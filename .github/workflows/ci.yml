@@ -30,6 +30,8 @@ jobs:
   docker:
     name: docker integration, validate examples
     runs-on: ubuntu-latest
+    env:
+      PATCHGROUND_REQUIRE_DOCKER: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
