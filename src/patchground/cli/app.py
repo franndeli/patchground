@@ -3,6 +3,7 @@
 import typer
 
 from patchground import __version__
+from patchground.cli.validate import validate
 
 app = typer.Typer(name="patchground", no_args_is_help=True, add_completion=False)
 
@@ -20,6 +21,9 @@ def root(
     ),
 ) -> None:
     """Practice real software engineering on broken repositories."""
+
+
+app.command("validate")(validate)
 
 
 def main() -> None:

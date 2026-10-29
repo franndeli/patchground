@@ -22,7 +22,9 @@ resolves inputs, calls one module entry point, and renders the result.
   confirmation, the AI payload preview. `--yes` answers them; `--json` never prompts.
 - `doctor`: assembles checks from `sandbox` engine probing, git and disk, and prints the exact fix
   for each failure.
-- Mapping domain errors to messages and exit codes; manifest errors keep their file and line.
+- Mapping domain errors to messages and exit codes; manifest errors keep their file and line. Any
+  unexpected exception still ends as one `internal` error (exit `2`, one JSON document under
+  `--json`), never a traceback that reads as exit `1`.
 
 ## Boundary
 

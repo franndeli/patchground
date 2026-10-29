@@ -18,8 +18,11 @@ The binary is `patchground` with the alias `pgnd` (not `pg`, which developers re
   clear error unless `--yes` is given.
 - Manifest errors name the file and line.
 - The CLI never prints the reference solution or hidden test sources.
-- Exit codes *(unconfirmed)*: `0` success, `1` a check or validation failed, `2` usage, manifest or
-  environment error.
+- Exit codes: `0` success; `1` a check or validation failed — for `validate` this includes an invalid
+  manifest, which is a validation result; `2` a usage error, an environment problem (engine
+  unreachable, git missing, unwritable folder) or an internal error. A `--json` command that cannot
+  produce its result prints `{"error": {"kind": "environment" | "internal" | "interrupted",
+  "message": ...}}`. Ctrl-C exits `130`.
 - Commands that act on a session (`check`, `reset`, `status`, `hint`, `run`, `submit`) use the
   session whose directory contains the current working directory, otherwise the most recently
   started open session *(unconfirmed)*.
@@ -39,7 +42,7 @@ The binary is `patchground` with the alias `pgnd` (not `pg`, which developers re
 | `submit [--transcript <file>]` | End the session and write the verified-outcomes report. |
 | `sessions` / `report <session>` | Past sessions and their reports. |
 | `new <id> --type <type> --lang <lang>` | Scaffold a challenge folder from `templates/`. |
-| `validate <path>` | Run `patchground-contract-verification`; CI-friendly. |
+| `validate <path> [--no-write]` | Run `patchground-contract-verification`; CI-friendly. Progress goes to stderr; `--no-write` leaves `verification.json` untouched. |
 | `doctor` | Check Docker (or Podman), git, disk; print exact fixes (WSL2 on Windows). |
 | `pack add <git-url>[@ref]`, `pack list\|update\|remove` | Manage packs, pinned by commit. |
 | `config set <key> <value>` | Defaults: provider, model, editor command. |
