@@ -1,0 +1,22 @@
+diff --git a/src/catalog/pagination.py b/src/catalog/pagination.py
+index 8c0a96e..f09b864 100644
+--- a/src/catalog/pagination.py
++++ b/src/catalog/pagination.py
+@@ -2,6 +2,7 @@
+ 
+ from __future__ import annotations
+ 
++import math
+ from collections.abc import Sequence
+ from dataclasses import dataclass
+ from typing import Generic, TypeVar
+@@ -39,7 +40,8 @@ def paginate(items: Sequence[T], page: int, per_page: int = 20) -> Page[T]:
+     if page < 1:
+         raise PageOutOfRange(f"page {page} is before the first page")
+ 
+-    total_pages = max(1, len(items) // per_page)
++    # Round up: a partial last page is still a page.
++    total_pages = max(1, math.ceil(len(items) / per_page))
+     if page > total_pages:
+         raise PageOutOfRange(f"page {page} is past the last page ({total_pages})")
+ 

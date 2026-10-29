@@ -1,0 +1,375 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://patchground.dev/schema/challenge-0.1.schema.json",
+  "$comment": "Generated from patchground.spec.models; do not edit.",
+  "title": "Patchground challenge.yaml v0.1",
+  "$defs": {
+    "AIPolicy": {
+      "description": "Whether the user may use AI assistance.",
+      "enum": [
+        "allowed",
+        "forbidden"
+      ],
+      "title": "AIPolicy",
+      "type": "string"
+    },
+    "Author": {
+      "additionalProperties": false,
+      "description": "Challenge author.",
+      "patternProperties": {
+        "^x-": {}
+      },
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "github": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Github"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Author",
+      "type": "object"
+    },
+    "ChallengeType": {
+      "description": "Kind of challenge.",
+      "enum": [
+        "debug",
+        "feature",
+        "review",
+        "refactor"
+      ],
+      "title": "ChallengeType",
+      "type": "string"
+    },
+    "Checks": {
+      "additionalProperties": false,
+      "description": "Visible checks are copied into the workspace; hidden checks never are.",
+      "patternProperties": {
+        "^x-": {}
+      },
+      "properties": {
+        "visible": {
+          "anyOf": [
+            {
+              "description": "Relative POSIX path inside the challenge folder (no absolute paths, must not escape the folder).",
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Visible"
+        },
+        "hidden": {
+          "description": "Relative POSIX path inside the challenge folder (no absolute paths, must not escape the folder).",
+          "minLength": 1,
+          "title": "Hidden",
+          "type": "string"
+        }
+      },
+      "required": [
+        "hidden"
+      ],
+      "title": "Checks",
+      "type": "object"
+    },
+    "Debrief": {
+      "additionalProperties": false,
+      "description": "Optional interviewer prompts and unweighted coaching areas.",
+      "patternProperties": {
+        "^x-": {}
+      },
+      "properties": {
+        "questions": {
+          "anyOf": [
+            {
+              "description": "Relative POSIX path inside the challenge folder (no absolute paths, must not escape the folder).",
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Questions"
+        },
+        "focus": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Focus",
+          "type": "array"
+        }
+      },
+      "title": "Debrief",
+      "type": "object"
+    },
+    "Difficulty": {
+      "description": "Intended difficulty.",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "title": "Difficulty",
+      "type": "string"
+    },
+    "Environment": {
+      "additionalProperties": false,
+      "description": "Runtime image and test command.",
+      "patternProperties": {
+        "^x-": {}
+      },
+      "properties": {
+        "dockerfile": {
+          "description": "Relative POSIX path inside the challenge folder (no absolute paths, must not escape the folder).",
+          "minLength": 1,
+          "title": "Dockerfile",
+          "type": "string"
+        },
+        "services": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Services",
+          "type": "array"
+        },
+        "test_command": {
+          "minLength": 1,
+          "title": "Test Command",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dockerfile",
+        "test_command"
+      ],
+      "title": "Environment",
+      "type": "object"
+    },
+    "GeneratedBy": {
+      "additionalProperties": false,
+      "description": "Model and prompt version of a generated challenge.",
+      "patternProperties": {
+        "^x-": {}
+      },
+      "properties": {
+        "model": {
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "prompt_version": {
+          "minLength": 1,
+          "title": "Prompt Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model",
+        "prompt_version"
+      ],
+      "title": "GeneratedBy",
+      "type": "object"
+    },
+    "Provenance": {
+      "description": "How the challenge was authored.",
+      "enum": [
+        "handmade",
+        "generated"
+      ],
+      "title": "Provenance",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Manifest of a challenge folder (challenge.yaml, format v0.1).",
+  "else": {
+    "properties": {
+      "generated_by": {
+        "type": "null"
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "provenance": {
+        "const": "generated"
+      }
+    },
+    "required": [
+      "provenance"
+    ]
+  },
+  "patternProperties": {
+    "^x-": {}
+  },
+  "properties": {
+    "spec_version": {
+      "const": "0.1",
+      "title": "Spec Version",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "version": {
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "title": "Version",
+      "type": "string"
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "type": {
+      "$ref": "#/$defs/ChallengeType"
+    },
+    "summary": {
+      "minLength": 1,
+      "title": "Summary",
+      "type": "string"
+    },
+    "languages": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Languages",
+      "type": "array"
+    },
+    "tags": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "difficulty": {
+      "$ref": "#/$defs/Difficulty"
+    },
+    "timebox_minutes": {
+      "exclusiveMinimum": 0,
+      "title": "Timebox Minutes",
+      "type": "integer"
+    },
+    "ai_policy": {
+      "$ref": "#/$defs/AIPolicy"
+    },
+    "environment": {
+      "$ref": "#/$defs/Environment"
+    },
+    "checks": {
+      "$ref": "#/$defs/Checks"
+    },
+    "solution": {
+      "description": "Relative POSIX path inside the challenge folder (no absolute paths, must not escape the folder).",
+      "minLength": 1,
+      "title": "Solution",
+      "type": "string"
+    },
+    "expected_paths": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Expected Paths",
+      "type": "array"
+    },
+    "hints": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Hints",
+      "type": "array"
+    },
+    "debrief": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Debrief"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "author": {
+      "$ref": "#/$defs/Author"
+    },
+    "content_license": {
+      "default": "CC-BY-4.0",
+      "minLength": 1,
+      "title": "Content License",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance",
+      "default": "handmade"
+    },
+    "generated_by": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GeneratedBy"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "spec_version",
+    "id",
+    "version",
+    "title",
+    "type",
+    "summary",
+    "languages",
+    "difficulty",
+    "timebox_minutes",
+    "ai_policy",
+    "environment",
+    "checks",
+    "solution",
+    "author"
+  ],
+  "then": {
+    "properties": {
+      "generated_by": {
+        "type": "object"
+      }
+    },
+    "required": [
+      "generated_by"
+    ]
+  },
+  "type": "object"
+}

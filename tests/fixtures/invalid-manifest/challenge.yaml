@@ -1,0 +1,24 @@
+spec_version: "0.1"
+id: invalid-manifest
+version: 1.0.0
+title: Last page of search results returns "page out of range"
+type: bugfix
+summary: >-
+  The catalog API rejects the last page of results whenever the result count is not
+  a multiple of the page size. Find the root cause and fix it.
+languages: [python]
+tags: [pagination, off-by-one]
+difficulty: beginner
+estimated_minutes: 20
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  network: none
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+author: {name: Fran Delicado, github: franndeli}
+x-notes: extension keys are accepted and ignored; this line must NOT be reported

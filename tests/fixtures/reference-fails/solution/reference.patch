@@ -1,0 +1,13 @@
+diff --git a/src/catalog/pagination.py b/src/catalog/pagination.py
+index 8c0a96e..3b1d2c4 100644
+--- a/src/catalog/pagination.py
++++ b/src/catalog/pagination.py
+@@ -39,7 +39,7 @@ def paginate(items: Sequence[T], page: int, per_page: int = 20) -> Page[T]:
+     if page < 1:
+         raise PageOutOfRange(f"page {page} is before the first page")
+ 
+-    total_pages = max(1, len(items) // per_page)
++    total_pages = max(1, round(len(items) / per_page))
+     if page > total_pages:
+         raise PageOutOfRange(f"page {page} is past the last page ({total_pages})")
+ 

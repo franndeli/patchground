@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://patchground.dev/schema/pack-0.1.schema.json",
+  "$comment": "Generated from patchground.spec.models; do not edit.",
+  "title": "Patchground pack.yaml v0.1",
+  "additionalProperties": false,
+  "description": "Manifest of a pack folder (pack.yaml, format v0.1).",
+  "patternProperties": {
+    "^x-": {}
+  },
+  "properties": {
+    "spec_version": {
+      "const": "0.1",
+      "title": "Spec Version",
+      "type": "string"
+    },
+    "name": {
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "title": "Name",
+      "type": "string"
+    },
+    "version": {
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "title": "Version",
+      "type": "string"
+    },
+    "description": {
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "challenges": {
+      "items": {
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+        "type": "string"
+      },
+      "title": "Challenges",
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "spec_version",
+    "name",
+    "version",
+    "description",
+    "challenges"
+  ],
+  "type": "object"
+}

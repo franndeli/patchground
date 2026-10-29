@@ -1,0 +1,31 @@
+spec_version: "0.1"
+id: build-fails
+version: 1.0.0
+title: Last page of search results returns "page out of range"
+type: debug
+summary: >-
+  The catalog API rejects the last page of results whenever the result count is not
+  a multiple of the page size. Find the root cause and fix it.
+languages: [python]
+tags: [pagination, off-by-one]
+difficulty: beginner
+timebox_minutes: 20
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/catalog/]
+hints:
+  - Compare the number of pages the paginator computes with the number you would count by hand for 25 items, 10 per page.
+  - Integer division rounds down. What happens to the items that don't fill a whole page?
+debrief:
+  questions: debrief/questions.md
+  focus: [debugging_method, test_quality, scope_judgment]
+author: {name: Fran Delicado, github: franndeli}
+content_license: CC-BY-4.0
+provenance: handmade
