@@ -27,6 +27,15 @@ The binary is `patchground` with the alias `pgnd` (not `pg`, which developers re
   explicit `--session <path>`. Outside a session, require selection rather than silently choosing
   the latest attempt.
 
+## Implemented commands
+
+The first playable slice implements `validate`, `start <local-path> [--no-timer]`,
+`check [--session <path>]` and `status [--session <path>]`, each with `--json`. Start accepts authored
+local paths only; it freezes check inputs and builds, without applying the reference solution.
+Status needs no container engine. Checks with no tests or any skipped test do not count as passing.
+
+The table below also describes planned commands and options; it is not a claim that they all exist.
+
 ## Commands
 
 | Command | Behavior |

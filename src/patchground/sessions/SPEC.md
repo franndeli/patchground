@@ -22,8 +22,11 @@ workspaces; the separate verification-copy exception is described in `patchgroun
 └── .session/
     ├── session.json  # challenge id + version, source and trust, image digest, ai_policy, start/end, timer on/off
     ├── events.jsonl  # append-only
-    ├── original/     # pristine starting workspace, read-only
-    └── report.md     # written on submit
+    ├── original/     # pristine starting workspace + visible checks, read-only
+    ├── manifest.json # frozen validated challenge metadata
+    ├── hidden/       # private check inputs, never in workspace/
+    ├── TICKET.md     # frozen ticket
+    └── lock          # advisory lock used by check
 ```
 
 A second session for the same challenge on the same day gets a numeric suffix. Directory reservation
@@ -40,6 +43,15 @@ is never copied. Source edits or removal do not change an existing attempt. Chec
 command and image ID; a missing image is an environment error, not permission to rebuild or pull.
 Session metadata is versioned and paths stay within the session; links must not redirect reads or
 writes. Checks are serialized with an advisory lock. Status is read-only and works without Docker.
+
+Copy safety is checked against open descriptors, not a prior pathname scan: editors can replace a
+file or directory while a check copies it. Each ancestor and entry is opened without following
+links; types and identity are validated on those descriptors. Sensitive-file and Git exclusions
+apply before copying. Mutable metadata is additionally required to have one hard link, verified on
+the descriptor before any append, so an events file cannot redirect writes into the Git index.
+The Git executable is resolved absolutely before changing directories, preventing a relative PATH
+entry from selecting a challenge-supplied executable. Raw run logs, even apparently engine-prefixed
+lines, never enter events or CLI output.
 
 ## Event log
 

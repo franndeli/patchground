@@ -53,4 +53,5 @@ the network while checks run without it.
 3. Run `test_command` with `PG_RESULTS=/results`.
 4. Parse `/results/junit.xml` into per-test results.
 5. Record a `check_run` event (owned by `patchground-sessions`) and tear everything down.
-6. Snapshot the workspace into `refs/patchground/checks/<n>` (see `patchground-sessions`).
+6. Snapshots into `refs/patchground/checks/<n>` are deferred. Current check/status commands never
+   invoke Git or change workspace Git state (see `patchground-sessions`).

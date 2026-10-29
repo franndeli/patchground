@@ -99,7 +99,7 @@ through WSL2 + Docker Desktop; `pgnd doctor` points Windows users there.
 
 Unit tests per module; tests that need a container engine are marked `@pytest.mark.docker`, and CI
 sets `PATCHGROUND_REQUIRE_DOCKER=1` so they fail rather than skip without an engine. ruff for lint,
-mypy strict on `spec`, `verify`, `report` and `sandbox` (the safety boundary). The challenges in
+mypy strict on `spec`, `verify`, `report`, `sessions` and `sandbox` (the safety boundary). The challenges in
 `examples/` must pass `pgnd validate` in CI; their `verification.json` is gitignored, because a
 locally built image id means nothing on another machine and CI re-validating every push is the
 proof. Broken challenges, one per failing step, live in `tests/fixtures/`.
