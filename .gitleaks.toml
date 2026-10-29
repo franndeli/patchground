@@ -1,0 +1,31 @@
+# Stricter-than-default secret scanning. Used by .githooks/ and CI.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "anthropic-key-loose"
+description = "Anthropic API key (any sk-ant- token)"
+regex = '''sk-ant-[A-Za-z0-9_\-]{20,}'''
+keywords = ["sk-ant-"]
+
+[[rules]]
+id = "llm-provider-key-loose"
+description = "Provider-style secret keys (OpenAI, OpenRouter, Groq, etc.)"
+regex = '''\b(sk-(proj|or-v1|svcacct|admin)?-?[A-Za-z0-9_\-]{20,}|gsk_[A-Za-z0-9]{20,}|hf_[A-Za-z0-9]{20,}|xai-[A-Za-z0-9]{20,})\b'''
+keywords = ["sk-", "gsk_", "hf_", "xai-"]
+
+[[rules]]
+id = "hardcoded-credential"
+description = "Credential-looking assignment with a literal value"
+regex = '''(?i)[a-z0-9_.\-]*(password|passwd|pwd|secret|token|api_?key|private_key)[a-z0-9_]*["']?\s*[:=]\s*["'][^"'\s]{8,}["']'''
+keywords = ["password", "passwd", "pwd", "secret", "token", "key"]
+
+[allowlist]
+description = "Obvious placeholders"
+regexTarget = "match"
+regexes = [
+  '''(?i:fake|dummy|example|placeholder|changeme|not-a-real|redacted|your[-_]?(?:api[-_]?)?key|xxxx)''',
+  '''["']\$\{?[A-Z_]+\}?["']''',
+  '''["']<[^>]+>["']''',
+  '''[:=]\s*["'][A-Z][A-Z0-9_]+["']$''',
+]

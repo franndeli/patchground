@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Blocks commits that contain secrets or personal data. Fails closed.
+# Enable once per clone: git config core.hooksPath .githooks
+set -euo pipefail
+
+fail() { echo "pre-commit: BLOCKED — $*" >&2; exit 1; }
+
+command -v gitleaks >/dev/null 2>&1 \
+  || fail "gitleaks is not installed (brew install gitleaks). Refusing to commit unscanned."
+
+# 1. Commit identity must not expose a personal email.
+email="$(git config user.email || true)"
+[[ "$email" == *@users.noreply.github.com ]] \
+  || fail "user.email is '$email'. Use your GitHub noreply address for this repo."
+
+# 2. Secret scan of the staged changes.
+gitleaks git --config .gitleaks.toml --pre-commit --staged --redact --no-banner -v \
+  || fail "gitleaks found a possible secret in staged changes."
+
+# 3. Forbidden file types, even if .gitignore was bypassed with -f.
+forbidden='(^|/)(\.env(\..*)?|.*\.(pem|key|p12|pfx|keystore|jks|gpg)|id_(rsa|ed25519|ecdsa).*|\.netrc|\.pypirc|\.npmrc|\.mcp\.json|credentials.*\.json|service-account.*\.json)$'
+bad="$(git diff --cached --name-only --diff-filter=ACMR | grep -E "$forbidden" | grep -v '\.env\.example$' || true)"
+[[ -z "$bad" ]] || fail "sensitive file(s) staged: $bad"
+
+# 4. Personal strings kept OUTSIDE the repo (never committed), one per line.
+#    File: .git/info/forbidden-strings
+list="$(git rev-parse --git-dir)/info/forbidden-strings"
+if [[ -s "$list" ]]; then
+  while IFS= read -r s; do
+    [[ -z "$s" || "$s" == \#* ]] && continue
+    if git diff --cached -U0 | grep -E '^\+' | grep -qiF -- "$s"; then
+      fail "staged changes contain a string from .git/info/forbidden-strings."
+    fi
+  done < "$list"
+fi

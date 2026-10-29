@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Last local gate before anything leaves the machine. Fails closed.
+set -euo pipefail
+
+fail() { echo "pre-push: BLOCKED — $*" >&2; exit 1; }
+
+command -v gitleaks >/dev/null 2>&1 \
+  || fail "gitleaks is not installed (brew install gitleaks). Refusing to push unscanned."
+
+zero=0000000000000000000000000000000000000000
+while read -r _local_ref local_sha _remote_ref remote_sha; do
+  [[ "$local_sha" == "$zero" ]] && continue
+  if [[ "$remote_sha" == "$zero" ]]; then range="$local_sha"; else range="$remote_sha..$local_sha"; fi
+
+  # Every pushed commit must use a noreply identity.
+  leaked="$(git log --format='%ae%n%ce' "$range" | sort -u | grep -v '@users.noreply.github.com$' || true)"
+  [[ -z "$leaked" ]] || fail "commits in $range use a non-noreply email. Rewrite them before pushing."
+
+  # Secret scan of every pushed commit.
+  gitleaks git --config .gitleaks.toml --log-opts="$range" --redact --no-banner -v \
+    || fail "gitleaks found a possible secret in $range."
+done
