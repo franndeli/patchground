@@ -24,7 +24,7 @@ secrets.*
 
 # --- Local Patchground state (may hold AI payloads, transcripts, config) ---
 .patchground/
-sessions/
+/sessions/
 *.transcript.*
 .session/
 
