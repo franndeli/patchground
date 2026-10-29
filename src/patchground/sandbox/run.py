@@ -25,12 +25,13 @@ from pathlib import Path
 
 import docker.errors
 import requests
+import urllib3.exceptions
+from docker import DockerClient
 from docker.models.containers import Container
 from docker.models.networks import Network
 from docker.models.volumes import Volume
 from docker.types import Mount
 
-from docker import DockerClient
 from patchground.sandbox._engine import connect
 from patchground.sandbox.errors import JUnitError, SandboxError
 from patchground.sandbox.junit import TestResult, TestStatus, parse_junit
@@ -43,6 +44,8 @@ JUNIT_PATH = f"{RESULTS}/junit.xml"
 #: Largest junit.xml accepted from a container.
 MAX_JUNIT_BYTES = 50 * 1024**2
 LOG_TAIL_LINES = 200
+#: A connection error this close to the wall-clock limit counts as the limit being hit.
+TIMEOUT_TOLERANCE_SECONDS = 1.0
 LABELS = {"patchground": "1"}
 
 
@@ -80,6 +83,10 @@ class RunResult:
     ``limit`` is ``"timeout"`` or ``"memory"`` when ``outcome`` is ``LIMIT_EXCEEDED``.
     ``log_tail`` is the last ~200 lines of combined stdout/stderr, followed by any
     ``[patchground]`` notes explaining the outcome.
+
+    ``log_tail`` is raw test-runner output and may contain test sources (assertion rewrites,
+    tracebacks), including those of hidden checks. Callers must not display it for runs that
+    included hidden layers; the ``[patchground]`` note lines are always safe to show.
     """
 
     outcome: RunOutcome
@@ -135,8 +142,16 @@ def build_seed_tar(layers: Sequence[Path]) -> bytes:
     top-level entries make the volume roots themselves owned by 1000 and mode 0755.
 
     Directories may appear in several layers; any other path clash between layers is a caller
-    bug and raises :class:`SandboxError`, as do symlinks and special files anywhere in a layer.
+    bug and raises :class:`SandboxError`, as do symlinks and special files anywhere in a layer
+    and files that cannot be read.
     """
+    try:
+        return _build_seed_tar(layers)
+    except OSError as exc:
+        raise SandboxError(f"cannot read files to copy into the sandbox: {exc}") from exc
+
+
+def _build_seed_tar(layers: Sequence[Path]) -> bytes:
     merged: dict[str, tuple[Path, bool]] = {}
     for layer in layers:
         for rel, (path, is_dir) in _collect(layer).items():
@@ -252,7 +267,11 @@ def run_check(
         container = _create_container(client, image_id, command, mounts, _name(network), limits)
         container.start()
         return _wait_and_collect(container, limits)
-    except (docker.errors.DockerException, requests.exceptions.RequestException) as exc:
+    except (
+        docker.errors.DockerException,
+        requests.exceptions.RequestException,
+        urllib3.exceptions.HTTPError,
+    ) as exc:
         raise SandboxError(f"sandbox run failed: {exc}") from exc
     finally:
         _teardown([c for c in (seed, container) if c is not None], volumes, network)
@@ -316,18 +335,30 @@ def _create_container(
     )
 
 
-def _wait_and_collect(container: Container, limits: Limits) -> RunResult:
-    timed_out = False
-    exit_code: int | None = None
+def _wait(container: Container, limits: Limits) -> int | None:
+    """Wait for ``container`` to exit; its exit code, or ``None`` if it hit the wall clock.
+
+    On timeout the container is killed. A connection error well before the deadline means the
+    engine went away mid-run and raises :class:`SandboxError` (the caller still tears down).
+    """
+    started = time.monotonic()
     try:
         status = container.wait(timeout=limits.timeout_seconds)
-        exit_code = int(status["StatusCode"])
-    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as exc:
         # docker-py surfaces a wait() timeout as ReadTimeout or, depending on the transport,
-        # as ConnectionError (docker/docker-py#1966).
-        timed_out = True
+        # as ConnectionError (docker/docker-py#1966); only near the deadline is it a timeout.
+        elapsed = time.monotonic() - started
+        if elapsed < limits.timeout_seconds - TIMEOUT_TOLERANCE_SECONDS:
+            raise SandboxError(f"engine connection lost during run: {exc}") from exc
         with contextlib.suppress(docker.errors.DockerException):
             container.kill()
+        return None
+    return int(status["StatusCode"])
+
+
+def _wait_and_collect(container: Container, limits: Limits) -> RunResult:
+    exit_code = _wait(container, limits)
+    timed_out = exit_code is None
     container.reload()
     oom_killed = bool(container.attrs.get("State", {}).get("OOMKilled", False))
     log = container.logs(stdout=True, stderr=True, tail=LOG_TAIL_LINES).decode(

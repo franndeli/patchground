@@ -27,6 +27,31 @@ sessions, packs or reports: callers hand it an environment and files, it hands b
   errored, missing results and limit exceeded.
 - **Engine probing** for `doctor`: engine reachable, version, disk available.
 
+## Implementation notes (M0)
+
+- The API takes plain values (paths, strings, `Limits`); for M0 it imports no other patchground
+  module. Services and engine probing are not built yet.
+- Builds use the Engine API's classic builder (what the Docker SDK drives), tagged
+  `patchground/<name>:<hash12>` over the context directory; build containers are memory-capped.
+  A build has a wall-clock budget (`timeout_seconds`, default 1800 s), checked whenever the builder
+  emits output and enforced for silent steps by an equal HTTP read timeout (so a build that goes
+  quiet just before the deadline may overrun it by up to one more budget). Exceeding it raises
+  `BuildFailed`; closing the build connection makes the engine cancel the build and remove its
+  intermediate container. Engine 4xx answers are `BuildFailed` (the challenge's fault); 5xx, no
+  status, or a connection lost before the deadline are `SandboxError` (the environment's fault).
+- A run's wall clock is `container.wait(timeout=…)`; a read timeout or connection error from it
+  counts as the limit only once the deadline (minus 1 s) has passed, otherwise it is a lost engine
+  (`SandboxError`, teardown still runs). Unreadable layer files are `SandboxError`, never `OSError`.
+- Files reach the run container through two fresh labelled volumes (`/workspace`, `/results`). The
+  engine refuses archives into a read-only rootfs and ignores a tar's root (`.`) entry, so a
+  never-started "seed" container mounting the same volumes takes the archive at `/`; this is what
+  makes both volume roots owned by uid 1000. The seed container never runs anything.
+- The run outcome comes from `/results/junit.xml` only: limit exceeded (timeout or OOM) first, then
+  missing/unparsable results, then errored > failed > passed; zero test cases is errored.
+- `RunResult.log_tail` is raw test-runner output and may contain test sources (assertion rewrites,
+  tracebacks), including those of hidden checks. Callers must not display it for runs that
+  included hidden layers; only its `[patchground]` note lines are safe to show.
+
 ## Boundary
 
 Depends only on `spec`. Never executes anything on the host shell, never bind-mounts the user's

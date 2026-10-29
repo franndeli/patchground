@@ -7,10 +7,10 @@ from collections.abc import Iterator
 from pathlib import Path
 from textwrap import dedent
 
+import docker
 import pytest
 from docker.models.containers import Container
 
-import docker
 from patchground.sandbox import (
     BuildFailed,
     BuildResult,
@@ -33,7 +33,10 @@ PYTEST = "python -m pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.x
 def image(tmp_path_factory: pytest.TempPathFactory) -> BuildResult:
     env = tmp_path_factory.mktemp("environment")
     (env / "Dockerfile").write_text(
-        "FROM python:3.12-slim\nRUN pip install --no-cache-dir pytest==8.3.5\n"
+        "FROM python:3.12-slim\n"
+        "RUN pip install --no-cache-dir pytest==8.3.5\n"
+        # Owned by the run user but outside /workspace: only the read-only rootfs stops writes.
+        "RUN mkdir /owned && chown 1000:1000 /owned\n"
     )
     return build_image(env / "Dockerfile", name="sandbox-test")
 
@@ -82,6 +85,30 @@ def test_build_failure_raises_with_log(tmp_path: Path) -> None:
         build_image(tmp_path / "Dockerfile", name="sandbox-broken")
     assert "about-to-fail" in info.value.log
     assert "returned a non-zero code: 3" in info.value.log
+
+
+def test_build_timeout(tmp_path: Path, engine: docker.DockerClient) -> None:
+    (tmp_path / "Dockerfile").write_text(
+        "FROM python:3.12-slim\nRUN echo before-sleep && sleep 60\n"
+    )
+    started = time.monotonic()
+    with pytest.raises(BuildFailed, match="image build exceeded 5 s") as info:
+        build_image(tmp_path / "Dockerfile", name="sandbox-slow", timeout_seconds=5)
+    assert time.monotonic() - started < 30
+    assert "[patchground] image build exceeded 5 s" in info.value.log
+    # Closing the build connection makes the engine cancel the build and remove its
+    # intermediate container (it may linger as "Dead" for a moment).
+    deadline = time.monotonic() + 20
+    while time.monotonic() < deadline:
+        sleeping = [
+            c
+            for c in engine.containers.list(all=True)
+            if "before-sleep" in " ".join(c.attrs.get("Config", {}).get("Cmd") or [])
+        ]
+        if not sleeping:
+            break
+        time.sleep(0.5)
+    assert sleeping == []
 
 
 def test_passing_run(image: BuildResult, tmp_path: Path, engine: docker.DockerClient) -> None:
@@ -198,6 +225,7 @@ def test_hardening(image: BuildResult, tmp_path: Path) -> None:
         tmp_path / "ws",
         {
             "test_hardening.py": """\
+            import errno
             import os
             from pathlib import Path
 
@@ -210,10 +238,14 @@ def test_hardening(image: BuildResult, tmp_path: Path) -> None:
 
 
             def test_rootfs_read_only():
-                with pytest.raises(OSError):
-                    Path("/etc/x").write_text("x")
-                with pytest.raises(OSError):
-                    Path("/usr/local/x").write_text("x")
+                mounts = [line.split() for line in Path("/proc/mounts").read_text().splitlines()]
+                root_options = [m[3].split(",") for m in mounts if m[1] == "/"]
+                assert root_options, mounts
+                assert "ro" in root_options[-1]
+                assert Path("/owned").stat().st_uid == 1000
+                with pytest.raises(OSError) as info:
+                    Path("/owned/x").write_text("x")
+                assert info.value.errno == errno.EROFS
 
 
             def test_workspace_tmp_results_writable():

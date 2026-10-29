@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import docker
 import docker.errors
 import requests
 
-import docker
 from patchground.sandbox.errors import EngineUnavailable
 
 

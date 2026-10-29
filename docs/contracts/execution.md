@@ -22,8 +22,13 @@ the network while checks run without it.
 - `test_command` uses preinstalled dependencies only. A challenge whose tests need a download is
   invalid.
 - Challenge commands run only inside containers, never through the host shell.
-- The workspace is **copied** into a fresh container, never bind-mounted writable. Hidden checks are
-  added to the copy, never to the user's workspace.
+- The workspace is **copied** into a fresh container, never bind-mounted writable. Visible and hidden
+  checks are merged into the copy at the workspace root, preserving their relative paths (so
+  `checks/hidden/tests/test_x.py` runs as `tests/test_x.py`); hidden checks never reach the user's
+  workspace.
+- `test_command` runs as `/bin/sh -c <test_command>` with `PG_RESULTS=/results` and `HOME=/tmp`,
+  working directory `/workspace`; the image's `ENTRYPOINT` is overridden, so the image needs
+  `/bin/sh`.
 - `PG_RESULTS=/results`; results are read from `/results/junit.xml`. A missing or unparsable file is
   an error result, not a pass.
 - Services named in `environment.services` start on the same internal network, reachable by service
@@ -32,9 +37,12 @@ the network while checks run without it.
 
 ## Container defaults
 
-- Build: no host mounts, no Docker socket, build-time limits.
-- Run: non-root user; read-only root filesystem with only `/workspace` and `/results` writable;
-  dropped Linux capabilities and `no-new-privileges`.
+- Build: the build context is the Dockerfile's folder (never the challenge root); no host mounts, no
+  Docker socket; memory-capped and a 30-minute wall clock. The engine's classic builder is used, so
+  BuildKit-only syntax such as `RUN --mount` is not supported.
+- Run: always uid/gid 1000, whatever the Dockerfile's `USER`; read-only root filesystem with only
+  `/workspace`, `/results` and a `/tmp` tmpfs writable; dropped Linux capabilities and
+  `no-new-privileges`.
 - Limits per check: 2 CPUs, 2 GB memory, 512 PIDs, 10 minutes wall clock. Exceeding one is reported as
   such, distinct from failing tests.
 

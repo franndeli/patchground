@@ -14,8 +14,8 @@ class EngineUnavailable(SandboxError):
 class BuildFailed(SandboxError):
     """The image build failed; ``log`` holds the builder output up to the failure."""
 
-    def __init__(self, log: str) -> None:
-        super().__init__("image build failed")
+    def __init__(self, log: str, *, message: str = "image build failed") -> None:
+        super().__init__(message)
         self.log = log
 
 
