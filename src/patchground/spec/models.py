@@ -134,10 +134,11 @@ def _check_slug(value: str) -> str:
     return value
 
 
-def relative_path_problem(value: str) -> str | None:
+def relative_path_problem(value: str, container: str = "challenge folder") -> str | None:
     """Return why ``value`` is not an acceptable manifest path, or ``None`` if it is.
 
-    Manifest paths are relative POSIX strings that stay inside the challenge folder lexically.
+    Manifest paths are relative POSIX strings that stay inside ``container`` (the challenge folder
+    by default; the workspace for ``expected_paths``) lexically. A trailing ``/`` is allowed.
     Symlinks are checked against the filesystem by the loader, not here.
     """
     if not value or not value.strip():
@@ -145,7 +146,7 @@ def relative_path_problem(value: str) -> str | None:
     if "\\" in value:
         return "path must use '/' as separator"
     if value.startswith("/") or re.match(r"^[A-Za-z]:", value):
-        return "path must be relative to the challenge folder"
+        return f"path must be relative to the {container}"
     depth = 0
     for part in value.split("/"):
         if part in ("", "."):
@@ -153,16 +154,23 @@ def relative_path_problem(value: str) -> str | None:
         if part == "..":
             depth -= 1
             if depth < 0:
-                return "path must stay inside the challenge folder"
+                return f"path must stay inside the {container}"
         else:
             depth += 1
     if depth == 0:
-        return "path must point inside the challenge folder, not at the folder itself"
+        return f"path must point inside the {container}, not at the {container} itself"
     return None
 
 
 def _check_relative_path(value: str) -> str:
     problem = relative_path_problem(value)
+    if problem is not None:
+        raise PydanticCustomError("relative_path", problem)
+    return value
+
+
+def _check_workspace_path(value: str) -> str:
+    problem = relative_path_problem(value, "workspace")
     if problem is not None:
         raise PydanticCustomError("relative_path", problem)
     return value
@@ -193,6 +201,19 @@ RelPath = Annotated[
             "minLength": 1,
             "description": "Relative POSIX path inside the challenge folder "
             "(no absolute paths, must not escape the folder).",
+        }
+    ),
+]
+
+WorkspacePath = Annotated[
+    str,
+    AfterValidator(_check_workspace_path),
+    WithJsonSchema(
+        {
+            "type": "string",
+            "minLength": 1,
+            "description": "Relative POSIX path inside the workspace (no absolute paths, must not "
+            "escape the workspace; a trailing '/' marks a directory). Need not exist.",
         }
     ),
 ]
@@ -317,7 +338,7 @@ class ChallengeManifest(ManifestModel):
     environment: Environment
     checks: Checks
     solution: RelPath
-    expected_paths: list[NonEmptyStr] = Field(default_factory=list)
+    expected_paths: list[WorkspacePath] = Field(default_factory=list)
     hints: list[NonEmptyStr] = Field(default_factory=list)
     debrief: Debrief | None = None
     author: Author

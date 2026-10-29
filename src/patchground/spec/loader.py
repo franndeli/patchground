@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import re
+import stat
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -400,6 +401,141 @@ def _clash_issues(sources: Iterable[_MergeSource], file: Path) -> list[ManifestI
     return issues
 
 
+def _relation(a: Path, b: Path) -> str | None:
+    """How resolved path ``a`` relates to resolved path ``b``: same, inside, contains, or None."""
+    if a == b:
+        return "is the same path as"
+    if a.is_relative_to(b):
+        return "is inside"
+    if b.is_relative_to(a):
+        return "contains"
+    return None
+
+
+def _non_regular_entries(directory: Path) -> list[tuple[str, str]]:
+    """``(relative POSIX path, kind)`` of every symlink or special file below ``directory``.
+
+    Only names and kinds are reported, never contents; symlinks are not followed.
+    """
+    found: list[tuple[str, str]] = []
+    for current, dirnames, filenames in directory.walk(follow_symlinks=False):
+        dirnames.sort()
+        for name in sorted([*dirnames, *filenames]):
+            entry = current / name
+            try:
+                mode = entry.lstat().st_mode
+            except OSError:
+                continue
+            if stat.S_ISDIR(mode) or stat.S_ISREG(mode):
+                continue
+            if stat.S_ISLNK(mode):
+                kind = "a symlink"
+                if name in dirnames:
+                    dirnames.remove(name)
+            elif stat.S_ISFIFO(mode):
+                kind = "a FIFO"
+            elif stat.S_ISSOCK(mode):
+                kind = "a socket"
+            elif stat.S_ISCHR(mode) or stat.S_ISBLK(mode):
+                kind = "a device file"
+            else:
+                kind = "a special file"
+            found.append((entry.relative_to(directory).as_posix(), kind))
+    return found
+
+
+def _git_entries(directory: Path) -> list[str]:
+    """Relative POSIX paths of every ``.git`` entry (any case, file or dir) below ``directory``.
+
+    A ``.git`` directory is not descended into; symlinks are not followed.
+    """
+    found: list[str] = []
+    for current, dirnames, filenames in directory.walk(follow_symlinks=False):
+        dirnames.sort()
+        for name in sorted([*dirnames, *filenames]):
+            if name.casefold() != ".git":
+                continue
+            found.append((current / name).relative_to(directory).as_posix())
+            if name in dirnames:
+                dirnames.remove(name)
+    return found
+
+
+@dataclass(frozen=True)
+class _Ref:
+    """A resolved folder entry and where to report problems about it."""
+
+    label: str
+    path: Path
+    file: Path
+    line: int | None
+    field: str | None
+
+    def issue(self, message: str) -> ManifestIssue:
+        return ManifestIssue(self.file, self.line, self.field, message)
+
+
+def _isolation_issues(refs: dict[str, _Ref]) -> list[ManifestIssue]:
+    """Enforce that solution and hidden checks can never reach the workspace or the image.
+
+    Everything under ``workspace/`` and ``checks.visible`` is copied into the user's workspace,
+    and the Dockerfile's folder is the build context sent into the image the sessions run. So
+    ``solution`` and ``checks.hidden`` must not overlap the workspace or visible checks, visible
+    checks must not overlap the workspace, and the build context must be a separate folder.
+    """
+    issues: list[ManifestIssue] = []
+    workspace = refs.get("workspace")
+    visible = refs.get("visible")
+    for secret_key in ("hidden", "solution"):
+        secret = refs.get(secret_key)
+        if secret is None:
+            continue
+        for exposed in (workspace, visible):
+            if exposed is None:
+                continue
+            relation = _relation(secret.path, exposed.path)
+            if relation is None:
+                continue
+            # Blame checks.visible when it covers the secret; otherwise the secret's own field.
+            blame_exposed = exposed.field is not None and relation != "contains"
+            blamed, other = (exposed, secret) if blame_exposed else (secret, exposed)
+            issues.append(
+                blamed.issue(
+                    f"{blamed.label} {_relation(blamed.path, other.path)} {other.label}; "
+                    f"{secret.label} must never be copied into the workspace, "
+                    "keep them in separate folders"
+                )
+            )
+    if workspace is not None and visible is not None:
+        relation = _relation(visible.path, workspace.path)
+        if relation is not None:
+            issues.append(
+                visible.issue(
+                    f"{visible.label} {relation} {workspace.label}; visible checks must be a "
+                    "separate folder that is merged into the workspace"
+                )
+            )
+    dockerfile = refs.get("dockerfile")
+    if dockerfile is not None:
+        context = dockerfile.path.parent
+        for key in ("workspace", "hidden", "solution"):
+            leaked = refs.get(key)
+            if leaked is None:
+                continue
+            leaks = leaked.path.is_relative_to(context)
+            if key == "hidden":  # a context inside the hidden checks ships some of them too
+                leaks = leaks or context.is_relative_to(leaked.path)
+            if leaks:
+                issues.append(
+                    dockerfile.issue(
+                        f"the Dockerfile's folder (the build context) "
+                        f"{_relation(context, leaked.path)} {leaked.label}; the build context goes "
+                        "into the image, so it must be a separate folder such as environment/"
+                    )
+                )
+    return issues
+
+
 def _challenge_fs_issues(folder: Path, root: Path, manifest: Path, raw: Any) -> list[ManifestIssue]:
     issues: list[ManifestIssue] = []
 
@@ -445,14 +581,49 @@ def _challenge_fs_issues(folder: Path, root: Path, manifest: Path, raw: Any) -> 
         else:
             resolved[loc] = target
 
-    sources: list[_MergeSource] = []
+    refs: dict[str, _Ref] = {}
     if isinstance(workspace, Path):
-        sources.append(_MergeSource(f"{WORKSPACE_DIR}/", workspace, None, None))
-    for loc in (("checks", "visible"), ("checks", "hidden")):
+        refs["workspace"] = _Ref(f"{WORKSPACE_DIR}/", workspace, folder / WORKSPACE_DIR, None, None)
+    for key, loc in (
+        ("dockerfile", ("environment", "dockerfile")),
+        ("visible", ("checks", "visible")),
+        ("hidden", ("checks", "hidden")),
+        ("solution", ("solution",)),
+    ):
         if loc in resolved:
-            field = _format_loc(loc)
-            sources.append(_MergeSource(str(field), resolved[loc], _line_for(raw, loc), field))
-    issues.extend(_clash_issues(sources, manifest))
+            field = str(_format_loc(loc))
+            refs[key] = _Ref(field, resolved[loc], manifest, _line_for(raw, loc), field)
+
+    isolation = _isolation_issues(refs)
+    issues.extend(isolation)
+
+    for key in ("workspace", "visible", "hidden"):
+        ref = refs.get(key)
+        if ref is None:
+            continue
+        for rel in _git_entries(ref.path):
+            shown = (ref.path / rel).relative_to(root).as_posix()
+            issues.append(
+                ref.issue(
+                    f"'{shown}' is a git repository or git file; challenges must not ship .git"
+                )
+            )
+        for rel, kind in _non_regular_entries(ref.path):
+            shown = (ref.path / rel).relative_to(root).as_posix()
+            issues.append(
+                ref.issue(
+                    f"'{shown}' is {kind}; {ref.label} may only contain regular files "
+                    "and directories"
+                )
+            )
+
+    if not isolation:  # overlapping folders would only repeat the same problem as clashes
+        sources = [
+            _MergeSource(ref.label, ref.path, ref.line, ref.field)
+            for key in ("workspace", "visible", "hidden")
+            if (ref := refs.get(key)) is not None
+        ]
+        issues.extend(_clash_issues(sources, manifest))
     return issues
 
 

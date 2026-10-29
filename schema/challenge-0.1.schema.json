@@ -295,6 +295,7 @@
     },
     "expected_paths": {
       "items": {
+        "description": "Relative POSIX path inside the workspace (no absolute paths, must not escape the workspace; a trailing '/' marks a directory). Need not exist.",
         "minLength": 1,
         "type": "string"
       },

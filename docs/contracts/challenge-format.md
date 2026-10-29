@@ -58,17 +58,35 @@ debrief:
 author: {name: Fran Delicado, github: <handle>}
 content_license: CC-BY-4.0
 provenance: handmade                # handmade | generated
+# generated_by: {model: ..., prompt_version: "3"}   # required when provenance: generated, else forbidden
 ```
+
+Optional: `tags`, `checks.visible`, `expected_paths`, `hints`, `debrief`, `content_license` (default
+`CC-BY-4.0`), `provenance` (default `handmade`), `generated_by`; every other key is required. Values
+are not coerced: `spec_version` is the string `"0.1"`, `timebox_minutes` an integer.
 
 - Unknown keys are rejected, except keys prefixed `x-`, which are accepted and ignored so experiments
   don't break the schema.
-- Every path is relative to the challenge folder and must stay inside it.
+- Every path is relative to the challenge folder and must stay inside it, except `expected_paths`,
+  which are relative to `workspace/` (must stay inside it, need not exist; a trailing `/` marks a
+  directory).
+- `solution` and `checks.hidden` must not be, contain or sit inside `workspace/` or
+  `checks.visible`; `checks.visible` must not overlap `workspace/`; the Dockerfile's folder (the build
+  context) must not be, contain or sit inside `workspace/`, `solution` or `checks.hidden`.
+- `workspace/` and both checks folders hold only regular files and directories (no symlinks, FIFOs,
+  sockets or device files) and no `.git` entry at any depth: repository config a challenge ships
+  could otherwise run commands on the host when tools touch the copy.
 - `test_command` must write JUnit XML to `$PG_RESULTS/junit.xml` — the only results contract, for every
   language — and must work with preinstalled dependencies only (see `patchground-contract-execution`).
 - Services are reached by service name on the run network (e.g. `postgres:5432`); credentials come
   from environment variables the challenge declares.
-- Generated challenges carry `provenance: generated` plus the model and prompt version, and are
-  otherwise indistinguishable from handmade ones.
+- Generated challenges carry `provenance: generated` plus `generated_by` (model and prompt version),
+  and are otherwise indistinguishable from handmade ones.
+- `checks.visible` and `checks.hidden` mirror the workspace layout: their files are merged into the
+  workspace root (see `patchground-contract-execution`), so a relative path present in two of
+  `workspace/`, `checks.visible` and `checks.hidden` is invalid.
+- `environment.services` is in the format but the runner does not start services yet: a non-empty
+  list fails validation.
 - Code inside `workspace/` keeps the license of the project it came from; `content_license` covers
   the rest of the challenge.
 

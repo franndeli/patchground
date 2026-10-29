@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import os
+import socket
+import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
@@ -494,6 +497,233 @@ def test_check_clash_file_versus_directory(make_challenge: ChallengeFactory) -> 
     folder = make_challenge(files={"workspace/tests": "a file where checks have a dir\n"})
     issues = issues_of(folder)
     assert {issue.message.split("'")[1] for issue in issues} == {"tests"}
+
+
+# --- solution and hidden checks never reach the workspace or the image ---------------------
+
+
+def test_hidden_checks_inside_workspace(make_challenge: ChallengeFactory) -> None:
+    manifest = replace("  hidden: checks/hidden", "  hidden: workspace/hiddenchecks")
+    folder = make_challenge(manifest, files={"workspace/hiddenchecks/test_h.py": "x = 1\n"})
+    (issue,) = issues_of(folder)
+    assert issue.field == "checks.hidden"
+    assert issue.line == line_of(manifest, "  hidden:")
+    assert issue.message.startswith("checks.hidden is inside workspace/;")
+
+
+def test_solution_inside_workspace(make_challenge: ChallengeFactory) -> None:
+    manifest = replace("solution: solution/reference.patch", "solution: workspace/reference.patch")
+    folder = make_challenge(manifest, files={"workspace/reference.patch": "--- a\n"})
+    (issue,) = issues_of(folder)
+    assert issue.field == "solution"
+    assert issue.line == line_of(manifest, "solution:")
+    assert "solution is inside workspace/" in issue.message
+
+
+def test_hidden_checks_containing_visible(make_challenge: ChallengeFactory) -> None:
+    manifest = replace("  hidden: checks/hidden", "  hidden: checks")
+    (issue,) = issues_of(make_challenge(manifest))
+    assert issue.field == "checks.hidden"
+    assert issue.message.startswith("checks.hidden contains checks.visible;")
+
+
+def test_visible_checks_containing_hidden(make_challenge: ChallengeFactory) -> None:
+    manifest = replace("  visible: checks/visible", "  visible: checks")
+    (issue,) = issues_of(make_challenge(manifest))
+    assert issue.field == "checks.visible"
+    assert issue.line == line_of(manifest, "  visible:")
+    assert issue.message.startswith("checks.visible contains checks.hidden;")
+
+
+def test_visible_checks_equal_to_hidden(make_challenge: ChallengeFactory) -> None:
+    manifest = replace("  visible: checks/visible", "  visible: checks/hidden")
+    (issue,) = issues_of(make_challenge(manifest))
+    assert issue.field == "checks.visible"
+    assert "is the same path as checks.hidden" in issue.message
+
+
+def test_visible_checks_pointing_at_solution(make_challenge: ChallengeFactory) -> None:
+    manifest = replace("  visible: checks/visible", "  visible: solution")
+    (issue,) = issues_of(make_challenge(manifest))
+    assert issue.field == "checks.visible"
+    assert issue.message.startswith("checks.visible contains solution;")
+
+
+@pytest.mark.parametrize("visible", ["workspace", "workspace/tests"])
+def test_visible_checks_inside_workspace(make_challenge: ChallengeFactory, visible: str) -> None:
+    manifest = replace("  visible: checks/visible", f"  visible: {visible}")
+    folder = make_challenge(manifest, files={"workspace/tests/test_v.py": "x = 1\n"})
+    (issue,) = issues_of(folder)
+    assert issue.field == "checks.visible"
+    assert "workspace/" in issue.message
+
+
+@pytest.mark.parametrize(
+    ("dockerfile", "files", "leaked"),
+    [
+        ("Dockerfile", {"Dockerfile": "FROM scratch\n"}, "workspace/"),
+        ("checks/Dockerfile", {"checks/Dockerfile": "FROM scratch\n"}, "checks.hidden"),
+        ("checks/hidden/Dockerfile", {"checks/hidden/Dockerfile": "FROM scratch\n"}, "hidden"),
+        ("solution/Dockerfile", {"solution/Dockerfile": "FROM scratch\n"}, "solution"),
+        ("workspace/Dockerfile", {"workspace/Dockerfile": "FROM scratch\n"}, "workspace/"),
+    ],
+)
+def test_build_context_must_not_hold_secrets_or_workspace(
+    make_challenge: ChallengeFactory, dockerfile: str, files: dict[str, str | None], leaked: str
+) -> None:
+    manifest = replace("  dockerfile: environment/Dockerfile", f"  dockerfile: {dockerfile}")
+    issues = issues_of(make_challenge(manifest, files=files))
+    context_issues = [issue for issue in issues if issue.field == "environment.dockerfile"]
+    assert context_issues, issues
+    assert all(issue.line == line_of(manifest, "dockerfile:") for issue in context_issues)
+    assert any(leaked in issue.message for issue in context_issues)
+    assert all("build context" in issue.message for issue in context_issues)
+
+
+def test_build_context_at_challenge_root_reports_every_leak(
+    make_challenge: ChallengeFactory,
+) -> None:
+    manifest = replace("  dockerfile: environment/Dockerfile", "  dockerfile: Dockerfile")
+    issues = issues_of(make_challenge(manifest, files={"Dockerfile": "FROM scratch\n"}))
+    assert {issue.field for issue in issues} == {"environment.dockerfile"}
+    assert len(issues) == 3  # workspace/, checks.hidden and solution
+
+
+# --- symlinks and special files ---------------------------------------------------------------
+
+
+def test_symlink_in_workspace(make_challenge: ChallengeFactory) -> None:
+    folder = make_challenge()
+    (folder / "workspace" / "src" / "link.py").symlink_to("payments/charge.py")
+    (issue,) = issues_of(folder)
+    assert issue.file == folder / "workspace"
+    assert issue.line is None
+    assert issue.field is None
+    assert issue.message.startswith("'workspace/src/link.py' is a symlink;")
+
+
+def test_symlinked_directory_in_hidden_checks(make_challenge: ChallengeFactory) -> None:
+    manifest = VALID_CHALLENGE_YAML
+    folder = make_challenge()
+    (folder / "checks" / "hidden" / "more").symlink_to("tests", target_is_directory=True)
+    (issue,) = issues_of(folder)
+    assert issue.field == "checks.hidden"
+    assert issue.line == line_of(manifest, "  hidden:")
+    assert issue.message.startswith("'checks/hidden/more' is a symlink;")
+    assert "SECRET_HIDDEN_CONTENT" not in issue.message
+
+
+def test_fifo_in_visible_checks(make_challenge: ChallengeFactory) -> None:
+    folder = make_challenge()
+    os.mkfifo(folder / "checks" / "visible" / "pipe")
+    (issue,) = issues_of(folder)
+    assert issue.field == "checks.visible"
+    assert issue.message.startswith("'checks/visible/pipe' is a FIFO;")
+
+
+def test_unix_socket_in_workspace(make_challenge: ChallengeFactory) -> None:
+    folder = make_challenge()
+    # AF_UNIX paths are short on macOS, so bind from inside the directory.
+    cwd = Path.cwd()
+    os.chdir(folder / "workspace")
+    try:
+        with socket.socket(socket.AF_UNIX) as sock:
+            sock.bind("s.sock")
+            (issue,) = issues_of(folder)
+    finally:
+        os.chdir(cwd)
+    assert issue.message.startswith("'workspace/s.sock' is a socket;")
+
+
+# --- .git entries -------------------------------------------------------------------------------
+
+GIT_MESSAGE = "is a git repository or git file; challenges must not ship .git"
+
+
+def test_git_repository_in_workspace_is_reported(make_challenge: ChallengeFactory) -> None:
+    # The reviewer's attack: a repo whose filter runs a host command through .gitattributes.
+    folder = make_challenge()
+    workspace = folder / "workspace"
+    marker = folder.parent / "pwned"
+    subprocess.run(["git", "init", "-q", str(workspace)], check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-C", str(workspace), "config", "filter.x.clean", f"touch {marker}; cat"],
+        check=True,
+    )
+    (workspace / ".gitattributes").write_text("* filter=x\n")
+    (issue,) = issues_of(folder)
+    assert issue.file == workspace
+    assert issue.line is None
+    assert issue.field is None
+    assert issue.message == f"'workspace/.git' {GIT_MESSAGE}"
+    assert not marker.exists()
+
+
+@pytest.mark.parametrize(
+    ("key", "rel"),
+    [
+        ("visible", "checks/visible/tests/.GIT"),
+        ("hidden", "checks/hidden/deep/er/.Git"),
+    ],
+)
+@pytest.mark.parametrize("as_dir", [True, False], ids=["dir", "file"])
+def test_git_entry_in_checks_is_reported(
+    make_challenge: ChallengeFactory, key: str, rel: str, as_dir: bool
+) -> None:
+    folder = make_challenge()
+    entry = folder / rel
+    entry.parent.mkdir(parents=True, exist_ok=True)
+    if as_dir:
+        entry.mkdir()
+        (entry / "config").write_text("[core]\n")
+    else:
+        entry.write_text("gitdir: /elsewhere\n")
+    (issue,) = issues_of(folder)
+    assert issue.field == f"checks.{key}"
+    assert issue.line == line_of(VALID_CHALLENGE_YAML, f"  {key}:")
+    assert issue.message == f"'{rel}' {GIT_MESSAGE}"
+
+
+def test_names_merely_containing_git_are_fine(make_challenge: ChallengeFactory) -> None:
+    folder = make_challenge(
+        files={
+            "workspace/.gitignore": "*.pyc\n",
+            "workspace/src/x.git": "",
+            "workspace/.github/a": "",
+        }
+    )
+    load_challenge(folder)
+
+
+# --- expected_paths -----------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("value", ["src/payments/", "src/payments/charge.py", "new/not/yet"])
+def test_expected_paths_relative_to_workspace_need_not_exist(
+    make_challenge: ChallengeFactory, value: str
+) -> None:
+    manifest = replace("expected_paths: [src/payments/]", f"expected_paths: [{value}]")
+    challenge = load_challenge(make_challenge(manifest))
+    assert challenge.manifest.expected_paths == [value]
+
+
+@pytest.mark.parametrize(
+    ("value", "message"),
+    [
+        ("/etc/passwd", "path must be relative to the workspace"),
+        ("../outside", "path must stay inside the workspace"),
+        ("src/../../x", "path must stay inside the workspace"),
+        ("'.'", "path must point inside the workspace, not at the workspace itself"),
+        ("'src\\x'", "path must use '/' as separator"),
+        ("''", "path must not be empty"),
+    ],
+)
+def test_expected_paths_rules(make_challenge: ChallengeFactory, value: str, message: str) -> None:
+    manifest = replace("expected_paths: [src/payments/]", f"expected_paths:\n  - ok/\n  - {value}")
+    (issue,) = issues_of(make_challenge(manifest))
+    assert issue.field == "expected_paths[1]"
+    assert issue.message == message
+    assert issue.line == line_of(manifest, f"  - {value}")
 
 
 # --- packs ------------------------------------------------------------------------------------
