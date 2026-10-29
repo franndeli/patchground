@@ -3,6 +3,7 @@
 import typer
 
 from patchground import __version__
+from patchground.cli.sessions import SessionCommand, check, start, status
 from patchground.cli.validate import validate
 
 app = typer.Typer(name="patchground", no_args_is_help=True, add_completion=False)
@@ -24,6 +25,9 @@ def root(
 
 
 app.command("validate")(validate)
+app.command("start", cls=SessionCommand)(start)
+app.command("check", cls=SessionCommand)(check)
+app.command("status", cls=SessionCommand)(status)
 
 
 def main() -> None:
