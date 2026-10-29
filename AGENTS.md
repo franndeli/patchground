@@ -1,0 +1,63 @@
+# Patchground
+
+Open-source, local-first CLI (`patchground`, alias `pgnd`) for practicing real software
+engineering. Users solve challenges in their own editor with their own AI; Patchground
+runs verification in Docker and reports verified outcomes.
+
+## Where the rules live
+
+- Product: `goal-and-requirements.md`. System and module boundaries: `architecture.md`.
+- Contracts you implement against: `docs/contracts/*.md`.
+- Each module's responsibility and boundary: `src/patchground/<module>/SPEC.md`.
+- Background and roadmap: `docs/spec.md` (not authoritative).
+
+Read the SPEC of the module you are changing and the contracts it implements. If a spec and the
+code disagree, or a spec is ambiguous, stop and ask. A change that alters a boundary or contract
+updates the owning spec in the same change.
+
+## Current milestone: M0 (minimal spec)
+
+Build only: the repo scaffold (`uv` project, Apache-2.0, CI with lint, type check, tests); the
+Pydantic models for `challenge.yaml` v0.1 and `pack.yaml` with JSON Schema exported to `schema/`;
+a basic `pgnd validate` (schema check, image builds, broken state fails, reference passes).
+Do NOT build: stages, scoring, reports, snapshots, hints, packs, AI, generator, web UI.
+
+## Hard rules
+
+- Challenge commands run only in containers via `sandbox/`. Never through the host shell.
+- Build phase may use the network; run phase uses an internal network only.
+- Third-party packs: ask for consent before building or running anything from them.
+- Never copy `solution/` or hidden checks into the workspace; never print hidden tests.
+- Never modify the user's git HEAD, branches, index or staging area.
+- Never write API keys to disk or logs.
+- Correctness comes from tests only. No overall scores.
+- Core must work without the `[ai]` extra installed.
+- Use the glossary terms exactly: challenge, pack, session, workspace, check, debrief.
+
+## Secrets and personal data (absolute — this repo is public)
+
+- Never commit, push, print, log, or paste into issues, PRs, comments or commit messages: API keys,
+  tokens, passwords, private keys, `.env` contents, cookies, credentials of any kind.
+- Never include personal data: email addresses (other than GitHub noreply addresses), phone numbers,
+  home paths such as `/Users/<name>/`, machine names, or private repo URLs.
+- Never bypass the guards: no `--no-verify`, no `git add -f` on ignored files, no editing or
+  disabling `.githooks/`, `.gitignore`, `.github/workflows/secret-scan.yml` or GitHub push protection.
+- Never change `user.email` away from the GitHub noreply address, never force-push, never create
+  releases, gists or new public repos without the owner's explicit request.
+- Tests and examples use obviously fake values (`sk-test-not-a-real-key`), never real ones.
+- If a hook or scan blocks you, stop and tell the owner. Do not work around it. If a secret may have
+  been exposed, say so immediately: it must be rotated, not just deleted.
+
+One-time setup per clone: `brew install gitleaks && git config core.hooksPath .githooks`.
+
+## Conventions
+
+Python 3.12+, uv, Typer, Rich, Pydantic v2, ruff, mypy (strict on spec/, verify/, report/).
+Every command supports `--json`. Manifest errors name the file and line.
+Unit tests per module; Docker integration tests marked `@pytest.mark.docker`.
+Work in small PR-sized steps; run lint, types and tests before calling a step done.
+
+## Definition of done for M0
+
+`uv run pgnd validate examples/<challenge>` passes on a valid example and fails, naming the step,
+on a broken one; the exported schema in `schema/` is up to date; CI is green.
