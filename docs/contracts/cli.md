@@ -23,9 +23,9 @@ The binary is `patchground` with the alias `pgnd` (not `pg`, which developers re
   unreachable, git missing, unwritable folder) or an internal error. A `--json` command that cannot
   produce its result prints `{"error": {"kind": "environment" | "internal" | "interrupted",
   "message": ...}}`. Ctrl-C exits `130`.
-- Commands that act on a session (`check`, `reset`, `status`, `hint`, `run`, `submit`) use the
-  session whose directory contains the current working directory, otherwise the most recently
-  started open session *(unconfirmed)*.
+- Commands that act on a session use the session containing the current working directory or an
+  explicit `--session <path>`. Outside a session, require selection rather than silently choosing
+  the latest attempt.
 
 ## Commands
 

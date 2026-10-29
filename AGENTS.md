@@ -15,12 +15,12 @@ Read the SPEC of the module you are changing and the contracts it implements. If
 code disagree, or a spec is ambiguous, stop and ask. A change that alters a boundary or contract
 updates the owning spec in the same change.
 
-## Current milestone: M0 (minimal spec)
+## Current milestone: M1 (playable local prototype)
 
-Build only: the repo scaffold (`uv` project, Apache-2.0, CI with lint, type check, tests); the
-Pydantic models for `challenge.yaml` v0.1 and `pack.yaml` with JSON Schema exported to `schema/`;
-a basic `pgnd validate` (schema check, image builds, broken state fails, reference passes).
-Do NOT build: stages, scoring, reports, snapshots, hints, packs, AI, generator, web UI.
+M0 provides the scaffold, manifest models, exported schemas and basic `pgnd validate`.
+Build the local session loop in small slices: first `start <path>`, `check` and `status`, then
+`reset`, `doctor` and local challenge discovery. Preserve the hardened Docker execution boundary.
+Do NOT build: stages, scoring, reports, snapshots, hints, pack management, AI, generator, web UI.
 
 ## Hard rules
 
@@ -28,7 +28,9 @@ Do NOT build: stages, scoring, reports, snapshots, hints, packs, AI, generator, 
 - Build phase may use the network; run phase uses an internal network only.
 - Third-party packs: ask for consent before building or running anything from them.
 - Never copy `solution/` or hidden checks into the workspace; never print hidden tests.
-- Never modify the user's git HEAD, branches, index or staging area.
+- At runtime, never modify an existing challenge workspace's git HEAD, branches, index or staging
+  area. Initializing a fresh session repo before handoff is allowed. This does not prohibit normal
+  development commits in the Patchground source repository when requested by the owner.
 - Never write API keys to disk or logs.
 - Correctness comes from tests only. No overall scores.
 - Core must work without the `[ai]` extra installed.
