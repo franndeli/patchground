@@ -239,9 +239,7 @@ class _Validation:
         summary = RunSummary.from_result(label, result)
         if result.outcome in INCONCLUSIVE:
             detail = f"inconclusive: run {label} {_inconclusive_reason(result)}"
-            raise _StepFailed(
-                _failed(step, started, detail, [*runs, summary], notes=_notes(result))
-            )
+            raise _StepFailed(_failed(step, started, detail, [*runs, summary]))
         return result, summary
 
     # ------------------------------------------------------------------------------------ steps
@@ -444,12 +442,6 @@ def _inconclusive_reason(result: RunResult) -> str:
     if result.outcome is RunOutcome.LIMIT_EXCEEDED:
         return f"exceeded the {result.limit or 'resource'} limit"
     return "produced no usable junit.xml (missing results)"
-
-
-def _notes(result: RunResult) -> list[str]:
-    """The sandbox's own ``[patchground]`` explanations; never the test output itself."""
-    prefix = "[patchground] "
-    return [line[len(prefix) :] for line in result.log_tail.splitlines() if line.startswith(prefix)]
 
 
 def _counts_text(summary: RunSummary) -> str:

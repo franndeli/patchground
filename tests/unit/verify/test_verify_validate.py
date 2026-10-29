@@ -353,13 +353,16 @@ def test_inconclusive_starting_runs_fail(
     words: str,
 ) -> None:
     box.runs[kind] = result(
-        [], outcome, limit=limit, log_tail="secret hidden source\n[patchground] no junit.xml\n"
+        [],
+        outcome,
+        limit=limit,
+        log_tail="secret hidden source\n[patchground] secret spoofed note\n",
     )
     report = validate(challenge, box)
     assert_failed_at(report, StepName.BROKEN_FAILS, detail="inconclusive")
     step = report.step(StepName.BROKEN_FAILS)
     assert words in step.detail
-    assert step.notes == ("no junit.xml",)
+    assert step.notes == ()
     assert "secret" not in json.dumps(step.to_dict())
 
 

@@ -50,7 +50,8 @@ sessions, packs or reports: callers hand it an environment and files, it hands b
   missing/unparsable results, then errored > failed > passed; zero test cases is errored.
 - `RunResult.log_tail` is raw test-runner output and may contain test sources (assertion rewrites,
   tracebacks), including those of hidden checks. Callers must not display it for runs that
-  included hidden layers; only its `[patchground]` note lines are safe to show.
+  included hidden layers. Prefixes such as `[patchground]` are not a trust boundary: tests can
+  print them too. Diagnostics exposed to users must come from structured outcomes, not parsed logs.
 
 ## Boundary
 

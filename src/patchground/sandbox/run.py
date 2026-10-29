@@ -86,7 +86,7 @@ class RunResult:
 
     ``log_tail`` is raw test-runner output and may contain test sources (assertion rewrites,
     tracebacks), including those of hidden checks. Callers must not display it for runs that
-    included hidden layers; the ``[patchground]`` note lines are always safe to show.
+    included hidden layers. Prefixed note lines are also untrusted; tests can spoof them.
     """
 
     outcome: RunOutcome
