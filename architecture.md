@@ -44,8 +44,9 @@ flowchart TD
 
 Edges not drawn above are forbidden. In particular: nothing below `cli` imports `cli`; nothing in the
 core imports `ai` or `generate`; only `sandbox` imports the Docker SDK; only `sessions` runs git on
-workspaces (others read git data through `sessions`), and `packs` runs it only to clone and fetch pack
-sources. `cli` reaches `sandbox` only for `doctor`'s engine probe.
+workspaces (others read git data through `sessions`), `packs` runs it only to clone and fetch pack
+sources, and `verify` runs only `git apply` on a throwaway copy of a challenge's `workspace/` (never
+a repo the user owns, never with repository config a challenge could supply). `cli` reaches `sandbox` only for `doctor`'s engine probe.
 
 ## Cross-cutting decisions
 
@@ -96,6 +97,9 @@ through WSL2 + Docker Desktop; `pgnd doctor` points Windows users there.
 
 ## Testing
 
-Unit tests per module; tests that need a container engine are marked `@pytest.mark.docker`. ruff for
-lint, mypy strict on `spec`, `verify` and `report`. The challenges in `examples/` must pass
-`pgnd validate` in CI.
+Unit tests per module; tests that need a container engine are marked `@pytest.mark.docker`, and CI
+sets `PATCHGROUND_REQUIRE_DOCKER=1` so they fail rather than skip without an engine. ruff for lint,
+mypy strict on `spec`, `verify`, `report` and `sandbox` (the safety boundary). The challenges in
+`examples/` must pass `pgnd validate` in CI; their `verification.json` is gitignored, because a
+locally built image id means nothing on another machine and CI re-validating every push is the
+proof. Broken challenges, one per failing step, live in `tests/fixtures/`.
