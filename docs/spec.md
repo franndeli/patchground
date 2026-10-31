@@ -477,20 +477,27 @@ Building an image from an untrusted Dockerfile is itself security-sensitive, whi
 
 ## 14. Roadmap
 
+Implementation status below is reconciled with the M1 local prototype. The contracts and module
+SPECs remain authoritative; future roadmap items are not claims of implemented behavior.
+
 The order is chosen to answer the riskiest question first: do developers enjoy practicing with realistic challenges in their own IDE, and can someone else author one? No infrastructure is built before that has an answer. No dates are set, since this is a side project next to work and the thesis.
 
 ### M0 — Minimal spec
 
-- [ ] Repo, Apache-2.0 license, `uv` project, CI (lint, type check, tests)
-- [ ] Pydantic models for single-stage `challenge.yaml` v0.1 and `pack.yaml`; JSON Schema exported to `schema/`
-- [ ] Execution contract written in `docs/contracts/execution.md`
-- [ ] Basic `pgnd validate`: schema check, image builds, broken state fails, reference passes
+- [x] Repo, Apache-2.0 license, `uv` project, CI (lint, type check, tests)
+- [x] Pydantic models for single-stage `challenge.yaml` v0.1 and `pack.yaml`; JSON Schema exported to `schema/`
+- [x] Execution contract written in `docs/contracts/execution.md`
+- [x] Basic `pgnd validate`: schema check, image builds, broken state fails, reference passes
 
 ### M1 — Playable prototype
 
-- [ ] `list`, `show`, `start`, `check`, `reset`, `status`, `doctor`
-- [ ] Runner with build and run phases, internal network, JUnit parsing
-- [ ] **One excellent** Python `debug` challenge passing `validate`
+- [x] Local `list`, `show`, `start`, `check`, `reset`, `status`, `doctor`
+- [x] Runner with build and run phases, internal network, JUnit parsing
+- [x] Python `debug` example (`pagination-last-page`) with a ticket and validation coverage
+- [ ] Fresh-user trial: independently install, discover, solve and reset; assess challenge quality
+
+Multi-container services are explicitly deferred beyond this single-container prototype. Local
+listing does not install packs or resolve IDs. See `docs/first-session.md` for the trial checklist.
 
 * **Done when:** a fresh user installs with one command and completes the challenge in their own editor without asking Fran anything.
 

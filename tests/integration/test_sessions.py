@@ -10,7 +10,7 @@ import pytest
 from typer.testing import CliRunner
 
 from patchground.cli.app import app
-from patchground.sessions import check_session, session_status, start_session
+from patchground.sessions import check_session, reset_session, session_status, start_session
 
 pytestmark = pytest.mark.docker
 EXAMPLE = Path(__file__).resolve().parents[2] / "examples/pagination-last-page"
@@ -56,6 +56,9 @@ def test_session_loop(tmp_path: Path) -> None:
     assert session_status(started.session, root=root).last_check == fixed
     assert not list(started.workspace.rglob("reference.patch"))
     assert "log_tail" not in fixed.model_dump_json()
+    reset_session(started.workspace, root=root)
+    assert git_state(started.workspace) == before
+    assert not check_session(started.workspace, root=root).passed
 
 
 def test_cli_session_loop(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -82,4 +85,9 @@ def test_cli_session_loop(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> No
     status = runner.invoke(app, ["status", "--json"])
     assert status.exit_code == 0
     assert json.loads(status.stdout)["last_check"]["passed"] is True
+    reset = runner.invoke(app, ["reset", "--yes", "--json"])
+    assert reset.exit_code == 0
+    assert json.loads(reset.stdout)["challenge_id"] == EXAMPLE.name
+    check = runner.invoke(app, ["check", "--json"])
+    assert check.exit_code == 1
     assert git_state(workspace) == before

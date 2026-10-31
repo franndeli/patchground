@@ -30,9 +30,17 @@ The binary is `patchground` with the alias `pgnd` (not `pg`, which developers re
 ## Implemented commands
 
 The first playable slice implements `validate`, `start <local-path> [--no-timer]`,
-`check [--session <path>]` and `status [--session <path>]`, each with `--json`. Start accepts authored
+`check [--session <path>]`, `status [--session <path>]` and
+`reset [--session <path>] [--yes]`, `doctor`, `list [directory]` and `show <path>`,
+each with `--json`. Start accepts authored
 local paths only; it freezes check inputs and builds, without applying the reference solution.
 Status needs no container engine. Checks with no tests or any skipped test do not count as passing.
+
+Local discovery reads immediate challenge folders only; it never builds, runs, installs, resolves
+IDs or grants trust. `list` returns matching metadata and all invalid candidates; `show` returns
+metadata and ticket. Invalid challenge results exit `1`; invalid command arguments or inaccessible
+directories exit `2`. An empty listing succeeds. Doctor probes engine reachability/version, Git and
+session-disk availability, exits `0` if healthy and `2` otherwise; it does not measure Docker VM disk.
 
 The table below also describes planned commands and options; it is not a claim that they all exist.
 
@@ -40,11 +48,11 @@ The table below also describes planned commands and options; it is not a claim t
 
 | Command | Behavior |
 | --- | --- |
-| `list [--type] [--lang] [--difficulty] [--tag]` | Installed challenges. |
-| `show <challenge>` | Metadata, timebox, AI policy; never the solution. |
+| `list [directory] [--type] [--lang] [--difficulty] [--tag]` | Local challenges immediately inside the directory (default current directory). Installed packs are deferred. |
+| `show <path>` | Local metadata, timebox, AI policy and ticket; never the solution. |
 | `start <challenge> [--ai allowed\|forbidden] [--no-timer] [--snapshots <interval>]` | Consent if untrusted, build the image, create the session and workspace, print the ticket and workspace path. |
 | `check` | Run visible and hidden checks; report pass/fail per test. Never touches the user's git state. |
-| `reset` | Restore the workspace to its starting state, after confirmation. |
+| `reset` | Restore ordinary workspace files after confirmation; preserve Git, credential-pattern files, timer and history. `--json` requires `--yes`. |
 | `status` | Current session: elapsed time vs timebox, last check result. |
 | `hint` | Reveal the next hint; logged. |
 | `run -- <cmd>` | Run a command in the challenge container on the internal network. |

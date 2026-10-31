@@ -20,8 +20,12 @@ resolves inputs, calls one module entry point, and renders the result.
   `--json` form from the same data.
 - All interactive prompts: consent for untrusted packs (what to show comes from `packs`), reset
   confirmation, the AI payload preview. `--yes` answers them; `--json` never prompts.
-- `doctor`: assembles checks from `sandbox` engine probing, git and disk, and prints the exact fix
-  for each failure.
+- `doctor`: assembles checks from `sandbox` engine probing and the `sessions.diagnostics` Git and
+  disk probes, and prints the exact fix for each failure (platform-specific; WSL2 on Windows). It
+  reports every check (`{"healthy", "checks": [{name, status, detail, problem, fix}]}` under
+  `--json`), exits `0` when all pass and `2` otherwise, and never builds or runs a challenge. The
+  disk check uses a 1 GiB free-space baseline at the sessions root (or its nearest existing parent);
+  that is a floor, not a guarantee an image build fits. Paths under home display as `~`.
 - Mapping domain errors to messages and exit codes; manifest errors keep their file and line. Any
   unexpected exception still ends as one `internal` error (exit `2`, one JSON document under
   `--json`), never a traceback that reads as exit `1`.

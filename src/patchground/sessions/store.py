@@ -152,6 +152,6 @@ def locked(meta: Path) -> Iterator[None]:
         try:
             fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as exc:
-            raise SessionError("session busy: another check is running") from exc
+            raise SessionError("session busy: another check or reset is running") from exc
         # Release by closing the pinned descriptor, never by reopening/truncating its path.
         yield

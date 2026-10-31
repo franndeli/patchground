@@ -33,7 +33,7 @@ validation fails. mypy strict.
 - Entry point: `validate_challenge(folder, *, limits, write, sandbox, progress) -> ValidationReport`.
   Steps `manifest`, `build`, `broken_fails`, `reference_passes` run fail-fast; `determinism` and
   `anti_gaming` are always `not_run` ("planned for M2"). Non-empty `environment.services` fails
-  `manifest` (services arrive in M1).
+  `manifest` (multi-container services are deferred beyond the single-container prototype).
 - Host problems (engine unreachable, engine errors, git missing, a temp folder or workspace copy
   that fails, a `verification.json` that can't be written or removed) raise
   `VerifyEnvironmentError`; they are not step failures. Challenge problems the sandbox would reject (symlinks, layer clashes,

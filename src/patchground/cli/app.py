@@ -3,7 +3,9 @@
 import typer
 
 from patchground import __version__
-from patchground.cli.sessions import SessionCommand, check, start, status
+from patchground.cli.discovery import DiscoveryCommand, list_challenges, show
+from patchground.cli.doctor import doctor
+from patchground.cli.sessions import SessionCommand, check, reset, start, status
 from patchground.cli.validate import validate
 
 app = typer.Typer(name="patchground", no_args_is_help=True, add_completion=False)
@@ -28,6 +30,10 @@ app.command("validate")(validate)
 app.command("start", cls=SessionCommand)(start)
 app.command("check", cls=SessionCommand)(check)
 app.command("status", cls=SessionCommand)(status)
+app.command("reset", cls=SessionCommand)(reset)
+app.command("doctor", cls=DiscoveryCommand)(doctor)
+app.command("list", cls=DiscoveryCommand)(list_challenges)
+app.command("show", cls=DiscoveryCommand)(show)
 
 
 def main() -> None:

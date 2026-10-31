@@ -38,4 +38,7 @@ paginate(results, page=3, per_page=10)   # raises PageOutOfRange
 - Requesting a page past the real end (e.g. page 4 above) must keep raising `PageOutOfRange`;
   the web layer turns it into a 404.
 - An empty result set is still a single, empty page 1.
-- Run the tests with `pytest`.
+- Run `pgnd check` from the session workspace to check your changes in Docker.
+- Add a regression test covering the reported case, and keep existing behavior intact.
+- You may use your own editor and AI tools. The goal is to explain the cause and verify your fix,
+  not merely make the reported error disappear.

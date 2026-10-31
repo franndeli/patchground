@@ -25,12 +25,18 @@ sessions, packs or reports: callers hand it an environment and files, it hands b
   dropped capabilities, `no-new-privileges`, CPU/memory/PID/wall-clock limits.
 - **JUnit parsing** (`junitparser`) into per-test results. A run result distinguishes passed, failed,
   errored, missing results and limit exceeded.
-- **Engine probing** for `doctor`: engine reachable, version, disk available.
+- **Engine probing** for `doctor`: engine reachable, engine kind (Docker/Podman) and version.
 
 ## Implementation notes (M0)
 
 - The API takes plain values (paths, strings, `Limits`); for M0 it imports no other patchground
-  module. Services and engine probing are not built yet.
+  module. Services are not built yet.
+- `probe_engine(timeout=5)` returns an `EngineProbe`; it never raises for an unusable engine. It
+  pings and reads the version with a per-request HTTP timeout and always closes the client. Failures
+  are reported only as an `EngineProblem` category (`not_running`, `permission`, `timeout`,
+  `misconfigured`, `unhealthy`) derived from the exception chain, never as raw engine text (which
+  may carry socket paths or hosts). It never builds, pulls or runs anything. Engine-side disk usage
+  is not probed; `doctor` checks host disk for sessions through `sessions`.
 - Builds use the Engine API's classic builder (what the Docker SDK drives), tagged
   `patchground/<name>:<hash12>` over the context directory; build containers are memory-capped.
   A build has a wall-clock budget (`timeout_seconds`, default 1800 s), checked whenever the builder

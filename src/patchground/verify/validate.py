@@ -57,7 +57,9 @@ DEFAULT_LIMITS = Limits()
 BUILD_LOG_TAIL_LINES = 30
 INCONCLUSIVE = frozenset({RunOutcome.MISSING_RESULTS, RunOutcome.LIMIT_EXCEEDED})
 PLANNED = "planned for M2"
-SERVICES_UNSUPPORTED = "environment.services is not supported yet (planned for M1)"
+SERVICES_UNSUPPORTED = (
+    "environment.services is not supported yet (deferred beyond the local prototype)"
+)
 
 Progress = Callable[[str], None]
 
@@ -259,7 +261,7 @@ class _Validation:
                 manifest_file,
                 _services_line(challenge.manifest_path),
                 "environment.services",
-                "not supported yet (planned for M1); use [] until then",
+                "not supported yet (deferred beyond the local prototype); use [] until then",
             )
             return _manifest_failure(started, SERVICES_UNSUPPORTED, [issue])
         self.challenge = challenge

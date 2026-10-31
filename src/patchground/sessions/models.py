@@ -70,6 +70,12 @@ class StartedSession(Model):
     ticket: str
 
 
+class ResetResult(Model):
+    session: Path
+    workspace: Path
+    challenge_id: str
+
+
 class SessionStatus(Model):
     session: Path
     workspace: Path

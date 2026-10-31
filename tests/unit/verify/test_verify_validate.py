@@ -286,7 +286,7 @@ def test_services_are_not_supported(challenge: Path, box: FakeSandbox) -> None:
     assert_failed_at(
         report,
         StepName.MANIFEST,
-        detail="environment.services is not supported yet (planned for M1)",
+        detail="environment.services is not supported yet (deferred beyond the local prototype)",
     )
     (issue,) = report.step(StepName.MANIFEST).issues
     assert (issue.line, issue.field) == (16, "environment.services")

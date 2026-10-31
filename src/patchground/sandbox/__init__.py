@@ -7,11 +7,14 @@ limits) and returns plain results; it knows nothing about sessions, packs or rep
 from patchground.sandbox.build import BuildResult, build_image
 from patchground.sandbox.errors import BuildFailed, EngineUnavailable, JUnitError, SandboxError
 from patchground.sandbox.junit import TestResult, TestStatus, parse_junit
+from patchground.sandbox.probe import EngineProbe, EngineProblem, probe_engine
 from patchground.sandbox.run import Limits, RunOutcome, RunResult, run_check
 
 __all__ = [
     "BuildFailed",
     "BuildResult",
+    "EngineProbe",
+    "EngineProblem",
     "EngineUnavailable",
     "JUnitError",
     "Limits",
@@ -22,5 +25,6 @@ __all__ = [
     "TestStatus",
     "build_image",
     "parse_junit",
+    "probe_engine",
     "run_check",
 ]

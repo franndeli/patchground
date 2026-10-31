@@ -17,6 +17,11 @@ the network while checks run without it.
 | Build | On `start` and `validate`, cached by a hash of `environment/` plus lockfiles | External network allowed | `docker build` of the challenge Dockerfile. For untrusted sources, only after consent (`patchground-contract-security`). |
 | Run | Every `check`, `run` and validation step | A per-run Docker network with `internal: true`: test container and services reach each other, nothing reaches the internet | `test_command` (or the user's `run` command) against a copy of the workspace |
 
+## Current implementation
+
+The local prototype supports single-container challenges only. Non-empty `environment.services`
+is rejected by start and validation; service lifecycle below describes a deferred capability.
+
 ## Rules
 
 - `test_command` uses preinstalled dependencies only. A challenge whose tests need a download is

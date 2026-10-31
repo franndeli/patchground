@@ -33,7 +33,7 @@ A second session for the same challenge on the same day gets a numeric suffix. D
 is atomic; failed creation removes only that attempt's partial directory. The timer is derived from
 timestamps; there is no background process.
 
-The first playable slice implements start, check and status only. Starting validates the authored
+The local session loop implements start, check, status and reset. Starting validates the authored
 local manifest and builds the image; it does not run reference validation. The new baseline repo is
 initialized before handoff with a fixed noreply identity, without user/system Git configuration,
 hooks or templates. Subsequent check/status operations do not invoke Git in the editable workspace.
@@ -69,8 +69,16 @@ duration), `reset`, `hint_revealed`, `command_run`, `submitted`, `transcript_att
   `refs/patchground/checks/<n>` using a temporary `GIT_INDEX_FILE`, `git add -A`, `write-tree`,
   `commit-tree`, `update-ref`. This respects `.gitignore`, skips the sensitive-file list from
   `patchground-contract-security`, and never touches HEAD, branches, the index or staging.
-- **Reset:** restore the workspace from `original/`. `reset` and the regression-test outcome depend on
-  `original/`, never on snapshots.
+- **Reset:** restore ordinary workspace files from `original/`, removing ordinary additions, under
+  the same lock as check. Preserve Git metadata and sensitive-pattern entries at every depth,
+  including their containing directories; refuse collisions between those entries and starting
+  files. Preflight rejects ordinary symlinks and special files before mutation. Protected entries
+  are never traversed. Descriptor-relative deletion and exclusive creation avoid following links
+  or truncating hardlinked targets. Restored files are owner-writable. Reset never invokes Git,
+  changes the timer, or erases history; a successful reset appends one event. The last check remains
+  a historical result, not a claim about restored files. Filesystem failure can leave a partial
+  restoration, reported explicitly; reset is not transactional and editors should be paused while
+  it runs. `original/`, never snapshots, supplies reset and the future regression-test outcome.
 - **Hints, run, submit, transcripts:** reveal the next hint, run a command in the container, close the
   session, copy an attached transcript into `.session/` — each logged as an event.
 - Hidden checks and the reference solution are never copied into the workspace.

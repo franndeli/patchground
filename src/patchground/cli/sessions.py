@@ -21,15 +21,17 @@ from patchground.cli.render import (
 )
 from patchground.sessions import (
     CheckResult,
+    ResetResult,
     SessionError,
     SessionStatus,
     StartedSession,
     check_session,
+    reset_session,
     session_status,
     start_session,
 )
 
-Result = StartedSession | CheckResult | SessionStatus
+Result = StartedSession | CheckResult | SessionStatus | ResetResult
 JsonOption = Annotated[bool, typer.Option("--json", help="Print one JSON document.")]
 SessionOption = Annotated[Path | None, typer.Option("--session", help="Select a session path.")]
 
@@ -55,6 +57,8 @@ def _human(console: Console, result: Result) -> None:
         console.print(Text(f"started {result.challenge_id}"))
         console.print(Text(str(result.workspace)))
         console.print(Text(result.ticket))
+    elif isinstance(result, ResetResult):
+        console.print(Text(f"reset {result.challenge_id}; timer and history preserved"))
     elif isinstance(result, SessionStatus):
         console.print(Text(f"session {result.challenge_id}"))
         if result.timer:
@@ -106,6 +110,32 @@ def start(
 def check(session: SessionOption = None, json_mode: JsonOption = False) -> None:
     """Run checks on a temporary copy of the selected workspace."""
     _invoke(lambda: check_session(session), json_mode)
+
+
+def reset(
+    session: SessionOption = None,
+    yes: Annotated[bool, typer.Option("--yes", help="Confirm destructive reset.")] = False,
+    json_mode: JsonOption = False,
+) -> None:
+    """Restore starting files, preserving Git and credential-pattern entries."""
+    if not yes:
+        if json_mode:
+            emit_error("environment", "reset requires --yes in JSON mode", True)
+            raise typer.Exit(EXIT_ERROR)
+        try:
+            confirmed = typer.confirm(
+                "Discard workspace edits and ordinary added files? "
+                "Git, credential-pattern files, timer and history are preserved. "
+                "Filesystem errors may leave a partial reset",
+                default=False,
+            )
+        except (KeyboardInterrupt, EOFError, typer.Abort) as exc:
+            emit_error("interrupted", "reset cancelled", False)
+            raise typer.Exit(EXIT_INTERRUPTED) from exc
+        if not confirmed:
+            emit_error("interrupted", "reset cancelled", False)
+            raise typer.Exit(EXIT_INTERRUPTED)
+    _invoke(lambda: reset_session(session), json_mode)
 
 
 def status(session: SessionOption = None, json_mode: JsonOption = False) -> None:
