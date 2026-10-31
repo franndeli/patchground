@@ -1,0 +1,67 @@
+name: validation-action-smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Record checkout Git state
+        env:
+          SNAPSHOT: ${{ runner.temp }}/patchground-git-before.json
+        shell: bash
+        run: |
+          python3 -I - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          state = {
+              p.as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+              for p in Path('.git').rglob('*') if p.is_file()
+          }
+          Path(os.environ['SNAPSHOT']).write_text(json.dumps(state))
+          PY
+      - name: Exercise the reusable Action
+        id: validate
+        uses: ./
+        with:
+          challenge-directory: examples
+          # An unavailable base deliberately exercises the conservative validate-all fallback.
+          base-commit: "0000000000000000000000000000000000000000"
+          allow-execution: "true"
+      - name: Check the report and unchanged Git metadata
+        if: always()
+        env:
+          REPORT: ${{ steps.validate.outputs.report-file }}
+          SNAPSHOT: ${{ runner.temp }}/patchground-git-before.json
+        shell: bash
+        run: |
+          python3 -I - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          report = json.loads(Path(os.environ['REPORT']).read_text())
+          print(json.dumps(report, ensure_ascii=True))
+          assert report['exit_code'] == 0
+          assert report['commit'] == os.environ['GITHUB_SHA']
+          assert report['selected']
+          assert report['selection_mode'] == 'fallback_all'
+          after = {
+              p.as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+              for p in Path('.git').rglob('*') if p.is_file()
+          }
+          assert after == json.loads(Path(os.environ['SNAPSHOT']).read_text()), 'Git metadata changed'
+          PY

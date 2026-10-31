@@ -75,7 +75,8 @@ image build.
 - Every predefined challenge is fully playable offline, with no API key, after its image is built.
 - Someone other than the author can write a challenge from the docs alone and pass `pgnd validate`.
 - Every published challenge is proven in its container: the broken state fails and a reference
-  solution passes, deterministically.
+  solution passes, deterministically. Reusable in-repository CI automation applies that same verifier
+  to committed changes with explicit execution consent, factual JSON and no checkout mutation.
 
 ## Principles
 

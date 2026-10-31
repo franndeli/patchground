@@ -19,6 +19,7 @@ build) and no API key.
 flowchart TD
   cli --> authoring & packs & sessions & verify & report & sandbox
   authoring --> spec
+  automation --> packs & verify & spec & safeio
   cli -. lazy .-> ai & generate
   packs --> spec & safeio
   sessions --> spec & sandbox & packs & safeio
@@ -35,6 +36,7 @@ flowchart TD
 | --- | --- | --- |
 | `cli` | Commands, terminal and `--json` output, consent prompts. No business logic. | `patchground-cli` |
 | `authoring` | Safe local scaffolding from packaged runnable templates; no execution. | `patchground-authoring` |
+| `automation` | Committed changed-challenge selection and safe aggregate results for the in-repository Action. | `patchground-automation` |
 | `spec` | Manifest models, loading, schema export. Depends on nothing internal. | `patchground-spec` |
 | `packs` | Pinned distribution, immutable content, resolution and execution consent. | `patchground-packs` |
 | `safeio` | Shared descriptor-safe filesystem access and Git executable selection. | `patchground-safeio` |
@@ -108,9 +110,11 @@ DNS, production deployment, package publication and releases require approval at
 ## Repositories
 
 - `patchground/patchground` — this repo: the CLI, the format, schemas (`schema/`), scaffolds
-  (`src/patchground/authoring/templates/`), test challenges (`examples/`), docs.
+  (`src/patchground/authoring/templates/`), test challenges (`examples/`), docs, and the reusable
+  validation Action (`action.yml`, `patchground-automation`). The Action uses the same verifier with
+  explicit execution consent and disposable committed inputs, never mutating the checkout.
 - `patchground/patchground-core` — the official, curated pack.
-- `patchground/validate-action` — a GitHub Action that runs `pgnd validate` on changed challenges.
+The validation Action is versioned here with the CLI, superseding the separate-repository plan.
 
 ## Testing
 

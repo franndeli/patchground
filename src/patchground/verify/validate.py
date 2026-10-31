@@ -121,6 +121,7 @@ def validate_challenge(
     yes: bool = False,
     expected_identity: str | None = None,
     pack_root: Path | None = None,
+    input_roots: tuple[Path, ...] = (),
 ) -> ValidationReport:
     """Authorize installed inputs; validate their captured copy without altering the cache."""
     from patchground.packs.models import ConsentRequired, PackError
@@ -136,7 +137,7 @@ def validate_challenge(
                 write=write and prepared.pack is None,
                 sandbox=sandbox,
                 progress=progress,
-                input_roots=prepared.input_roots,
+                input_roots=(*prepared.input_roots, *input_roots),
             )
             if prepared.pack is not None:
                 challenge = (

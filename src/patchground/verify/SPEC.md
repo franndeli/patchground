@@ -11,7 +11,7 @@ implements: [patchground-contract-verification]
 # verify
 
 Runs `patchground-contract-verification` against a challenge folder and produces `verification.json`.
-One implementation serves `pgnd validate`, the `validate-action` in CI, and the generator, so a
+One implementation serves `pgnd validate`, the in-repository validation Action in CI, and the generator, so a
 challenge passes or fails the same way everywhere.
 
 ## Owns
@@ -32,7 +32,10 @@ validation may write `verification.json` or delete a stale Patchground record on
 
 ## Implementation notes
 
-- Entry point: `validate_challenge(folder, *, limits, write, sandbox, progress) -> ValidationReport`.
+- Entry point: `validate_challenge(folder, *, limits, write, sandbox, progress, input_roots, ...) -> ValidationReport`.
+  Callers validating captured input supply its original/captured roots through `input_roots`; these
+  augment, never replace, pack preparation's mandatory Git executable exclusions. Automation uses
+  `write=False`, retaining no verification record in the checkout.
   All six steps run fail-fast; unsupported anti-gaming adapters/layouts remain explicitly `not_run`.
   The bounded pytest adapter recognizes direct invocations and static conventional test definitions
   in safety-checked temporary editable-layer copies, preserving helper-only modules even with test

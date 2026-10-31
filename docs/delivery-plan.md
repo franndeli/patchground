@@ -118,5 +118,13 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   transport policy is hermetically tested; the end-to-end wheel source was a real local Git repository.
 - A final rerun exposed an existing Docker stdout/stderr ordering assumption. The test now requires
   both exact lines without inventing cross-stream chronology; container behavior is unchanged.
-- Next: contribution guidance/automation and agreed runner coverage. Human trials and the ten-learner
+- Portability follow-up `77db755` passed remote CI and secret scanning. Linux pack staging identity
+  races were reproduced and fixed; the intermittent OOM symptom remains unreproduced after 112 probes,
+  with conservative production classification unchanged. See `evaluations/ci-portability.md`.
+- Contribution automation is implemented in this repository: explicit execution consent, committed
+  changed/all selection, safe JSON, no-change skip and unchanged source/Git. Local gates: 928
+  Docker-required tests, lint/format, types and clean-wheel/Action-shell smoke without AI passed.
+  Integration caught and fixed original-source Git selection, installer Python import exposure and
+  root-challenge folder identity. See `evaluations/automation-smoke.md` for evidence and limits.
+- Next: agreed runner coverage and remaining product/evaluation work. Human trials and the ten-learner
   cohort remain pending; no deployment, package publication or release is implied.

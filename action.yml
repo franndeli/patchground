@@ -1,0 +1,94 @@
+name: Patchground validate changes
+description: >-
+  Validate changed Patchground challenges from a committed checkout with the pgnd verifier in Docker.
+  Execution is refused unless allow-execution is set to "true".
+author: Patchground contributors
+
+inputs:
+  source-directory:
+    description: Git checkout to read committed challenges from (never modified).
+    required: false
+    default: ${{ github.workspace }}
+  challenge-directory:
+    description: Directory inside the checkout holding one challenge, a pack root or challenge folders.
+    required: false
+    default: "."
+  base-commit:
+    description: Commit to compare against. Defaults to the event base when available, else all challenges.
+    required: false
+    default: ""
+  allow-execution:
+    description: >-
+      Must be the string "true" to build and run challenge Dockerfiles and checks. Anything else
+      refuses before any build.
+    required: false
+    default: "false"
+
+outputs:
+  report-file:
+    description: >-
+      Path of the aggregate JSON report. Set before validation starts; the file exists once
+      validation has started, but setup or unsafe-path failures can occur before it is created.
+    value: ${{ steps.validate.outputs.report-file }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up uv and Python 3.12
+      uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+      with:
+        python-version: "3.12"
+        enable-cache: false
+
+    - name: Install Patchground from this Action (locked core dependencies)
+      id: install
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        ENV_ROOT: ${{ runner.temp }}
+        SOURCE_DIRECTORY: ${{ inputs.source-directory }}
+      run: |
+        set -euo pipefail
+        source_dir="$SOURCE_DIRECTORY"
+        if [[ "$source_dir" != /* ]]; then source_dir="$GITHUB_WORKSPACE/$source_dir"; fi
+        source_root="$(cd -- "$source_dir" 2>/dev/null && pwd -P)" || { echo 'Invalid source directory' >&2; exit 2; }
+        temp_root="$(cd -- "$ENV_ROOT" 2>/dev/null && pwd -P)" || { echo 'Invalid temporary directory' >&2; exit 2; }
+        if [[ "$source_root$temp_root" =~ [[:cntrl:]] ]]; then echo 'Unsafe directory name' >&2; exit 2; fi
+        case "$temp_root/" in
+          "${source_root%/}/"*) echo 'Temporary storage must be outside the source checkout' >&2; exit 2 ;;
+        esac
+        # mktemp -d is private (0700) and unique per invocation.
+        env_dir="$(mktemp -d "$temp_root/patchground-action.XXXXXXXX")"
+        unset PYTHONPATH PYTHONHOME PYTHONSTARTUP PYTHONINSPECT
+        cd "$ACTION_PATH"
+        UV_PROJECT_ENVIRONMENT="$env_dir/venv" uv sync --locked --no-dev --no-editable --project "$ACTION_PATH"
+        echo "venv-dir=$env_dir/venv" >> "$GITHUB_OUTPUT"
+        echo "source-directory=$source_root" >> "$GITHUB_OUTPUT"
+        echo "temp-root=$temp_root" >> "$GITHUB_OUTPUT"
+
+    - name: Validate changed challenges
+      id: validate
+      shell: bash
+      env:
+        VENV_DIR: ${{ steps.install.outputs.venv-dir }}
+        REPORT_ROOT: ${{ steps.install.outputs.temp-root }}
+        SOURCE_DIRECTORY: ${{ steps.install.outputs.source-directory }}
+        CHALLENGE_DIRECTORY: ${{ inputs.challenge-directory }}
+        BASE_INPUT: ${{ inputs.base-commit }}
+        EVENT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        ALLOW_EXECUTION: ${{ inputs.allow-execution }}
+      run: |
+        set -euo pipefail
+        base="$BASE_INPUT"
+        if [ -z "$base" ] && [[ "$EVENT_BASE" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]] && [[ ! "$EVENT_BASE" =~ ^0+$ ]]; then
+          base="$EVENT_BASE"
+        fi
+        report_dir="$(mktemp -d "$REPORT_ROOT/patchground-report.XXXXXXXX")"
+        report="$report_dir/report.json"
+        echo "report-file=$report" >> "$GITHUB_OUTPUT"
+        args=(--source "$SOURCE_DIRECTORY" --directory "$CHALLENGE_DIRECTORY" --report "$report")
+        if [ -n "$base" ]; then args+=(--base "$base"); fi
+        if [ "$ALLOW_EXECUTION" = "true" ]; then args+=(--consent); fi
+        # -I: ignore PYTHONPATH, user site and the current directory, so checkout code is never imported.
+        cd "$report_dir"
+        exec "$VENV_DIR/bin/python" -I -m patchground.automation "${args[@]}"
