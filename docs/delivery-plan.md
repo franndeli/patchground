@@ -98,5 +98,14 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   667 Docker-required tests passed, plus lint/format/types/spec validation. A clean wheel without AI
   extras passed failed submission/readback and before-fails/after-passes regression submission,
   preserving workspace Git state.
-- Next: publish this verified wave, then agree hints/container commands,
-  session browsing and safe snapshot behavior. Human trials and learner cohort remain pending.
+- Published submit/report wave: `bc42ec9`; its CI and secret scanning both succeeded.
+- Practice tools verified: hints, disposable diagnostic commands, local session browsing and private
+  checkpoint history. All applicable ignore sources are honored or capture is unavailable; unsafe
+  executable selection cannot run workspace-supplied Git. Empty Docker volumes retain non-root write
+  ownership. Final gates: 773 Docker-required tests, lint/format, strict types (54 source files), and
+  a clean wheel without AI extras passed. Wheel evidence covered hints/run/history, immutable failed
+  submission/readback, no command-output persistence and unchanged workspace Git bytes.
+- Periodic capture and snapshot restoration are explicitly deferred. Ignore includes, linked
+  worktrees and other unsupported contexts leave optional history unavailable, never weaken filtering.
+- Next: publish the practice wave and design pinned distribution/consent. Human trials and learner
+  cohort remain pending.

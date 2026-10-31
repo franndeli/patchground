@@ -120,7 +120,9 @@ Code, docs and CLI output use exactly these terms.
   (`patchground-contract-challenge-format`).
 - **Play a challenge:** list and show challenges, start a session (build image, create workspace,
   print ticket), check, reset, status, progressive hints, and running commands in the challenge
-  container (`patchground-contract-cli`).
+  container (`patchground-contract-cli`). Browse local attempts and read optional privacy-filtered
+  initial/check checkpoint history without changing learner Git state; diagnostic container edits
+  are discarded.
 - **Isolated verification:** every check runs in a container on an internal-only network with
   resource limits (`patchground-contract-execution`).
 - **Challenge validation and scaffolding:** `pgnd new` and `pgnd validate`, CI-friendly

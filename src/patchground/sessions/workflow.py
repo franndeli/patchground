@@ -12,6 +12,8 @@ from patchground import sandbox as engine
 from patchground.sandbox import BuildResult, RunOutcome, RunResult, SandboxError, TestStatus
 from patchground.sessions import git, store
 from patchground.sessions.files import copy_tree, readonly, remove_partial, safe_path
+from patchground.sessions.history import capture
+from patchground.sessions.history_ignore import resolve as resolve_history_ignores
 from patchground.sessions.models import (
     CheckResult,
     CheckTest,
@@ -38,7 +40,12 @@ def _root(root: Path | None) -> Path:
 
 
 def start_session(
-    path: Path, *, root: Path | None = None, timer: bool = True, sandbox: Sandbox = engine
+    path: Path,
+    *,
+    root: Path | None = None,
+    timer: bool = True,
+    history: bool = True,
+    sandbox: Sandbox = engine,
 ) -> StartedSession:
     """Start an authored local challenge, freezing all future check inputs."""
     partial: Path | None = None
@@ -68,7 +75,7 @@ def start_session(
         (meta / "TICKET.md").write_text(ticket, encoding="utf-8")
         (meta / "TICKET.md").chmod(0o600)
         store.write_json(meta / "manifest.json", manifest.model_dump(mode="json"))
-        git.initialize(workspace)
+        git.initialize(workspace, source=challenge.root)
         built = sandbox.build_image(
             challenge.root / manifest.environment.dockerfile, name=manifest.id
         )
@@ -79,6 +86,7 @@ def start_session(
             image_id=built.image_id,
             started_at=now(),
             timer=timer,
+            history_enabled=history,
         )
         store.write_json(meta / "session.json", record.model_dump(mode="json"))
         event = Event(
@@ -87,12 +95,21 @@ def start_session(
         (meta / "events.jsonl").write_text(event.model_dump_json() + "\n", encoding="utf-8")
         (meta / "events.jsonl").chmod(0o600)
         (meta / "lock").touch(mode=0o600)
+        checkpoint = capture(
+            meta,
+            meta / "original",
+            enabled=history,
+            kind="initial",
+            rules=resolve_history_ignores(workspace, source=challenge.root) if history else None,
+        )
+        store.append_event(meta, "history_recorded", checkpoint.model_dump(mode="json"))
         return StartedSession(
             session=partial,
             workspace=workspace,
             challenge_id=manifest.id,
             timer=timer,
             ticket=ticket,
+            history=checkpoint,
         )
     except BaseException as exc:
         if partial is not None:
@@ -126,7 +143,7 @@ def _sanitized(result: RunResult, duration: float) -> CheckResult:
 def check_session(
     session: Path | None = None, *, root: Path | None = None, sandbox: Sandbox = engine
 ) -> CheckResult:
-    """Check a temporary clean copy; never invoke Git or mutate the user's workspace."""
+    """Check captured input; checkpoint only editable files in private storage."""
     try:
         path = store.resolve(session, _root(root))
         store.load(path)
@@ -144,13 +161,31 @@ def check_session(
                     prefix="patchground-check-",
                     dir=Path(tempfile.gettempdir()).resolve(strict=True),
                 ) as temp:
-                    clean = Path(temp)
-                    copy_tree(path / "workspace", clean)
+                    editable = Path(temp) / "editable"
+                    clean = Path(temp) / "check"
+                    editable.mkdir()
+                    clean.mkdir()
+                    rules = (
+                        resolve_history_ignores(path / "workspace", source=Path(record.source))
+                        if record.history_enabled
+                        else None
+                    )
+                    copy_tree(path / "workspace", editable)
+                    copy_tree(editable, clean)
                     copy_tree(meta / "hidden", clean)
                     raw = sandbox.run_check(
                         record.image_id, [clean], manifest.environment.test_command
                     )
-                result = _sanitized(raw, time.monotonic() - started)
+                    result = _sanitized(raw, time.monotonic() - started)
+                    checkpoint = capture(
+                        meta,
+                        editable,
+                        enabled=record.history_enabled,
+                        kind="check",
+                        check_outcome=result.outcome.value,
+                        rules=rules,
+                    )
+                    result = result.model_copy(update={"history": checkpoint})
             except (SandboxError, OSError, SessionError, KeyboardInterrupt) as exc:
                 store.append_event(
                     meta,

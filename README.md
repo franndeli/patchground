@@ -6,9 +6,10 @@ Open-source, local-first CLI (`patchground`, alias `pgnd`) for practicing real s
 solve broken or incomplete repositories in your own editor, with your own AI (or none), and get
 verified outcomes from checks that run in Docker.
 
-Status: **local prototype with authoring** — create challenges with `new`, validate them,
+Status: **local practice prototype** — create challenges with `new`, validate them,
 discover them with `list` / `show`,
-and practice with `start`, `check`, `status` and `reset`. `doctor` checks environment readiness.
+and practice with `start`, `check`, `status`, `hint`, `run` and `reset`.
+Browse attempts with `sessions` and private checkpoints with `history`. `doctor` checks environment readiness.
 Finish attempts with `submit` and read frozen verified outcomes with `report`.
 The fresh-user usability trial is still pending; pack management is not implemented.
 
@@ -36,7 +37,7 @@ pgnd reset
 
 Outside a session directory, select it explicitly with `pgnd check --session <session-path>` or
 `pgnd status --session <session-path>`. There is no implicit latest-session fallback. All commands
-support `--json`; `start` also accepts `--no-timer`. `reset --json` requires `--yes`.
+support `--json`; `start` also accepts `--no-timer` and `--no-history`. `reset --json` requires `--yes`.
 
 `list [directory]` scans only immediate challenge folders (default: the current directory), with
 `--type`, `--lang`, `--difficulty` and `--tag` filters. Invalid candidates are reported even when
@@ -70,6 +71,32 @@ Status works without Docker. A removed session image must be restored or a new s
 check does not silently rebuild or pull it. Multi-container services remain deferred; challenges
 must use `environment.services: []`.
 
+## Practice tools
+
+```sh
+pgnd hint
+pgnd run -- python -m pytest tests/test_pagination.py
+pgnd history
+pgnd sessions
+```
+
+Hints come from frozen authored metadata; exhaustion succeeds without another event. `run` executes
+literal arguments in a disposable container copy with no hidden checks and no host environment
+forwarding. Container edits are discarded. It displays only a sanitized output tail (up to 64 KiB),
+not verification evidence, and saves neither arguments nor output in session events. Put Patchground
+options before `--`, for example `pgnd run --json -- python --version`. Use explicit `sh -c` only
+when you want shell syntax inside the container.
+
+New sessions capture initial and completed-check checkpoints in private session Git storage, never
+in your branches or staging area. `start --no-history` opts out; older sessions are not migrated.
+History skips credential patterns and Git-ignored files, and reports unavailable capture separately
+from passing/failing tests. It is filtered history, not a complete replay of ignored files used by
+checks or frozen submission evidence. `history` is read-only and remains available after submission;
+periodic capture and snapshot restoration are not implemented. Reset still restores originals.
+Unsupported or unsafe ignore contexts—including Git includes, linked-worktree metadata, relative
+exclusion paths and unsupported Git environment overrides—make history unavailable rather than
+silently retaining ignored files; checks remain usable.
+
 ## Finish an attempt
 
 ```sh
@@ -81,7 +108,7 @@ pgnd report --session <session-path> --json
 
 Submit captures the checked ordinary files, runs fresh checks and saves an immutable local report.
 It can finalize a failed attempt (exit `1`); missing regression evidence is explicit, not a pass or
-submission gate. Repeating submit returns the same result without rerunning. Further check/reset
+submission gate. Repeating submit returns the same result without rerunning. Further check/reset/hint/run
 operations are rejected; start a new session to practice again. Your workspace remains editable,
 but later edits cannot change the saved report. Report reads need no Docker.
 
@@ -134,6 +161,13 @@ Other runners/layouts, absent editable tests, or ineffective mutations are expli
 not passed. A `valid` result means all executed gates passed: inspect step statuses before claiming
 anti-gaming coverage. This bounded probe does not prevent malicious test runners, forged results,
 custom discovery/plugin bypasses or local cheating.
+
+## Website
+
+The product homepage lives in [`web/`](web/README.md). Preview it locally with
+`npm --prefix web run dev`, then open `http://127.0.0.1:4173`. It introduces the CLI, local practice
+workflow and real challenges, with contribution as a secondary path. It does not host execution.
+See the web README for checks, the static build, and the separate deployment approval gate.
 
 ## Develop
 

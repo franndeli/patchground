@@ -284,7 +284,7 @@ The user only ever touches the workspace; everything above the dashed line works
 3. Run `test_command` with `PG_RESULTS=/results`, using only preinstalled dependencies.
 4. Parse `/results/junit.xml`.
 5. Append a `check_run` event with per-test results and duration; tear down the network and containers.
-6. **From M2:** record a snapshot as `refs/patchground/checks/<n>` using a temporary index (`GIT_INDEX_FILE`, `git add -A`, `write-tree`, `commit-tree`, `update-ref`). This never touches the user's HEAD, branches, index or staging area, respects `.gitignore`, and skips a default sensitive-file list (`.env*`, `*.pem`, `*.key`, `id_*`).
+6. History-enabled sessions checkpoint captured editable inputs into private session-owned Git objects/internal refs, never the learner repository. Initial/completed-check capture respects applicable Git ignores and sensitive-file exclusions; uncertain filtering makes capture unavailable without invalidating checks. Native plumbing uses isolated temporary metadata without configured hooks/filters. See the owning sessions SPEC for the actual lifecycle and compatibility contract.
 
 ### Event log
 
@@ -294,8 +294,8 @@ The pristine starting workspace is kept read-only in `.session/original/`, so `r
 
 Patchground never watches keystrokes or the screen. Optional extra evidence:
 
-- `pgnd submit --transcript <file>` attaches an exported AI-agent transcript, so the debrief can judge how AI was directed and validated.
-- `pgnd start --snapshots 5m` adds periodic git snapshots for a finer-grained history.
+- Transcript attachment remains planned, not implemented. It would require explicit consent; transcript evidence is not proof of reasoning quality.
+- Periodic snapshots are explicitly deferred. The implemented policy is initial/completed-check capture with `start --no-history` opt-out and read-only `history`; no restore command.
 
 ## 9. Feedback: verified outcomes, then coaching
 
@@ -511,7 +511,7 @@ listing does not install packs or resolve IDs. See `docs/first-session.md` for t
 - [x] Bounded pytest editable-test tampering probes, with unsupported adapters explicitly unverified
 - [x] `pgnd new` runnable Python/debug scaffold with packaged assets
 - [ ] Broader validation adapters as needed
-- [ ] `hint`, `run`, `sessions`, `report`; snapshots in internal refs
+- [x] `hint`, `run`, `sessions`, `report`; private initial/check checkpoint refs and read-only `history`
 - [ ] Give it to about 10 developers preparing for interviews and watch them install, read the ticket, solve and finish
 - [ ] Ask one developer who isn't Fran to author and validate a challenge from the docs alone
 

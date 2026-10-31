@@ -11,8 +11,9 @@ implements: [patchground-contract-execution, patchground-contract-security]
 # sessions
 
 Owns one attempt at a challenge from `start` to `submit`: the workspace, the session record, the event
-log, and the orchestration of checks against the sandbox. It owns Git operations on session
-workspaces; the separate verification-copy exception is described in `patchground-architecture`.
+log, and the orchestration of checks against the sandbox. It initializes fresh workspace Git before handoff and owns private session Git checkpoint history;
+existing learner repositories are never used for Git writes or execution. The separate verification-copy
+exception is described in `patchground-architecture`.
 
 ## Session layout
 
@@ -27,7 +28,8 @@ workspaces; the separate verification-copy exception is described in `patchgroun
     ├── hidden/       # private check inputs, never in workspace/
     ├── TICKET.md     # frozen ticket
     ├── submission/   # atomically committed private final/, report.json, report.md, receipt.json
-    └── lock          # advisory lock shared by check, reset and submit
+    ├── history.git/  # optional private checkpoint objects/internal refs
+    └── lock          # advisory lock shared by mutating practice/submission operations
 ```
 
 A second session for the same challenge on the same day gets a numeric suffix. Directory reservation
@@ -37,7 +39,9 @@ timestamps; there is no background process.
 The local session loop implements start, check, status, reset and frozen submission/readback. Starting validates the authored
 local manifest and builds the image; it does not run reference validation. The new baseline repo is
 initialized before handoff with a fixed noreply identity, without user/system Git configuration,
-hooks or templates. Subsequent check/status operations do not invoke Git in the editable workspace.
+hooks or templates. Subsequent Git subprocesses run only in private temporary directories. Checkpoints use isolated
+temporary bare repositories and publish validated loose objects/internal refs into private
+`history.git/`; Git never loads the stored private repository configuration.
 
 Frozen manifest, ticket and hidden checks live under `.session/`, outside `workspace/`; the solution
 is never copied. Source edits or removal do not change an existing attempt. Checks use its frozen
@@ -50,26 +54,79 @@ file or directory while a check copies it. Each ancestor and entry is opened wit
 links; types and identity are validated on those descriptors. Sensitive-file and Git exclusions
 apply before copying. Mutable metadata is additionally required to have one hard link, verified on
 the descriptor before any append, so an events file cannot redirect writes into the Git index.
-The Git executable is resolved absolutely before changing directories, preventing a relative PATH
-entry from selecting a challenge-supplied executable. Raw run logs, even apparently engine-prefixed
-lines, never enter events or CLI output.
+All session Git operations share an executable resolver: only absolute PATH entries outside the
+current directory and all known learner, authored-source and captured-input trees are eligible.
+Both candidate locations and resolved symlink targets are checked against lexical and canonical
+input roots, then the candidate must be a regular executable file. Relative/empty PATH entries are
+never searched, and candidates are never executed to establish identity. The selected absolute
+executable is bound once for exclusion discovery and reused through checkpoint plumbing, even if
+PATH changes during a check. Standard absolute installation paths and installation symlinks outside
+excluded trees remain supported; their provenance is trusted as part of the caller's host installation,
+not authenticated by Patchground. If no safe candidate can be established, initial Git initialization
+fails safely and optional history is unavailable. Excluding a recorded authored-source path does not
+require that source to still exist; checks continue using frozen session inputs after source removal.
+Raw check logs, even apparently engine-prefixed lines, never enter events or CLI output.
+Diagnostic command tails are an explicit separate display surface; neither their arguments nor
+output enter the journal.
 
 ## Event log
 
 One JSON object per line: `{ts, type, data}`. Types: `session_started`, `check_run` (per-test results,
 duration), `reset`, `hint_revealed`, `command_run`, `submitted`, `transcript_attached`,
-`debrief_answer`. Events are only appended, never rewritten; readers ignore unknown types.
+`debrief_answer`, `history_recorded` (initial checkpoint status). Events are only appended, never rewritten; readers ignore unknown types.
 
 ## Behavior
 
 - **Check:** run a temporary copy of the editable workspace plus frozen hidden checks through
   `sandbox`, then append `check_run` with test ids, statuses and counts, never raw logs. Exclude Git
   metadata and sensitive-file patterns from the copy; reject symlinks, special files and hidden-check
-  collisions. Check and status never change the workspace's Git state. Submitted sessions reject checks under the shared lock. Snapshots are not yet built.
-- **Snapshots (deferred):** after each check (and periodically with `--snapshots`), write
-  `refs/patchground/checks/<n>` using a temporary `GIT_INDEX_FILE`, `git add -A`, `write-tree`,
-  `commit-tree`, `update-ref`. This respects `.gitignore`, skips the sensitive-file list from
-  `patchground-contract-security`, and never touches HEAD, branches, the index or staging.
+  collisions. Check and status never change the workspace's Git state. Submitted sessions reject
+  checks under the shared lock. The editable copy is retained separately before merging hidden checks;
+  completed checks checkpoint that captured editable input, never the hidden-merged run copy or the
+  later live workspace. Capture failures preserve the complete check result, passed/counts semantics
+  and normal `check_run` evidence, returning `history.state=unavailable` with a fixed safe explanation.
+- **History:** `start_session(..., history=True)` explicitly enables checkpoint capture for new
+  sessions; opt-out records `history_enabled=False`. Schema-1 records missing that field remain
+  disabled and are never auto-migrated. `StartedSession.history` and `CheckResult.history` are optional
+  `SnapshotStatus` values (default None for legacy results), with state recorded/unavailable/disabled,
+  optional ref and fixed safe detail. The exact returned check result is persisted in `check_run`.
+  Initial capture uses pristine editable originals and a separate `history_recorded` event, preserving
+  the established `session_started` shape. There is no periodic capture or restore-from-history API.
+  Captures exclude Git metadata and credential patterns through descriptor-safe copies. Native Git
+  ignore matching runs against captured root/nested `.gitignore` files in fresh trusted metadata,
+  honoring copied repository `info/exclude`, effective `core.excludesFile`, default XDG Git ignore
+  and `core.ignoreCase`. Exclusion inputs are resolved before the check runs, separately from the
+  exact captured editable input. Config precedence is system, XDG global, home global, local;
+  explicit absolute `GIT_CONFIG_SYSTEM`/`GIT_CONFIG_GLOBAL` and disabling system config are honored.
+  Git discovers its compiled system-config path via a read-only data query; unsupported discovery
+  makes capture unavailable. Configuration is parsed as data via stdin, never copied to disk;
+  only exclusion-rule bytes and sanitized fixed private config are written. No raw configuration,
+  command arguments or errors enter events or output.
+  Resolution fails closed for include/includeIf (including apparently inapplicable conditions),
+  extensions, linked worktrees/gitfiles, missing original Git context, relative exclusion/config
+  paths, other inherited GIT_* overrides, unreadable/redirected/shared/special or oversized exclusion
+  inputs, and unrecognized override values. These cases report unavailable; they never fall back
+  to `.gitignore`-only snapshots. Ordinary standalone Git metadata is required even when the actual
+  captured input is a temporary check copy. Missing ordinary config/ignore files are empty where
+  Git permits them; local repository config and HEAD must exist. Descriptor-safe reads reject
+  redirected ancestors and bound files to 1 MiB. Filtered history is not a complete replay image of
+  ignored files included in checks.
+  Git uses a fixed absolute executable, allowlisted environment, disabled hooks/config/pager/network
+  protocols and raw hash-object/index plumbing; no clean/smudge filters or challenge commands run on
+  the host. Its temporary index and writable repository live in system temporary storage, never the
+  learner repository. Private publication validates existing paths, hardlink counts, fixed config and
+  object hashes; writes only exclusive new files, shares identical objects, syncs objects before refs,
+  and never overwrites an existing ref. Partial writes and orphan refs remain private and unadvertised;
+  retries allocate new refs and preserve existing bytes. No automatic destructive cleanup occurs.
+  `history_for_session(session=None, *, root=None) -> HistoryResult` is read-only and works after
+  submission without a workspace or Docker. It returns session, enabled, availability
+  (available/disabled/unavailable), and a tuple of HistoryEntry values: ref, commit, kind
+  (initial/check), aware ts, optional check_outcome. Only refs linked to recorded session evidence
+  with valid commit/tree/blob objects are listed; unsafe/corrupt or missing checkpoint data yields
+  unavailable rather than fabricated history. Reads never invoke Git or repair/create storage.
+  Compatibility is forward-reading: current code reads prior schema-1 sessions and receipts unchanged;
+  older strict readers may reject newly created records/results containing history fields. Opt-out
+  preserves ordinary practice behavior; rollback never rewrites existing session metadata or Git.
 - **Reset:** restore ordinary workspace files from `original/`, removing ordinary additions, under
   the same lock as check. Preserve Git metadata and sensitive-pattern entries at every depth,
   including their containing directories; refuse collisions between those entries and starting
@@ -81,8 +138,18 @@ duration), `reset`, `hint_revealed`, `command_run`, `submitted`, `transcript_att
   restoration, reported explicitly; reset is not transactional and editors should be paused while
   it runs. `original/`, never snapshots, supplies reset and the regression-test outcome.
 - **Submit:** immutable closure and readback use the lifecycle API below; report owns analysis.
-- **Hints, run, transcripts (deferred):** reveal the next hint, run a command in the container, or
-  attach a transcript with explicit consent — each logged as an event.
+- **Hints:** under the shared lock, reject closed sessions and reveal the next frozen authored
+  hint. Record one one-based index per reveal, not the hint text. Empty/exhausted hints succeed
+  without another event; inconsistent indices fail rather than skip or repeat evidence.
+- **Diagnostic commands:** under the shared lock, reject closure, safely copy editable inputs
+  without hidden checks, and call sandbox's literal-argv command API using the frozen image.
+  Discard container edits. Return the bounded sanitized output tail but persist timing, exit/limit
+  or fixed interruption/environment-error metadata only, never arguments/output. No correctness
+  claim or practice-check count is inferred from these commands.
+- **Session browsing:** read immediate local attempts, sort newest first by recorded start time,
+  and report unsafe/invalid candidates without exposing private parse errors. No Docker, implicit
+  selection, repairs or writes. Ordinary unrelated folders are ignored.
+- **Transcripts (deferred):** attachment would require explicit consent.
 - Hidden checks and the reference solution are never copied into the workspace.
 
 ## Boundary

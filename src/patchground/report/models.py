@@ -35,7 +35,7 @@ class CheckEvidence(Fact):
 
     @classmethod
     def from_result(cls, result: CheckResult) -> Self:
-        return cls.model_validate(result.model_dump(mode="json"))
+        return cls.model_validate(result.model_dump(mode="json", include=set(cls.model_fields)))
 
 
 class EffortEvidence(Fact):

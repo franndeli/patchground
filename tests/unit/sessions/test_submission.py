@@ -160,7 +160,10 @@ def test_engine_failure_stays_active(authored: Path, root: Path, sandbox: FakeSa
     ):
         check_submission(snapshot, sandbox=sandbox)
     assert session_status(started.session, root=root).state == "active"
-    assert len(store.load(started.session)[2]) == 1
+    assert [e.type for e in store.load(started.session)[2]] == [
+        "session_started",
+        "history_recorded",
+    ]
 
 
 def test_failing_check_can_close(authored: Path, root: Path, sandbox: FakeSandbox) -> None:

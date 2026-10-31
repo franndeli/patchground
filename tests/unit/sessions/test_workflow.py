@@ -80,7 +80,8 @@ def test_rejected_before_build(authored, root, sandbox, invalid):
 
 
 def test_initialization_failure_rolls_back_readonly_original(authored, root, sandbox, monkeypatch):
-    def fail(_workspace):
+    def fail(_workspace, *, source):
+        assert source == authored
         raise SessionError("git unavailable")
 
     monkeypatch.setattr("patchground.sessions.git.initialize", fail)
@@ -91,7 +92,7 @@ def test_initialization_failure_rolls_back_readonly_original(authored, root, san
 
 
 def test_frozen_inputs_and_git_state(authored, root, sandbox, monkeypatch):
-    result = start_session(authored, root=root, sandbox=sandbox)
+    result = start_session(authored, root=root, sandbox=sandbox, history=False)
     (result.workspace / "code.py").write_text("staged = True\n")
     git(result.workspace, "add", "code.py")
     (result.workspace / "code.py").write_text("unstaged = True\n")
@@ -103,7 +104,7 @@ def test_frozen_inputs_and_git_state(authored, root, sandbox, monkeypatch):
     manifest = authored / "challenge.yaml"
     manifest.write_text(manifest.read_text().replace("frozen-command", "changed-command"))
     shutil.rmtree(authored)
-    # Any Git invocation during check/status is a bug, even a read-only one.
+    # Disabled history and status never invoke Git after handoff.
     monkeypatch.setattr(
         subprocess, "run", lambda *a, **kw: pytest.fail("Git invoked after handoff")
     )
@@ -364,7 +365,7 @@ def test_unknown_events_ignored_and_status_never_recreates_lock(authored, root, 
     started = start_session(authored, root=root, sandbox=sandbox)
     meta = started.session / ".session"
     events = meta / "events.jsonl"
-    event = json.loads(events.read_text())
+    event = json.loads(events.read_text().splitlines()[0])
     event.update(type="future_event", data={"future": True})
     with events.open("a") as stream:
         stream.write(json.dumps(event) + "\n")

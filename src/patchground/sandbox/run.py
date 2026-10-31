@@ -14,11 +14,12 @@ from __future__ import annotations
 import contextlib
 import io
 import os
+import re
 import stat
 import tarfile
 import time
 import uuid
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -30,7 +31,7 @@ from docker import DockerClient
 from docker.models.containers import Container
 from docker.models.networks import Network
 from docker.models.volumes import Volume
-from docker.types import Mount
+from docker.types import LogConfig, Mount
 
 from patchground.sandbox._engine import connect
 from patchground.sandbox.errors import JUnitError, SandboxError
@@ -44,6 +45,14 @@ JUNIT_PATH = f"{RESULTS}/junit.xml"
 #: Largest junit.xml accepted from a container.
 MAX_JUNIT_BYTES = 50 * 1024**2
 LOG_TAIL_LINES = 200
+#: Most bytes of sanitized combined output ``run_command`` returns (the tail of the output).
+MAX_OUTPUT_TAIL_BYTES = 64 * 1024
+#: Raw log bytes kept while streaming; sanitizing only shrinks them, so the tail still fills.
+_RAW_TAIL_BYTES = 4 * MAX_OUTPUT_TAIL_BYTES
+#: The engine keeps at most ``max-size * max-file`` of a container's output, whatever it prints.
+LOG_CONFIG = LogConfig(type="json-file", config={"max-size": "1m", "max-file": "2"})
+#: Exit codes the OCI runtime uses for "found but not executable" / "not found".
+_EXEC_FAILURE_CODES = (126, 127)
 #: A connection error this close to the wall-clock limit counts as the limit being hit.
 TIMEOUT_TOLERANCE_SECONDS = 1.0
 LABELS = {"patchground": "1"}
@@ -94,6 +103,23 @@ class RunResult:
     exit_code: int | None
     limit: str | None
     log_tail: str
+
+
+@dataclass(frozen=True)
+class CommandResult:
+    """Result of :func:`run_command`.
+
+    ``output_tail`` is the sanitized tail (at most :data:`MAX_OUTPUT_TAIL_BYTES` bytes of UTF-8)
+    of the combined stdout/stderr of the command; earlier output may have been dropped, which
+    ``output_tail_only`` (always true) states. It is arbitrary command output: untrusted text with
+    terminal control sequences removed, never engine error text. ``limit`` is ``"timeout"`` or
+    ``"memory"`` when a resource limit ended the run; ``exit_code`` is ``None`` on timeout.
+    """
+
+    exit_code: int | None
+    limit: str | None
+    output_tail: str
+    output_tail_only: bool = True
 
 
 # --------------------------------------------------------------------------- tar building
@@ -228,6 +254,56 @@ def _with_notes(log: str, notes: Sequence[str]) -> str:
 # --------------------------------------------------------------------------- run
 
 
+@contextlib.contextmanager
+def _hardened_container(
+    image_id: str,
+    layers: Sequence[Path],
+    *,
+    entrypoint: list[str],
+    command: list[str],
+    limits: Limits,
+) -> Iterator[Container]:
+    """Yield a created, not yet started hardened container seeded with a copy of ``layers``.
+
+    This is the single run lifecycle of the module: fresh internal network and volumes, seed
+    archive, the hardened container, and teardown of all of it on every exit path, including
+    errors and ``KeyboardInterrupt``. Engine failures become :class:`SandboxError`.
+    """
+    seed_tar = build_seed_tar(layers)
+    run_id = f"patchground-{uuid.uuid4().hex}"
+    client = connect()
+    network: Network | None = None
+    volumes: list[Volume] = []
+    seed: Container | None = None
+    container: Container | None = None
+    try:
+        network = client.networks.create(run_id, driver="bridge", internal=True, labels=LABELS)
+        for suffix in ("workspace", "results"):
+            volumes.append(client.volumes.create(name=f"{run_id}-{suffix}", labels=LABELS))
+        mounts = [
+            Mount(WORKSPACE, _name(volumes[0]), type="volume", no_copy=True),
+            Mount(RESULTS, _name(volumes[1]), type="volume", no_copy=True),
+        ]
+        seed = _create_seed(client, image_id, mounts)
+        if not seed.put_archive("/", seed_tar):
+            raise SandboxError("could not copy files into the sandbox")
+        _remove_container(seed)
+        seed = None
+        container = _create_container(
+            client, image_id, entrypoint, command, mounts, _name(network), limits
+        )
+        yield container
+    except (
+        docker.errors.DockerException,
+        requests.exceptions.RequestException,
+        urllib3.exceptions.HTTPError,
+    ) as exc:
+        raise SandboxError(f"sandbox run failed: {exc}") from exc
+    finally:
+        _teardown([c for c in (seed, container) if c is not None], volumes, network)
+        client.close()
+
+
 def run_check(
     image_id: str,
     layers: Sequence[Path],
@@ -244,38 +320,87 @@ def run_check(
     Raises :class:`EngineUnavailable` if the engine is unreachable and :class:`SandboxError`
     for invalid layers or engine failures; test outcomes are reported in the result.
     """
-    seed_tar = build_seed_tar(layers)
-    run_id = f"patchground-{uuid.uuid4().hex}"
-    client = connect()
-    network: Network | None = None
-    volumes: list[Volume] = []
-    seed: Container | None = None
-    container: Container | None = None
-    try:
-        network = client.networks.create(run_id, driver="bridge", internal=True, labels=LABELS)
-        for suffix in ("workspace", "results"):
-            volumes.append(client.volumes.create(name=f"{run_id}-{suffix}", labels=LABELS))
-        mounts = [
-            Mount(WORKSPACE, _name(volumes[0]), type="volume"),
-            Mount(RESULTS, _name(volumes[1]), type="volume"),
-        ]
-        seed = _create_seed(client, image_id, mounts)
-        if not seed.put_archive("/", seed_tar):
-            raise SandboxError("could not copy files into the sandbox")
-        _remove_container(seed)
-        seed = None
-        container = _create_container(client, image_id, command, mounts, _name(network), limits)
+    with _hardened_container(
+        image_id, layers, entrypoint=["/bin/sh", "-c"], command=[command], limits=limits
+    ) as container:
         container.start()
         return _wait_and_collect(container, limits)
-    except (
-        docker.errors.DockerException,
-        requests.exceptions.RequestException,
-        urllib3.exceptions.HTTPError,
-    ) as exc:
-        raise SandboxError(f"sandbox run failed: {exc}") from exc
-    finally:
-        _teardown([c for c in (seed, container) if c is not None], volumes, network)
-        client.close()
+
+
+def run_command(
+    image_id: str,
+    layers: Sequence[Path],
+    argv: Sequence[str],
+    *,
+    limits: Limits = DEFAULT_LIMITS,
+) -> CommandResult:
+    """Run ``argv`` literally (no shell unless ``argv`` names one) against a copy of ``layers``.
+
+    Same container, hardening, limits and teardown as :func:`run_check`; the image's ENTRYPOINT is
+    replaced by ``argv[0]``. Nothing from the host environment is passed in, and no JUnit is read.
+    A command that cannot be started (missing or non-executable program) reports exit code 126 or
+    127 with empty output. Raises :class:`SandboxError` for an empty or NUL-containing ``argv``,
+    invalid layers or engine failures.
+    """
+    if not argv or not argv[0]:
+        raise SandboxError("command is empty")
+    if any("\0" in arg for arg in argv):
+        raise SandboxError("command arguments cannot contain NUL bytes")
+    with _hardened_container(
+        image_id, layers, entrypoint=[argv[0]], command=list(argv[1:]), limits=limits
+    ) as container:
+        try:
+            container.start()
+        except docker.errors.APIError:
+            # An unrunnable program is the command's outcome, not an infrastructure failure;
+            # the engine's message is deliberately dropped.
+            container.reload()
+            state = container.attrs.get("State", {})
+            code = state.get("ExitCode")
+            if code not in _EXEC_FAILURE_CODES or state.get("Running"):
+                raise
+            return CommandResult(code, None, "")
+        exit_code = _wait(container, limits)
+        container.reload()
+        oom_killed = bool(container.attrs.get("State", {}).get("OOMKilled", False))
+        output = _output_tail(container)
+    if exit_code is None:
+        return CommandResult(None, "timeout", output)
+    return CommandResult(exit_code, "memory" if oom_killed else None, output)
+
+
+_ANSI = re.compile(
+    r"\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)?"  # OSC (titles, hyperlinks), also unterminated
+    r"|\x1b[PX^_][^\x1b]*(?:\x1b\\)?"  # DCS / SOS / PM / APC strings
+    r"|\x1b\[[0-?]*[ -/]*[@-~]"  # CSI
+    r"|\x1b[ -/]*[0-~]?"  # other escapes, or a lone/truncated ESC
+)
+_CONTROLS = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
+
+
+def sanitize_output(raw: bytes) -> str:
+    """Decode command output and drop terminal control sequences, keeping ``\\n`` and ``\\t``.
+
+    Carriage returns are removed (``\\r\\n`` becomes ``\\n``), so output cannot overwrite what
+    precedes it on a terminal line. The result is at most :data:`MAX_OUTPUT_TAIL_BYTES` bytes of
+    UTF-8, keeping the end of the output.
+    """
+    text = raw.decode("utf-8", errors="replace")
+    text = _CONTROLS.sub("", _ANSI.sub("", text))
+    encoded = text.encode("utf-8")
+    if len(encoded) <= MAX_OUTPUT_TAIL_BYTES:
+        return text
+    return encoded[-MAX_OUTPUT_TAIL_BYTES:].decode("utf-8", errors="ignore")
+
+
+def _output_tail(container: Container) -> str:
+    """Stream the container's (engine-bounded) log, keeping only a rolling raw tail in memory."""
+    raw = bytearray()
+    for chunk in container.logs(stdout=True, stderr=True, stream=True, follow=False):
+        raw += chunk
+        if len(raw) > 2 * _RAW_TAIL_BYTES:
+            del raw[:-_RAW_TAIL_BYTES]
+    return sanitize_output(bytes(raw[-_RAW_TAIL_BYTES:]))
 
 
 def _name(resource: Network | Volume) -> str:
@@ -309,15 +434,16 @@ def _create_seed(client: DockerClient, image_id: str, mounts: list[Mount]) -> Co
 def _create_container(
     client: DockerClient,
     image_id: str,
-    command: str,
+    entrypoint: list[str],
+    command: list[str],
     mounts: list[Mount],
     network_name: str,
     limits: Limits,
 ) -> Container:
     return client.containers.create(
         image_id,
-        [command],
-        entrypoint=["/bin/sh", "-c"],
+        command,
+        entrypoint=entrypoint,
         user=f"{RUN_UID}:{RUN_GID}",
         working_dir=WORKSPACE,
         environment={"PG_RESULTS": RESULTS, "HOME": "/tmp"},  # noqa: S108 - container path
@@ -331,6 +457,7 @@ def _create_container(
         mem_limit=limits.memory_bytes,
         memswap_limit=limits.memory_bytes,
         pids_limit=limits.pids,
+        log_config=LOG_CONFIG,
         labels=LABELS,
     )
 

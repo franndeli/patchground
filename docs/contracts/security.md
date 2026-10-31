@@ -37,8 +37,16 @@ sensitive. Container isolation defaults live in `patchground-contract-execution`
 
 - No telemetry by default. Any community stats are opt-in, anonymous and never include code.
 - API keys are read from environment variables only; never written to config, logs or session files.
-- Snapshots skip git-ignored files and a sensitive-file list (`.env*`, `*.pem`, `*.key`, `id_*`) and
-  live in internal refs, never on the user's branches.
+- Checkpoint history skips all applicable Git-ignored files and a sensitive-file list
+  (`.env*`, `*.pem`, `*.key`, `id_*`). If applicable ignore rules cannot safely be established,
+  capture is unavailable, not permission to retain potentially ignored files. Objects/internal
+  refs live in private session-owned Git storage, never on the user's branches or index. This
+  filtered history differs from immutable submission evidence, which includes ordinary ignored
+  checked files to faithfully preserve verification input.
+- Diagnostic commands receive only editable-workspace copies, never frozen hidden checks. Their
+  sanitized output tail may be displayed explicitly, but command arguments/output are not written
+  to session events. Raw verification logs remain private. Host environment secrets are not
+  forwarded to containers.
 - Before the first AI call in a session, show provider, model, estimated tokens and exactly which files
   will be sent, and require confirmation (`--yes` skips). Send the minimum context: ticket, diffs,
   selected files, test output — never the whole repository.

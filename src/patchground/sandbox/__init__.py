@@ -8,11 +8,19 @@ from patchground.sandbox.build import BuildResult, build_image
 from patchground.sandbox.errors import BuildFailed, EngineUnavailable, JUnitError, SandboxError
 from patchground.sandbox.junit import TestResult, TestStatus, parse_junit
 from patchground.sandbox.probe import EngineProbe, EngineProblem, probe_engine
-from patchground.sandbox.run import Limits, RunOutcome, RunResult, run_check
+from patchground.sandbox.run import (
+    CommandResult,
+    Limits,
+    RunOutcome,
+    RunResult,
+    run_check,
+    run_command,
+)
 
 __all__ = [
     "BuildFailed",
     "BuildResult",
+    "CommandResult",
     "EngineProbe",
     "EngineProblem",
     "EngineUnavailable",
@@ -27,4 +35,5 @@ __all__ = [
     "parse_junit",
     "probe_engine",
     "run_check",
+    "run_command",
 ]

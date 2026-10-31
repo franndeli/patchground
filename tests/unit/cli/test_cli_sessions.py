@@ -18,8 +18,8 @@ runner = CliRunner()
 def test_start(monkeypatch, json_mode):
     calls = []
 
-    def start(path, *, timer):
-        calls.append((path, timer))
+    def start(path, *, timer, history):
+        calls.append((path, timer, history))
         return StartedSession(
             session=Path("session"),
             workspace=Path("session/workspace"),
@@ -33,7 +33,7 @@ def test_start(monkeypatch, json_mode):
         app, ["start", "authored", "--no-timer", *(["--json"] if json_mode else [])]
     )
     assert result.exit_code == 0
-    assert calls == [(Path("authored"), False)]
+    assert calls == [(Path("authored"), False, True)]
     if json_mode:
         assert json.loads(result.stdout)["timer"] is False
     else:

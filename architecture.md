@@ -69,7 +69,10 @@ still goes through `sandbox`, and sessions never imports report. `cli` reaches `
 - **Git through a thin subprocess wrapper,** not a library: git is already required and the CLI's
   behavior is easier to predict.
 - **The user's git state is sacred.** Patchground never changes the workspace's HEAD, branches, index
-  or staging area. Internal history uses `refs/patchground/*` written through a temporary index.
+  or staging area. Checkpoint objects and `refs/patchground/*` live in private session-owned Git
+  storage, built through isolated temporary indexes/repositories. Ignore configuration is read only
+  as data; configured tools, hooks and filters never execute. Initial/check checkpoints are optional;
+  failure cannot invalidate test evidence. There is no periodic capture or snapshot restoration.
 - **Glossary terms are exact.** Identifiers, messages and docs use the terms in `patchground-goal`.
 
 ## Storage

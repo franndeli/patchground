@@ -14,6 +14,7 @@ from docker.models.containers import Container
 from patchground.sandbox import (
     BuildFailed,
     BuildResult,
+    CommandResult,
     Limits,
     RunOutcome,
     RunResult,
@@ -21,8 +22,10 @@ from patchground.sandbox import (
     TestStatus,
     build_image,
     run_check,
+    run_command,
 )
 from patchground.sandbox import run as sandbox_run
+from patchground.sandbox.run import MAX_OUTPUT_TAIL_BYTES
 
 pytestmark = pytest.mark.docker
 
@@ -289,3 +292,170 @@ def test_unknown_image(tmp_path: Path, engine: docker.DockerClient) -> None:
 
 def test_no_leftovers_after_all_runs(engine: docker.DockerClient) -> None:
     _assert_no_leftovers(engine)
+
+
+# --------------------------------------------------------------------------- run_command
+
+
+def _command(
+    image: BuildResult, ws: Path, argv: list[str], limits: Limits | None = None
+) -> CommandResult:
+    return run_command(image.image_id, [ws], argv, limits=limits or Limits())
+
+
+def test_command_exit_codes_and_combined_output(
+    image: BuildResult, tmp_path: Path, engine: docker.DockerClient
+) -> None:
+    ws = _workspace(tmp_path / "ws", {"visible.txt": "seen\n"})
+    ok = _command(image, ws, ["sh", "-c", "cat visible.txt; echo err >&2"])
+    assert (ok.exit_code, ok.limit, ok.output_tail_only) == (0, None, True)
+    assert ok.output_tail.splitlines() == ["seen", "err"]
+    bad = _command(image, ws, ["sh", "-c", "echo out; exit 7"])
+    assert (bad.exit_code, bad.output_tail) == (7, "out\n")
+    _assert_no_leftovers(engine)
+
+
+def test_command_argv_is_literal(image: BuildResult, tmp_path: Path) -> None:
+    ws = _workspace(tmp_path / "ws", {})
+    argv = ["python", "-c", "import sys; print(sys.argv[1:])", "$HOME; `id` $(id) *", "a b"]
+    result = _command(image, ws, argv)
+    assert result.output_tail.strip() == "['$HOME; `id` $(id) *', 'a b']"
+    assert not (tmp_path / "ws" / "a").exists()
+
+
+def test_command_has_no_host_environment(
+    image: BuildResult, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("PG_FAKE_SECRET", "sk-test-not-a-real-key")
+    result = _command(image, _workspace(tmp_path / "ws", {}), ["env"])
+    assert "sk-test-not-a-real-key" not in result.output_tail
+    assert "PG_FAKE_SECRET" not in result.output_tail
+
+
+def test_command_sees_only_given_layers_and_edits_are_discarded(
+    image: BuildResult, tmp_path: Path
+) -> None:
+    ws = _workspace(tmp_path / "ws", {"keep.txt": "original\n"})
+    result = _command(image, ws, ["sh", "-c", "ls; echo changed > keep.txt; rm -f keep.txt"])
+    assert result.output_tail.split() == ["keep.txt"]
+    assert (ws / "keep.txt").read_text() == "original\n"
+
+
+def test_command_hardening(image: BuildResult, tmp_path: Path) -> None:
+    script = (
+        "import os, socket\n"
+        "print(os.getuid(), os.getgid())\n"
+        "for p in ('/owned/x', '/usr/x'):\n"
+        "    try: open(p, 'w')\n"
+        "    except OSError as e: print('ro', p, e.errno)\n"
+        "open('/workspace/w', 'w'); open('/tmp/t', 'w')\n"
+        "try: socket.create_connection(('1.1.1.1', 53), timeout=3)\n"
+        "except OSError: print('no-net')\n"
+        "print(open('/proc/self/status').read().split('CapEff:')[1].split()[0])\n"
+    )
+    out = _command(image, _workspace(tmp_path / "ws", {}), ["python", "-c", script]).output_tail
+    assert out.splitlines() == [
+        "1000 1000",
+        "ro /owned/x 30",
+        "ro /usr/x 30",
+        "no-net",
+        "0000000000000000",
+    ]
+
+
+def test_command_output_is_bounded_and_sanitized(
+    image: BuildResult, tmp_path: Path, engine: docker.DockerClient
+) -> None:
+    script = (
+        "import sys\n"
+        "sys.stdout.write('first-line-dropped\\n' + 'x' * 5_000_000 + '\\n')\n"
+        "sys.stdout.write('\\x1b[31mred\\x1b[0m\\x1b]0;title\\x07 tail-marker\\n')\n"
+    )
+    result = _command(image, _workspace(tmp_path / "ws", {}), ["python", "-c", script])
+    assert result.exit_code == 0
+    assert len(result.output_tail.encode()) <= MAX_OUTPUT_TAIL_BYTES
+    assert result.output_tail.endswith("red tail-marker\n")
+    assert "first-line-dropped" not in result.output_tail and "\x1b" not in result.output_tail
+    _assert_no_leftovers(engine)
+
+
+def test_command_engine_log_is_bounded(
+    image: BuildResult, tmp_path: Path, engine: docker.DockerClient
+) -> None:
+    ws = _workspace(tmp_path / "ws", {})
+    script = "import sys\nfor i in range(200):\n    sys.stdout.write('y' * 99_999 + '\\n')\n"
+    seen: list[Container] = []
+    original = sandbox_run._output_tail
+
+    def spy(container: Container) -> str:
+        seen.append(container)
+        assert container.attrs["HostConfig"]["LogConfig"] == sandbox_run.LOG_CONFIG
+        return original(container)
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(sandbox_run, "_output_tail", spy)
+        result = _command(image, ws, ["python", "-c", script])
+    assert seen and len(result.output_tail.encode()) <= MAX_OUTPUT_TAIL_BYTES
+    assert result.output_tail.endswith("y\n")
+
+
+def test_command_timeout_and_memory_limits(
+    image: BuildResult, tmp_path: Path, engine: docker.DockerClient
+) -> None:
+    ws = _workspace(tmp_path / "ws", {})
+    slow = _command(image, ws, ["sh", "-c", "echo started; sleep 60"], Limits(timeout_seconds=3))
+    assert (slow.exit_code, slow.limit, slow.output_tail) == (None, "timeout", "started\n")
+    hog = _command(
+        image,
+        ws,
+        ["python", "-c", "b = bytearray(); [b.extend(bytes(10**7)) for _ in range(100)]"],
+        Limits(memory_bytes=128 * 1024**2),
+    )
+    assert hog.limit == "memory"
+    _assert_no_leftovers(engine)
+
+
+@pytest.mark.parametrize(("argv", "code"), [(["no-such-program"], 127), (["/workspace"], 126)])
+def test_command_that_cannot_start(
+    image: BuildResult, tmp_path: Path, engine: docker.DockerClient, argv: list[str], code: int
+) -> None:
+    result = _command(image, _workspace(tmp_path / "ws", {}), argv)
+    assert (result.exit_code, result.limit, result.output_tail) == (code, None, "")
+    _assert_no_leftovers(engine)
+
+
+def test_command_interrupt_tears_down(
+    image: BuildResult, tmp_path: Path, engine: docker.DockerClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def interrupted(container: Container, limits: Limits) -> int | None:
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(sandbox_run, "_wait", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        _command(image, _workspace(tmp_path / "ws", {}), ["sleep", "120"])
+    _assert_no_leftovers(engine)
+
+
+def test_command_unknown_image(tmp_path: Path, engine: docker.DockerClient) -> None:
+    with pytest.raises(SandboxError, match="image not found"):
+        run_command("sha256:" + "0" * 64, [_workspace(tmp_path / "ws", {})], ["true"])
+    _assert_no_leftovers(engine)
+
+
+def test_empty_workspace_is_writable_by_the_run_user(image: BuildResult, tmp_path: Path) -> None:
+    ws = tmp_path / "empty"
+    ws.mkdir()
+    script = (
+        "import os\n"
+        "print(os.getuid(), os.stat('/workspace').st_uid, os.stat('/results').st_uid)\n"
+        "print(os.listdir('/workspace'))\n"
+        "open('/workspace/w', 'w').close()\n"
+        "open('/results/r', 'w').close()\n"
+        "try: open('/usr/x', 'w')\n"
+        "except OSError as e: print('ro', e.errno)\n"
+    )
+    result = _command(image, ws, ["python", "-c", script])
+    assert result.exit_code == 0, result.output_tail
+    assert result.output_tail.splitlines() == ["1000 1000 1000", "[]", "ro 30"]
+    check = _run(image, ws, "touch /workspace/w /results/r")
+    assert check.exit_code == 0 and check.outcome is RunOutcome.MISSING_RESULTS

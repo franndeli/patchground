@@ -45,8 +45,22 @@ The runner never prints raw test output or hidden test sources. Test IDs and out
 passed or failed. Hidden checks live outside your editable workspace; this is a local honor system,
 not an anti-cheating platform.
 
-A passing check finishes the current practice loop. There is no `submit`, score, report, or automatic
-regression-test assessment yet. Keep your own notes on the cause, fix and evidence.
+For an authored clue, use `pgnd hint`. To inspect visible behavior, use
+`pgnd run -- python -m pytest`: it runs in a disposable container copy without hidden checks and
+shows a bounded output tail. Container edits are discarded; command arguments/output are not saved
+in session events. This is diagnostic output, not verified correctness.
+
+Use `pgnd sessions` to browse attempts and `pgnd history` to read private checkpoints. New sessions
+capture the initial input and completed checks without changing your Git state; use
+`start --no-history` to opt out. Older sessions are not migrated. Ignored and sensitive files are
+excluded from checkpoint history; unavailable capture is reported separately from test results.
+There is no periodic capture or snapshot restore command.
+
+When finished, run `pgnd submit` to capture fresh checks and save a factual report, then `pgnd report`
+to read it without Docker. A failed attempt can also be submitted. Supported pytest tests can provide
+regression evidence by failing on original code and passing on final code; unsupported evidence is
+explicit, never a pass. There is no overall score. Submission closes the attempt to further
+check/reset/hint/run operations; your workspace remains editable, but the saved report is immutable.
 
 ## Retry safely
 
@@ -66,7 +80,7 @@ failure may leave a partially restored workspace. Resolve that problem and retry
 session. There is no backup or undo; make your own backup before confirming if you need one.
 
 For automation, all commands support `--json`; reset additionally requires `--yes`. Outside a
-workspace, use `--session <session-path>` with check, status or reset. There is no automatic
+workspace, use `--session <session-path>` with check, status, reset, hint, run, history, submit or report. There is no automatic
 latest-session selection. Start a new session to get a fresh timer.
 
 ## Troubleshooting
@@ -75,6 +89,10 @@ latest-session selection. Start a new session to get a fresh timer.
   and reset do not require Docker. Doctor measures session-disk space, not Docker VM free space.
 - **Frozen image missing:** restore the exact local image if available, or start a new session.
   Check never silently rebuilds or pulls it.
+- **History unavailable:** checkpoints are optional and never gate checks. Unsafe or unsupported
+  ignore contexts (including Git includes, linked worktrees, relative exclusion paths or unsupported
+  Git environment overrides) make capture unavailable rather than silently include ignored files.
+  Older sessions remain history-disabled; `start --no-history` explicitly opts out for new sessions.
 - **Session busy:** wait for its check/reset to finish; only one mutation runs at a time.
 - **No session selected:** change into the printed workspace or pass `--session` explicitly.
 - **No challenges listed:** point `list` at the parent directory of challenge folders. It scans

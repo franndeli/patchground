@@ -28,6 +28,7 @@ class SessionRecord(Model):
     image_id: str = Field(min_length=1)
     started_at: AwareDatetime
     timer: bool
+    history_enabled: bool = False
 
 
 class CheckTest(Model):
@@ -35,11 +36,33 @@ class CheckTest(Model):
     status: TestStatus
 
 
+class SnapshotStatus(Model):
+    state: Literal["recorded", "unavailable", "disabled"]
+    ref: str | None = None
+    detail: Literal["Checkpoint capture unavailable"] | None = None
+
+
+class HistoryEntry(Model):
+    ref: str
+    commit: str
+    kind: Literal["initial", "check"]
+    ts: AwareDatetime
+    check_outcome: str | None = None
+
+
+class HistoryResult(Model):
+    session: Path
+    enabled: bool
+    availability: Literal["available", "disabled", "unavailable"]
+    snapshots: tuple[HistoryEntry, ...]
+
+
 class CheckResult(Model):
     outcome: RunOutcome
     tests: tuple[CheckTest, ...]
     duration_seconds: float = Field(ge=0, allow_inf_nan=False)
     limit: Literal["timeout", "memory"] | None = None
+    history: SnapshotStatus | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -68,6 +91,7 @@ class StartedSession(Model):
     challenge_id: str
     timer: bool
     ticket: str
+    history: SnapshotStatus | None = None
 
 
 class ResetResult(Model):

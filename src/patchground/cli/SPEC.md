@@ -31,6 +31,13 @@ resolves inputs, calls one module entry point, and renders the result.
 - `submit`/`report`: call the report module and render its versioned facts as JSON or Markdown
   text. Submit exits `1` for nonpassing final checks; reading that same report succeeds. Status
   displays active/submitted state; no CLI path reopens a closed attempt.
+- `hint`, `sessions`, `history` and `run`: delegate to session-owned practice/history APIs.
+  Run options precede a required `--`; everything afterward is literal container argv. Usage
+  failures do not echo arguments. Bounded command output uses literal Rich text, never markup;
+  human output always labels it as a tail and warns that container edits are discarded.
+  Nonzero/limited commands and listings with invalid candidates exit `1`; infrastructure exits `2`.
+  `start --no-history` disables new-session checkpoints; start/check display unavailable history
+  separately from correctness. History is read-only and available after submission.
 - Mapping domain errors to messages and exit codes; manifest errors keep their file and line. Any
   unexpected exception still ends as one `internal` error (exit `2`, one JSON document under
   `--json`), never a traceback that reads as exit `1`.

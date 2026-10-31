@@ -21,6 +21,10 @@ sessions, packs or reports: callers hand it an environment and files, it hands b
 - **Run:** given an image, a set of files to copy in (workspace plus extra paths such as hidden
   checks), a command, services and limits — create the internal network, start services, copy files,
   run, collect `/results`, tear down. Teardown is guaranteed on error, timeout and interrupt.
+- **Command run:** `run_command(image_id, layers, argv, *, limits)` runs a literal argv (the image
+  entrypoint is replaced by `argv[0]`, no shell unless argv names one) in the same container as a
+  check, with no host environment and no JUnit. It returns `CommandResult` (`exit_code`, `limit`,
+  `output_tail`, `output_tail_only` always true).
 - **Hardening and limits:** non-root, read-only rootfs, writable `/workspace` and `/results` only,
   dropped capabilities, `no-new-privileges`, CPU/memory/PID/wall-clock limits.
 - **JUnit parsing** (`junitparser`) into per-test results. A run result distinguishes passed, failed,
@@ -58,6 +62,17 @@ sessions, packs or reports: callers hand it an environment and files, it hands b
   tracebacks), including those of hidden checks. Callers must not display it for runs that
   included hidden layers. Prefixes such as `[patchground]` are not a trust boundary: tests can
   print them too. Diagnostics exposed to users must come from structured outcomes, not parsed logs.
+
+- `run_check` and `run_command` share one lifecycle (`_hardened_container`): the hardening, limits
+  and guaranteed teardown above exist once. Every run container's engine log is capped
+  (`json-file`, 1 MiB x 2 files), so output volume cannot grow engine disk without bound.
+- `CommandResult.output_tail` is the end of the combined stdout/stderr: streamed into a rolling
+  buffer (never read whole), decoded, stripped of terminal control sequences (ANSI/OSC/DCS, C0/C1
+  controls, `\r`) and cut to at most 64 KiB of UTF-8. It is untrusted command output, never engine
+  error text. A program the engine cannot start yields exit code 126/127 with empty output; other
+  engine failures raise `SandboxError`. The PID limit has no `limit` label; the exit code shows it.
+- Volumes are mounted with `no_copy`: otherwise the engine copies the ownership of the (root-owned)
+  `/workspace` mountpoint into a still-empty volume, and an empty workspace would not be writable.
 
 ## Boundary
 

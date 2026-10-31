@@ -56,6 +56,10 @@ def _human(console: Console, result: Result) -> None:
     if isinstance(result, StartedSession):
         console.print(Text(f"started {result.challenge_id}"))
         console.print(Text(str(result.workspace)))
+        if result.history is not None:
+            console.print(Text(f"history: {result.history.state}"))
+            if result.history.detail:
+                console.print(Text(result.history.detail))
         console.print(Text(result.ticket))
     elif isinstance(result, ResetResult):
         console.print(Text(f"reset {result.challenge_id}; timer and history preserved"))
@@ -77,6 +81,10 @@ def _human(console: Console, result: Result) -> None:
         console.print(Text("  ".join(f"{key}: {value}" for key, value in result.counts.items())))
         if result.limit is not None:
             console.print(Text(f"limit exceeded: {result.limit}"))
+        if result.history is not None:
+            console.print(Text(f"history: {result.history.state}"))
+            if result.history.detail:
+                console.print(Text(result.history.detail))
 
 
 def _invoke(call: Callable[[], Result], json_mode: bool) -> None:
@@ -101,10 +109,13 @@ def _invoke(call: Callable[[], Result], json_mode: bool) -> None:
 def start(
     path: Annotated[Path, typer.Argument(help="Local authored challenge folder.")],
     no_timer: Annotated[bool, typer.Option("--no-timer")] = False,
+    no_history: Annotated[
+        bool, typer.Option("--no-history", help="Disable checkpoint history.")
+    ] = False,
     json_mode: JsonOption = False,
 ) -> None:
     """Start a new local challenge session."""
-    _invoke(lambda: start_session(path, timer=not no_timer), json_mode)
+    _invoke(lambda: start_session(path, timer=not no_timer, history=not no_history), json_mode)
 
 
 def check(session: SessionOption = None, json_mode: JsonOption = False) -> None:

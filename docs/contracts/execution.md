@@ -28,13 +28,14 @@ is rejected by start and validation; service lifecycle below describes a deferre
   invalid.
 - Challenge commands run only inside containers, never through the host shell.
 - The workspace is **copied** into a fresh container, never bind-mounted writable. Visible and hidden
-  checks are merged into the copy at the workspace root, preserving their relative paths (so
+  checks are merged for verification into the copy at the workspace root, preserving their relative paths (so
   `checks/hidden/tests/test_x.py` runs as `tests/test_x.py`); hidden checks never reach the user's
-  workspace.
+  workspace. Diagnostic `run` copies only editable inputs and never mounts frozen hidden checks;
+  command edits are discarded. Its argv is literal unless the learner explicitly invokes a shell.
 - `test_command` runs as `/bin/sh -c <test_command>` with `PG_RESULTS=/results` and `HOME=/tmp`,
   working directory `/workspace`; the image's `ENTRYPOINT` is overridden, so the image needs
   `/bin/sh`.
-- `PG_RESULTS=/results`; results are read from `/results/junit.xml`. A missing or unparsable file is
+- For verification, `PG_RESULTS=/results`; results are read from `/results/junit.xml`. A missing or unparsable file is
   an error result, not a pass.
 - Services named in `environment.services` start on the same internal network, reachable by service
   name.
@@ -48,8 +49,12 @@ is rejected by start and validation; service lifecycle below describes a deferre
 - Run: always uid/gid 1000, whatever the Dockerfile's `USER`; read-only root filesystem with only
   `/workspace`, `/results` and a `/tmp` tmpfs writable; dropped Linux capabilities and
   `no-new-privileges`.
-- Limits per check: 2 CPUs, 2 GB memory, 512 PIDs, 10 minutes wall clock. Exceeding one is reported as
-  such, distinct from failing tests.
+- Limits per run: 2 CPUs, 2 GB memory, 512 PIDs, 10 minutes wall clock. Detected timeout/OOM limits
+  are distinct from ordinary failures; PID-limit kills may be observable only through the exit code.
+- Workspace/results volumes disable image copy-up, preserving uid/gid 1000 ownership even with empty
+  input. The seed container is never started. Engine logs use bounded rotation (1 MiB, two files).
+  Diagnostic output is streamed into a bounded buffer, sanitized, and exposed only as a combined
+  tail of at most 64 KiB. Check logs remain private and never enter reports or CLI output.
 
 ## A check, step by step
 
@@ -58,5 +63,7 @@ is rejected by start and validation; service lifecycle below describes a deferre
 3. Run `test_command` with `PG_RESULTS=/results`.
 4. Parse `/results/junit.xml` into per-test results.
 5. Record a `check_run` event (owned by `patchground-sessions`) and tear everything down.
-6. Snapshots into `refs/patchground/checks/<n>` are deferred. Current check/status commands never
-   invoke Git or change workspace Git state (see `patchground-sessions`).
+6. For history-enabled sessions, capture the retained editable input before hidden merging into
+   private session-owned Git objects/internal refs. Capture failure is separate from test evidence.
+   Runtime Git writes never touch learner HEAD, branches or index; status/history are read-only.
+   Initial/check checkpoints only: periodic capture and snapshot restoration are deferred.
