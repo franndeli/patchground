@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import time
 from collections.abc import Iterator
+from contextlib import closing
+from itertools import islice
 from pathlib import Path
 from textwrap import dedent
+from unittest.mock import Mock
 
 import docker
 import pytest
@@ -399,19 +402,185 @@ def test_command_engine_log_is_bounded(
     assert result.output_tail.endswith("y\n")
 
 
+def _oom_diagnostics(
+    container: Container, engine: docker.DockerClient, *, since: int
+) -> dict[str, object]:
+    evidence: dict[str, object] = {}
+    samples = []
+    evidence["state_samples_100ms"] = samples
+    try:
+        for attempt in range(11):
+            if attempt:
+                time.sleep(0.1)
+                container.reload()
+            state = container.attrs["State"]
+            samples.append({key: state.get(key) for key in ("Running", "ExitCode", "OOMKilled")})
+            if state.get("OOMKilled"):
+                break
+    except Exception:
+        evidence["state_unavailable"] = True
+    if samples and samples[0]["OOMKilled"]:
+        return evidence
+    try:
+        evidence["engine_version"] = engine.version().get("Version")
+    except Exception:
+        evidence["engine_version_unavailable"] = True
+    try:
+        # CancellableStream has close(), but does not implement the context-manager protocol.
+        with closing(
+            engine.events(
+                since=since,
+                until=int(time.time()) + 1,
+                filters={"container": container.id, "event": ["oom", "die", "kill"]},
+                decode=True,
+            )
+        ) as events:
+            evidence["events"] = [
+                (event.get("Action"), event.get("timeNano")) for event in islice(events, 16)
+            ]
+    except Exception:
+        # Diagnostics must never replace the original assertion or expose engine error text.
+        evidence["events_unavailable"] = True
+    return evidence
+
+
 def test_command_timeout_and_memory_limits(
-    image: BuildResult, tmp_path: Path, engine: docker.DockerClient
+    image: BuildResult,
+    tmp_path: Path,
+    engine: docker.DockerClient,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     ws = _workspace(tmp_path / "ws", {})
     slow = _command(image, ws, ["sh", "-c", "echo started; sleep 60"], Limits(timeout_seconds=3))
     assert (slow.exit_code, slow.limit, slow.output_tail) == (None, "timeout", "started\n")
+    # Keep failure evidence before teardown: distinguish a late OOM event from an engine
+    # that never confirms OOM. This never changes the result being asserted below.
+    evidence: dict[str, object] = {}
+    output_tail = sandbox_run._output_tail
+    since = int(time.time()) - 1
+
+    def capture(container: Container) -> str:
+        evidence.update(_oom_diagnostics(container, engine, since=since))
+        return output_tail(container)
+
+    monkeypatch.setattr(sandbox_run, "_output_tail", capture)
     hog = _command(
         image,
         ws,
         ["python", "-c", "b = bytearray(); [b.extend(bytes(10**7)) for _ in range(100)]"],
         Limits(memory_bytes=128 * 1024**2),
     )
-    assert hog.limit == "memory"
+    assert hog.limit == "memory", evidence
+    _assert_no_leftovers(engine)
+
+
+@pytest.mark.parametrize("delayed", [False, True], ids=["absent", "delayed"])
+def test_oom_diagnostics_collect_and_close(monkeypatch: pytest.MonkeyPatch, delayed: bool) -> None:
+    monkeypatch.setattr(time, "sleep", lambda _: None)
+    container = Mock(attrs={"State": {"Running": False, "ExitCode": 137, "OOMKilled": False}})
+    if delayed:
+        container.reload.side_effect = lambda: container.attrs["State"].update(OOMKilled=True)
+    # Like docker.types.CancellableStream, this iterator supports close but no __enter__.
+    events = Mock(spec=["__iter__", "close"])
+    events.__iter__ = Mock(return_value=iter([{"Action": "oom", "timeNano": 123}]))
+    engine = Mock()
+    engine.events.return_value = events
+    engine.version.return_value = {"Version": "28.5.2"}
+    evidence = _oom_diagnostics(container, engine, since=1)
+    samples = evidence["state_samples_100ms"]
+    assert len(samples) == (2 if delayed else 11)
+    assert samples[0]["OOMKilled"] is False
+    assert samples[-1]["OOMKilled"] is delayed
+    assert evidence["events"] == [("oom", 123)]
+    events.close.assert_called_once()
+
+
+@pytest.mark.parametrize("failure", ["reload", "version", "events", "iteration", "close"])
+def test_oom_diagnostics_failures_are_safe(monkeypatch: pytest.MonkeyPatch, failure: str) -> None:
+    monkeypatch.setattr(time, "sleep", lambda _: None)
+    container = Mock(attrs={"State": {"OOMKilled": False}})
+    engine = Mock()
+    engine.version.return_value = {"Version": "28.5.2"}
+    events = Mock(spec=["__iter__", "close"])
+    events.__iter__ = Mock(return_value=iter([]))
+    engine.events.return_value = events
+    target = {
+        "reload": container.reload,
+        "version": engine.version,
+        "events": engine.events,
+        "iteration": events.__iter__,
+        "close": events.close,
+    }[failure]
+    target.side_effect = RuntimeError("private engine error must not appear")
+    evidence = _oom_diagnostics(container, engine, since=1)
+    assert "unavailable" in repr(evidence)
+    assert "private" not in repr(evidence)
+    if failure in ("iteration", "close"):
+        events.close.assert_called_once()
+
+
+def test_oom_diagnostics_cap_events(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(time, "sleep", lambda _: None)
+    container = Mock(attrs={"State": {"OOMKilled": False}})
+    events = Mock(spec=["__iter__", "close"])
+    events.__iter__ = Mock(
+        return_value=({"Action": "oom", "timeNano": i} for i in range(1_000_000))
+    )
+    engine = Mock()
+    engine.events.return_value = events
+    engine.version.return_value = {"Version": "28.5.2"}
+    evidence = _oom_diagnostics(container, engine, since=1)
+    assert len(evidence["events"]) == 16
+    events.close.assert_called_once()
+
+
+@pytest.mark.parametrize("delayed", [False, True], ids=["absent", "delayed"])
+def test_oom_diagnostics_preserve_memory_assertion(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, delayed: bool
+) -> None:
+    monkeypatch.setattr(time, "sleep", lambda _: None)
+    monkeypatch.setattr(sandbox_run, "_output_tail", lambda _: "")
+    container = Mock(attrs={"State": {"OOMKilled": False}})
+    if delayed:
+        container.reload.side_effect = lambda: container.attrs["State"].update(OOMKilled=True)
+    engine = Mock()
+    engine.version.return_value = {"Version": "28.5.2"}
+    engine.events.side_effect = RuntimeError("private engine error must not appear")
+
+    def command(_image: object, _ws: Path, argv: list[str], _limits: Limits) -> CommandResult:
+        if argv[0] == "sh":
+            return CommandResult(None, "timeout", "started\n")
+        sandbox_run._output_tail(container)
+        # The already classified result must not be changed by delayed diagnostic evidence.
+        return CommandResult(137, None, "")
+
+    monkeypatch.setattr(f"{__name__}._command", command)
+    with pytest.raises(AssertionError) as error:
+        test_command_timeout_and_memory_limits(Mock(), tmp_path, engine, monkeypatch)
+    assert "events_unavailable" in str(error.value)
+    assert "private" not in str(error.value)
+
+
+def test_command_sigkill_is_not_a_memory_limit(
+    image: BuildResult,
+    tmp_path: Path,
+    engine: docker.DockerClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    wait = sandbox_run._wait
+
+    def kill_and_wait(container: Container, limits: Limits) -> int | None:
+        # PID 1 can ignore a self-sent signal; send SIGKILL through the engine instead.
+        container.kill()
+        return wait(container, limits)
+
+    monkeypatch.setattr(sandbox_run, "_wait", kill_and_wait)
+    result = _command(
+        image,
+        _workspace(tmp_path / "ws", {}),
+        ["sleep", "60"],
+    )
+    assert (result.exit_code, result.limit) == (137, None)
     _assert_no_leftovers(engine)
 
 

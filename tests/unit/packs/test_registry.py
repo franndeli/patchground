@@ -643,6 +643,44 @@ def test_stage_cleanup_leaves_a_replacement_at_the_staged_path(
     assert not list((state / "packs").glob("demo@*"))
 
 
+def test_held_stage_identity_cannot_be_recycled_by_a_replacement(tmp_path: Path) -> None:
+    stage = tmp_path / ".stage-x"
+    stage.mkdir()
+    with store.hold_stage(stage) as identity:
+        store.remove_tree(stage)
+        stage.mkdir()  # filesystems may hand a freed inode back; a held one is never free
+        (stage / "theirs").write_text("not ours")
+        info = stage.lstat()
+        assert (info.st_dev, info.st_ino) != identity
+        store.remove_tree(stage, expect=identity)
+    assert (stage / "theirs").read_text() == "not ours"
+
+
+def test_remove_tree_preserves_a_root_swapped_between_stat_and_open(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target = tmp_path / ".stage-x"
+    target.mkdir()
+    (target / "ours").write_text("ours")
+    real_open = os.open
+    swapped = False
+
+    def swap_then_open(path, flags, *args, **kwargs):
+        nonlocal swapped
+        if not swapped and path == target.name and kwargs.get("dir_fd") is not None:
+            swapped = True  # the vetted root is replaced after it was statted
+            target.rename(tmp_path / "moved-original")
+            target.mkdir()
+            (target / "theirs").write_text("not ours")
+        return real_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(os, "open", swap_then_open)
+    store.remove_tree(target)
+    assert swapped
+    assert (target / "theirs").read_text() == "not ours"
+    assert (tmp_path / "moved-original/ours").read_text() == "ours"
+
+
 # ---- removal ------------------------------------------------------------------------------
 
 

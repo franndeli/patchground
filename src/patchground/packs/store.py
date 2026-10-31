@@ -360,9 +360,19 @@ def cache_problem(root: Path, name: str, ver: Version) -> str | None:
     return None if actual == ver.digest else "installed pack content failed integrity verification"
 
 
-def stage_identity(path: Path) -> tuple[int, int]:
-    info = path.lstat()
-    return info.st_dev, info.st_ino
+@contextmanager
+def hold_stage(path: Path) -> Iterator[tuple[int, int]]:
+    """Keep stage ownership live through cleanup; see packs/SPEC.md for identity rules."""
+    try:
+        with open_directory(path.parent, error=PackError, label="pack state") as parent:
+            fd = os.open(path.name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent)
+    except OSError as exc:
+        raise _error("pack stage cannot be opened") from exc
+    try:
+        info = os.fstat(fd)
+        yield info.st_dev, info.st_ino
+    finally:
+        os.close(fd)
 
 
 def remove_tree(path: Path, *, expect: tuple[int, int] | None = None) -> None:
@@ -399,6 +409,9 @@ def remove_tree(path: Path, *, expect: tuple[int, int] | None = None) -> None:
                 return
             fd = os.open(path.name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent)
             try:
+                opened = os.fstat(fd)
+                if (opened.st_dev, opened.st_ino) != (found.st_dev, found.st_ino):
+                    return  # swapped between stat and open: not the directory that was vetted
                 clear(fd)
             finally:
                 os.close(fd)

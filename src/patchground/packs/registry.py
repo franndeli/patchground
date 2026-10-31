@@ -46,6 +46,7 @@ from patchground.packs.store import (
     cache_problem,
     capture_tree,
     ensure_dirs,
+    hold_stage,
     identity_of,
     load_state,
     locked,
@@ -53,7 +54,6 @@ from patchground.packs.store import (
     packs_dir,
     remove_tree,
     save_state,
-    stage_identity,
     state_root,
 )
 from patchground.safeio import open_directory
@@ -75,10 +75,17 @@ __all__ = [
 class _Staged:
     """A fetched revision captured into a private stage and validated, not yet published."""
 
-    def __init__(self, snap: SourceSnapshot, path: Path, capture: Capture, inspection: Inspection):
+    def __init__(
+        self,
+        snap: SourceSnapshot,
+        path: Path,
+        identity: tuple[int, int],
+        capture: Capture,
+        inspection: Inspection,
+    ):
         self.snap = snap
         self.path = path
-        self.filesystem_identity = stage_identity(path)
+        self.filesystem_identity = identity
         self.capture = capture
         self.inspection = inspection
         self.name = inspection.manifest.name
@@ -104,13 +111,14 @@ def _stage(source: str | Path, ref: str, root: Path) -> Iterator[_Staged]:
     with fetch_pack(source, ref) as snap:
         ensure_dirs(root)
         path = Path(tempfile.mkdtemp(prefix=".stage-", dir=packs_dir(root))).resolve()
-        identity = stage_identity(path)
-        try:
-            capture = capture_tree(snap.path.resolve(), path, seal=True)
-            yield _Staged(snap, path, capture, inspect_pack(path))
-        finally:
-            # Only the directory created here: a replacement at this path is not ours to delete.
-            remove_tree(path, expect=identity)
+        # The descriptor stays open until cleanup is done, so the identity cannot be recycled.
+        with hold_stage(path) as identity:
+            try:
+                capture = capture_tree(snap.path.resolve(), path, seal=True)
+                yield _Staged(snap, path, identity, capture, inspect_pack(path))
+            finally:
+                # Only the directory created here: a replacement at this path is not ours to delete.
+                remove_tree(path, expect=identity)
 
 
 def _publish(root: Path, staged: _Staged, entry: Entry | None) -> bool:

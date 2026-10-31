@@ -52,8 +52,10 @@ deletes newly referenced content or claims rollback. Earlier versions remain ava
 
 Add is idempotent only for matching source/commit/content; it does not silently update or switch
 sources. Existing destinations are never replaced: identical content can recover interrupted
-publication, differing content fails closed. Stage cleanup is identity-bound; no name/age-based
-orphan sweeping deletes unrelated data. Removal unregisters all versions and consent, then removes
+publication, differing content fails closed. Stage cleanup holds the original directory descriptor
+through publication/rollback: a saved device/inode pair alone can be recycled after deletion on
+Linux. The opened cleanup root is rechecked against its pre-open identity before deleting contents,
+so a replacement between stat and open survives. No name/age-based orphan sweeping deletes data. Removal unregisters all versions and consent, then removes
 their caches; a cleanup failure explicitly reports partial removal. Sessions and sources remain
 untouched.
 
