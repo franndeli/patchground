@@ -1,0 +1,4 @@
+- Which of the three symptoms shared a root cause, and which did not? How did you decide?
+- How did you check the expiry boundary without sleeping, and why does an injected clock matter here?
+- Which behavior did you want to leave unchanged while fixing reads, and how did you protect it?
+- If an AI assistant proposed a fix, what did you verify yourself before accepting it?

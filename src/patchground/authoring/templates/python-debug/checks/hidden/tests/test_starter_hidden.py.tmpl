@@ -1,0 +1,13 @@
+from starter import total
+
+
+def test_final_amount_contributes():
+    assert total([3, 2]) == 5
+
+
+def test_single_amount():
+    assert total([7]) == 7
+
+
+def test_negative_amounts():
+    assert total([4, -2]) == 2

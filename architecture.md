@@ -17,7 +17,8 @@ build) and no API key.
 
 ```mermaid
 flowchart TD
-  cli --> packs & sessions & verify & report & sandbox
+  cli --> authoring & packs & sessions & verify & report & sandbox
+  authoring --> spec
   cli -. lazy .-> ai & generate
   packs --> spec
   sessions --> spec & sandbox
@@ -33,6 +34,7 @@ flowchart TD
 | Module | Owns | Spec |
 | --- | --- | --- |
 | `cli` | Commands, terminal and `--json` output, consent prompts. No business logic. | `patchground-cli` |
+| `authoring` | Safe local scaffolding from packaged runnable templates; no execution. | `patchground-authoring` |
 | `spec` | Manifest models, loading, schema export. Depends on nothing internal. | `patchground-spec` |
 | `packs` | Resolving a challenge reference to a folder and its trust level; installing packs. | `patchground-packs` |
 | `sessions` | Session lifecycle, workspace repo, event log, check orchestration. | `patchground-sessions` |
@@ -88,10 +90,18 @@ Sessions always live under `~/patchground/sessions/`; the layout of `.session/` 
 macOS and Linux with Docker (or Podman through its Docker-compatible socket) and git. Windows only
 through WSL2 + Docker Desktop; `pgnd doctor` points Windows users there.
 
+## Public site boundary
+
+`patchground.dev` is a public documentation and challenge-catalog surface, not a hosted runner.
+Challenge execution, session state and verified outcomes stay local. Published catalog data is an
+allowlist of public challenge metadata and tickets, never session data, hidden checks, reference
+solutions or credentials. Site framework and hosting choices are separate delivery decisions;
+DNS, production deployment, package publication and releases require approval at publication.
+
 ## Repositories
 
 - `patchground/patchground` — this repo: the CLI, the format, schemas (`schema/`), scaffolds
-  (`templates/`), tiny test challenges (`examples/`), docs.
+  (`src/patchground/authoring/templates/`), test challenges (`examples/`), docs.
 - `patchground/patchground-core` — the official, curated pack.
 - `patchground/validate-action` — a GitHub Action that runs `pgnd validate` on changed challenges.
 
@@ -99,7 +109,7 @@ through WSL2 + Docker Desktop; `pgnd doctor` points Windows users there.
 
 Unit tests per module; tests that need a container engine are marked `@pytest.mark.docker`, and CI
 sets `PATCHGROUND_REQUIRE_DOCKER=1` so they fail rather than skip without an engine. ruff for lint,
-mypy strict on `spec`, `verify`, `report`, `sessions` and `sandbox` (the safety boundary). The challenges in
+mypy strict on `spec`, `verify`, `report`, `sessions`, `authoring` and `sandbox` (the safety boundary). The challenges in
 `examples/` must pass `pgnd validate` in CI; their `verification.json` is gitignored, because a
 locally built image id means nothing on another machine and CI re-validating every push is the
 proof. Broken challenges, one per failing step, live in `tests/fixtures/`.

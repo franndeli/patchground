@@ -1,0 +1,21 @@
+spec_version: "0.1"
+id: __CHALLENGE_ID__
+version: 0.1.0
+title: The last line item is missing from the total
+type: debug
+summary: Investigate incorrect totals without changing the public API.
+languages: [python]
+tags: [starter]
+difficulty: beginner
+timebox_minutes: 15
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+author: {name: Challenge author}
+content_license: CC-BY-4.0

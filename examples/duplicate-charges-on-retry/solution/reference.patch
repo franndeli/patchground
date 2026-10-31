@@ -1,0 +1,11 @@
+--- a/src/payments/service.py
++++ b/src/payments/service.py
+@@ -14,7 +14,7 @@
+         if not isinstance(request_id, str) or not request_id.strip():
+             raise ValueError("request_id must be nonempty")
+         for attempt in range(self.max_attempts):
+-            provider_key = f"{request_id}:attempt-{attempt}"
++            provider_key = request_id
+             try:
+                 return self.gateway.charge(provider_key, amount_cents)
+             except GatewayTimeout:

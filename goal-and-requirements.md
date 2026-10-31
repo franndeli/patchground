@@ -114,6 +114,8 @@ Code, docs and CLI output use exactly these terms.
 
 ## Capabilities
 
+- **Public documentation and challenge catalog** at `patchground.dev`, supporting discovery,
+  installation and authoring without accounts or hosted execution. The CLI remains the runner.
 - **Open challenge format** with a published JSON Schema and precise, file-and-line errors
   (`patchground-contract-challenge-format`).
 - **Play a challenge:** list and show challenges, start a session (build image, create workspace,

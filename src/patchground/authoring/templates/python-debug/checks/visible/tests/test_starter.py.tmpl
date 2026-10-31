@@ -1,0 +1,9 @@
+from starter import total
+
+
+def test_empty_total():
+    assert total([]) == 0
+
+
+def test_zero_final_amount():
+    assert total([4, 5, 0]) == 9

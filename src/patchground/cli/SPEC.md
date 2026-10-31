@@ -4,7 +4,7 @@ type: module-design
 status: draft
 title: "Module: cli"
 parent: patchground-architecture
-depends-on: [patchground-packs, patchground-sessions, patchground-verify, patchground-report, patchground-sandbox]
+depends-on: [patchground-packs, patchground-sessions, patchground-verify, patchground-report, patchground-sandbox, patchground-authoring]
 implements: [patchground-contract-cli]
 ---
 
@@ -26,6 +26,8 @@ resolves inputs, calls one module entry point, and renders the result.
   `--json`), exits `0` when all pass and `2` otherwise, and never builds or runs a challenge. The
   disk check uses a 1 GiB free-space baseline at the sessions root (or its nearest existing parent);
   that is a floor, not a guarantee an image build fits. Paths under home display as `~`.
+- `new`: calls `authoring.create_challenge`; renders the new relative path and validation next
+  step, or JSON `{id, path, type, language, files}`. It never runs the new challenge.
 - Mapping domain errors to messages and exit codes; manifest errors keep their file and line. Any
   unexpected exception still ends as one `internal` error (exit `2`, one JSON document under
   `--json`), never a traceback that reads as exit `1`.

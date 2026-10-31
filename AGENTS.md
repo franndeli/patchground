@@ -15,16 +15,22 @@ Read the SPEC of the module you are changing and the contracts it implements. If
 code disagree, or a spec is ambiguous, stop and ask. A change that alters a boundary or contract
 updates the owning spec in the same change.
 
-## Current slice: bounded anti-gaming validation (toward M2)
+## Current programme: local-first public product
 
-M1 provides the local session loop: `start <path>`, `check`, `status`, `reset`, `doctor`, and local
-challenge discovery. The independent fresh-user usability trial remains pending.
-Validation checks three runs of each workspace variant, comparing per-test evidence on one image.
-The approved anti-gaming slice probes editable pytest module deletion/skipping while preserving
-exact hidden outcomes. Unsupported adapters/layouts remain explicitly unverified; do not silently
-claim universal anti-gaming coverage. Authoring scaffolds remain a separate future slice.
-Preserve the hardened Docker execution boundary.
-Do NOT build: stages, scoring, reports, snapshots, hints, pack management, AI, generator, web UI.
+The owner approved expanding beyond M1 toward the roadmap and a public documentation/catalog site
+at patchground.dev. Delivery boundaries and resume context live in `docs/launch-brief.md` and
+`docs/delivery-plan.md`; the shared TODO list tracks active work. Authoring and challenge content
+come next, followed by verified outcomes, practice tools, distribution, the public site and bounded
+optional AI experiments. Each subsystem still requires an accepted design and owning-spec updates.
+
+Use existing configured model subscriptions/local models only; do not buy credits or paid services.
+Git pushes are authorized, but DNS changes, production deployments, package publication and release
+creation require explicit approval at publication. Synthetic model learners do not satisfy the
+independent human usability gate. Record their configuration and observed outcomes honestly.
+
+Do NOT build hosted challenge execution, accounts, overall scoring or proctoring. Stages remain
+reserved until their contract is explicitly redesigned. Preserve the hardened Docker boundary,
+user Git state, optional-AI separation and all privacy/publication guards below.
 
 ## Hard rules
 

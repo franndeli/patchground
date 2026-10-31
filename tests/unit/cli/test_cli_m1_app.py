@@ -15,7 +15,11 @@ def test_discovery_commands_registered():
     runner = CliRunner()
     listed = runner.invoke(app, ["list", str(EXAMPLES), "--lang", "python", "--json"])
     assert listed.exit_code == 0
-    assert json.loads(listed.stdout)["challenges"][0]["id"] == "pagination-last-page"
+    assert {item["id"] for item in json.loads(listed.stdout)["challenges"]} == {
+        "pagination-last-page",
+        "duplicate-charges-on-retry",
+        "cache-expiry",
+    }
     shown = runner.invoke(app, ["show", str(EXAMPLES / "pagination-last-page"), "--json"])
     assert shown.exit_code == 0
     assert json.loads(shown.stdout)["valid"] is True

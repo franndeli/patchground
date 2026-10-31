@@ -505,11 +505,12 @@ listing does not install packs or resolve IDs. See `docs/first-session.md` for t
 
 ### M2 — External validation
 
-- [ ] Two more challenges (three in total)
+- [x] Two more Docker-validated challenges: duplicate charges on retry and cache expiry
 - [ ] `submit` and the verified-outcomes report, including the regression-test check
 - [x] Determinism validation: three runs per workspace variant, comparing per-test evidence
 - [x] Bounded pytest editable-test tampering probes, with unsupported adapters explicitly unverified
-- [ ] `pgnd new` scaffold and broader validation adapters as needed
+- [x] `pgnd new` runnable Python/debug scaffold with packaged assets
+- [ ] Broader validation adapters as needed
 - [ ] `hint`, `run`, `sessions`, `report`; snapshots in internal refs
 - [ ] Give it to about 10 developers preparing for interviews and watch them install, read the ticket, solve and finish
 - [ ] Ask one developer who isn't Fran to author and validate a challenge from the docs alone

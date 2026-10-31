@@ -1,0 +1,41 @@
+diff --git a/src/profilecache/cache.py b/src/profilecache/cache.py
+index 497b49d..90f2a16 100644
+--- a/src/profilecache/cache.py
++++ b/src/profilecache/cache.py
+@@ -13,11 +13,12 @@ Clock = Callable[[], float]
+ @dataclass
+ class _Entry:
+     value: Any
+-    ttl: float
+     deadline: float
+
+
+ def _validate_ttl(ttl: float) -> float:
++    if not ttl > 0:
++        raise ValueError(f"ttl must be positive, got {ttl!r}")
+     return ttl
+
+
+@@ -36,7 +37,7 @@ class TTLCache:
+     def set(self, key: Hashable, value: Any, ttl: float | None = None) -> None:
+         """Store ``value`` under ``key`` for ``ttl`` seconds (default: the cache default)."""
+         ttl = _validate_ttl(self._default_ttl if ttl is None else ttl)
+-        self._entries[key] = _Entry(value, ttl, self._clock() + ttl)
++        self._entries[key] = _Entry(value, self._clock() + ttl)
+
+     def get(self, key: Hashable, default: Any = None) -> Any:
+         """Return the live value for ``key``, or ``default`` if absent or expired."""
+@@ -47,7 +48,6 @@ class TTLCache:
+         if self._expired(entry, now):
+             del self._entries[key]
+             return default
+-        entry.deadline = now + entry.ttl
+         return entry.value
+
+     def __contains__(self, key: Hashable) -> bool:
+@@ -64,4 +64,4 @@ class TTLCache:
+
+     @staticmethod
+     def _expired(entry: _Entry, now: float) -> bool:
+-        return now > entry.deadline
++        return now >= entry.deadline

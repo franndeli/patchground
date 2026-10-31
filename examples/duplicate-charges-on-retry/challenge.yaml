@@ -1,0 +1,30 @@
+spec_version: "0.1"
+id: duplicate-charges-on-retry
+version: 1.0.0
+title: Duplicate charges after a payment retry
+type: debug
+summary: A successful charge followed by a timeout causes a retry to charge twice.
+languages: [python]
+tags: [idempotency, retries, payments]
+difficulty: intermediate
+timebox_minutes: 45
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/payments/]
+hints:
+  - A timeout says nothing about whether the provider committed the charge.
+  - Compare the identity of a logical payment with the identity of a transport attempt.
+debrief:
+  questions: debrief/questions.md
+  focus: [debugging_method, test_quality, scope_judgment]
+author: {name: Patchground contributors}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by: {model: "Codex configured default (model unverified)", prompt_version: launch-payment-v1}

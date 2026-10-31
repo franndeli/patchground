@@ -1,0 +1,1 @@
+"""Offline checkout payment example."""

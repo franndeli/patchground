@@ -6,7 +6,8 @@ Open-source, local-first CLI (`patchground`, alias `pgnd`) for practicing real s
 solve broken or incomplete repositories in your own editor, with your own AI (or none), and get
 verified outcomes from checks that run in Docker.
 
-Status: **M1 local prototype** — validate authored challenges, discover them with `list` / `show`,
+Status: **local prototype with authoring** — create challenges with `new`, validate them,
+discover them with `list` / `show`,
 and practice with `start`, `check`, `status` and `reset`. `doctor` checks environment readiness.
 The fresh-user usability trial is still pending; pack management and reports are not implemented.
 
@@ -68,6 +69,22 @@ Status works without Docker. A removed session image must be restored or a new s
 check does not silently rebuild or pull it. Multi-container services remain deferred; challenges
 must use `environment.services: []`. A passing check is the current end of an attempt—`submit` and
 verified-outcomes reports arrive later.
+
+## Author a challenge
+
+```sh
+pgnd new my-challenge
+pgnd validate my-challenge
+```
+
+`new` defaults to `--type debug --lang python` and creates a runnable teaching starter in the
+current directory. It refuses any existing destination and never builds or runs automatically.
+Only that template combination is currently supported. The starter includes an intentional defect,
+checks and a reference patch; replace them together rather than changing only the ticket.
+See [the authoring guide](docs/authoring.md) for the full workflow and safety limits.
+
+The curated examples cover pagination, duplicate charges on retry, and cache expiry. They are
+Docker-validated, not yet human-rated for difficulty or realism.
 
 ## Validate an authored challenge
 

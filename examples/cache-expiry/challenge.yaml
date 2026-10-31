@@ -1,0 +1,32 @@
+spec_version: "0.1"
+id: cache-expiry
+version: 1.0.0
+title: Cached profiles never expire while they are being read
+type: debug
+summary: >-
+  A TTL cache keeps entries alive when they are read, expires them one tick late and accepts
+  nonpositive TTLs. Find the causes and fix them without changing write behavior.
+languages: [python]
+tags: [caching, ttl, time]
+difficulty: intermediate
+timebox_minutes: 30
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/profilecache/]
+hints:
+  - Write down, for one entry, the clock value at which it should expire, then step through what each method does to that deadline.
+  - Is the deadline moved by anything other than a write?
+debrief:
+  questions: debrief/questions.md
+  focus: [debugging_method, test_quality, scope_judgment]
+author: {name: Patchground contributors}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by: {model: "Claude Code configured default (model unverified)", prompt_version: launch-cache-v1}

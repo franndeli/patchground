@@ -31,7 +31,8 @@ The binary is `patchground` with the alias `pgnd` (not `pg`, which developers re
 
 The first playable slice implements `validate`, `start <local-path> [--no-timer]`,
 `check [--session <path>]`, `status [--session <path>]` and
-`reset [--session <path>] [--yes]`, `doctor`, `list [directory]` and `show <path>`,
+`reset [--session <path>] [--yes]`, `doctor`, `list [directory]`, `show <path>` and
+`new <id> [--type debug] [--lang python]`,
 each with `--json`. Start accepts authored
 local paths only; it freezes check inputs and builds, without applying the reference solution.
 Status needs no container engine. Checks with no tests or any skipped test do not count as passing.
@@ -41,6 +42,13 @@ IDs or grants trust. `list` returns matching metadata and all invalid candidates
 metadata and ticket. Invalid challenge results exit `1`; invalid command arguments or inaccessible
 directories exit `2`. An empty listing succeeds. Doctor probes engine reachability/version, Git and
 session-disk availability, exits `0` if healthy and `2` otherwise; it does not measure Docker VM disk.
+
+Authoring `new` creates `<current-directory>/<id>` from packaged runnable Python/debug assets.
+The ID follows the manifest slug rules. Type/language default to debug/python; other combinations
+exit `2` before writing. Any existing destination, including a dangling symlink, is refused. There
+is no overwrite option, Git initialization or automatic container execution. Success exits `0`;
+JSON returns `{id, path, type, language, files}` with relative paths, never source contents.
+Creation failures exit `2`; safe rollback may leave concurrent additions/replacements intact.
 
 The table below also describes planned commands and options; it is not a claim that they all exist.
 
@@ -58,7 +66,7 @@ The table below also describes planned commands and options; it is not a claim t
 | `run -- <cmd>` | Run a command in the challenge container on the internal network. |
 | `submit [--transcript <file>]` | End the session and write the verified-outcomes report. |
 | `sessions` / `report <session>` | Past sessions and their reports. |
-| `new <id> --type <type> --lang <lang>` | Scaffold a challenge folder from `templates/`. |
+| `new <id> [--type debug] [--lang python]` | Create a runnable starter in a new folder from packaged templates; never overwrite or execute. |
 | `validate <path> [--no-write]` | Run `patchground-contract-verification`; CI-friendly. Progress goes to stderr; `--no-write` leaves `verification.json` untouched. |
 | `doctor` | Check Docker (or Podman), git, disk; print exact fixes (WSL2 on Windows). |
 | `pack add <git-url>[@ref]`, `pack list\|update\|remove` | Manage packs, pinned by commit. |
