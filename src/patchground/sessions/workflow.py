@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Protocol
 
 from patchground import sandbox as engine
+from patchground.packs.models import ConsentRequired, PackError, PreparedChallenge
 from patchground.sandbox import BuildResult, RunOutcome, RunResult, SandboxError, TestStatus
 from patchground.sessions import git, store
 from patchground.sessions.files import copy_tree, readonly, remove_partial, safe_path
@@ -40,14 +41,47 @@ def _root(root: Path | None) -> Path:
 
 
 def start_session(
+    path: Path | str,
+    *,
+    root: Path | None = None,
+    timer: bool = True,
+    history: bool = True,
+    sandbox: Sandbox = engine,
+    yes: bool = False,
+    expected_identity: str | None = None,
+    pack_root: Path | None = None,
+) -> StartedSession:
+    """Resolve and authorize a source before any build or session mutation."""
+    from patchground.packs.registry import prepare_execution
+
+    try:
+        with prepare_execution(
+            path, yes=yes, expected_identity=expected_identity, root=pack_root
+        ) as prepared:
+            return _start_session(
+                prepared.path,
+                root=root,
+                timer=timer,
+                history=history,
+                sandbox=sandbox,
+                prepared=prepared,
+            )
+    except ConsentRequired:
+        raise
+    except PackError as exc:
+        raise SessionError(str(exc)) from exc
+
+
+def _start_session(
     path: Path,
     *,
     root: Path | None = None,
     timer: bool = True,
     history: bool = True,
     sandbox: Sandbox = engine,
+    prepared: PreparedChallenge,
 ) -> StartedSession:
-    """Start an authored local challenge, freezing all future check inputs."""
+    """Freeze an authorized source into an independent session."""
     partial: Path | None = None
     try:
         try:
@@ -75,14 +109,19 @@ def start_session(
         (meta / "TICKET.md").write_text(ticket, encoding="utf-8")
         (meta / "TICKET.md").chmod(0o600)
         store.write_json(meta / "manifest.json", manifest.model_dump(mode="json"))
-        git.initialize(workspace, source=challenge.root)
+        if prepared.pack is None:
+            git.initialize(workspace, source=challenge.root)
+        else:
+            git.initialize(workspace, source=challenge.root, inputs=prepared.input_roots)
         built = sandbox.build_image(
             challenge.root / manifest.environment.dockerfile, name=manifest.id
         )
         record = SessionRecord(
             challenge_id=manifest.id,
             challenge_version=manifest.version,
-            source=str(challenge.root),
+            source=str(prepared.source_path if prepared.pack else challenge.root),
+            trust="unofficial" if prepared.pack else "local-authored",
+            pack=prepared.pack,
             image_id=built.image_id,
             started_at=now(),
             timer=timer,
@@ -100,7 +139,11 @@ def start_session(
             meta / "original",
             enabled=history,
             kind="initial",
-            rules=resolve_history_ignores(workspace, source=challenge.root) if history else None,
+            rules=resolve_history_ignores(
+                workspace, source=challenge.root, inputs=prepared.input_roots
+            )
+            if history
+            else None,
         )
         store.append_event(meta, "history_recorded", checkpoint.model_dump(mode="json"))
         return StartedSession(
@@ -109,6 +152,7 @@ def start_session(
             challenge_id=manifest.id,
             timer=timer,
             ticket=ticket,
+            pack=prepared.pack,
             history=checkpoint,
         )
     except BaseException as exc:
@@ -166,7 +210,13 @@ def check_session(
                     editable.mkdir()
                     clean.mkdir()
                     rules = (
-                        resolve_history_ignores(path / "workspace", source=Path(record.source))
+                        resolve_history_ignores(
+                            path / "workspace",
+                            source=Path(record.source),
+                            inputs=(Path(record.pack.source),)
+                            if record.pack and record.pack.source_kind == "local"
+                            else (),
+                        )
                         if record.history_enabled
                         else None
                     )

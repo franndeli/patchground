@@ -4,7 +4,7 @@ type: module-design
 status: draft
 title: "Module: sessions"
 parent: patchground-architecture
-depends-on: [patchground-spec, patchground-sandbox]
+depends-on: [patchground-spec, patchground-sandbox, patchground-packs, patchground-safeio]
 implements: [patchground-contract-execution, patchground-contract-security]
 ---
 
@@ -36,8 +36,11 @@ A second session for the same challenge on the same day gets a numeric suffix. D
 is atomic; failed creation removes only that attempt's partial directory. The timer is derived from
 timestamps; there is no background process.
 
-The local session loop implements start, check, status, reset and frozen submission/readback. Starting validates the authored
-local manifest and builds the image; it does not run reference validation. The new baseline repo is
+The session loop implements start, check, status, reset and frozen submission/readback. Starting
+uses packs-owned preparation to resolve inputs and enforce installed-version consent before build;
+it validates the captured manifest but does not run reference validation. Pack identity and unofficial
+trust are frozen in new records/results; legacy local records without pack metadata remain valid.
+Checks and reports need neither installed cache nor registry after start. The new baseline repo is
 initialized before handoff with a fixed noreply identity, without user/system Git configuration,
 hooks or templates. Subsequent Git subprocesses run only in private temporary directories. Checkpoints use isolated
 temporary bare repositories and publish validated loose objects/internal refs into private
@@ -154,7 +157,7 @@ duration), `reset`, `hint_revealed`, `command_run`, `submitted`, `transcript_att
 
 ## Boundary
 
-Depends on `spec` and `sandbox`. Exposes read access to session records, events and git data (diffs,
+Depends on `spec`, `sandbox`, packs preparation and shared `safeio`. Exposes read access to session records, events and git data (diffs,
 snapshot refs) for `report` and `ai`; they never shell out to git themselves.
 
 ## Submission lifecycle and public API

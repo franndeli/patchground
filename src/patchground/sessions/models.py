@@ -6,8 +6,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, computed_field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, computed_field, model_validator
 
+from patchground.packs.models import PackIdentity
 from patchground.sandbox import RunOutcome, TestStatus
 
 
@@ -24,11 +25,18 @@ class SessionRecord(Model):
     challenge_id: str
     challenge_version: str
     source: str
-    trust: Literal["local-authored"] = "local-authored"
+    trust: Literal["local-authored", "unofficial"] = "local-authored"
+    pack: PackIdentity | None = None
     image_id: str = Field(min_length=1)
     started_at: AwareDatetime
     timer: bool
     history_enabled: bool = False
+
+    @model_validator(mode="after")
+    def consistent_pack(self) -> SessionRecord:
+        if (self.pack is None) != (self.trust == "local-authored"):
+            raise ValueError("inconsistent pack provenance")
+        return self
 
 
 class CheckTest(Model):
@@ -91,6 +99,7 @@ class StartedSession(Model):
     challenge_id: str
     timer: bool
     ticket: str
+    pack: PackIdentity | None = None
     history: SnapshotStatus | None = None
 
 

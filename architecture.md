@@ -20,9 +20,9 @@ flowchart TD
   cli --> authoring & packs & sessions & verify & report & sandbox
   authoring --> spec
   cli -. lazy .-> ai & generate
-  packs --> spec
-  sessions --> spec & sandbox
-  verify --> spec & sandbox
+  packs --> spec & safeio
+  sessions --> spec & sandbox & packs & safeio
+  verify --> spec & sandbox & packs & safeio
   report --> sessions & sandbox & verify
   sandbox --> spec
   ai --> report & sessions
@@ -36,7 +36,8 @@ flowchart TD
 | `cli` | Commands, terminal and `--json` output, consent prompts. No business logic. | `patchground-cli` |
 | `authoring` | Safe local scaffolding from packaged runnable templates; no execution. | `patchground-authoring` |
 | `spec` | Manifest models, loading, schema export. Depends on nothing internal. | `patchground-spec` |
-| `packs` | Resolving a challenge reference to a folder and its trust level; installing packs. | `patchground-packs` |
+| `packs` | Pinned distribution, immutable content, resolution and execution consent. | `patchground-packs` |
+| `safeio` | Shared descriptor-safe filesystem access and Git executable selection. | `patchground-safeio` |
 | `sessions` | Session lifecycle, workspace repo, event log, check orchestration. | `patchground-sessions` |
 | `sandbox` | Every interaction with the container engine. | `patchground-sandbox` |
 | `verify` | The verification contract run against a challenge folder. | `patchground-verify` |
@@ -46,9 +47,9 @@ flowchart TD
 
 Edges not drawn above are forbidden. In particular: nothing below `cli` imports `cli`; nothing in the
 core imports `ai` or `generate`; only `sandbox` imports the Docker SDK; only `sessions` runs git on
-workspaces (others read git data through `sessions`), `packs` runs it only to clone and fetch pack
-sources, and `verify` runs only `git apply` on a throwaway copy of a challenge's `workspace/` (never
-a repo the user owns, never with repository config a challenge could supply). `report` uses
+workspaces (others read git data through `sessions`), `packs` runs isolated Git retrieval and raw
+object inspection without loading source configuration, and `verify` runs only `git apply` on a
+throwaway copy of a challenge's `workspace/` (never a repo the user owns, never with repository config a challenge could supply). `report` uses
 `verify` only for shared pure pytest recognition/static-analysis primitives; submission execution
 still goes through `sandbox`, and sessions never imports report. `cli` reaches `sandbox` only for `doctor`'s engine probe.
 
@@ -80,7 +81,8 @@ still goes through `sandbox`, and sessions never imports report. `cli` reaches `
 ```
 ~/.patchground/
 ├── config.toml           # defaults (provider, model, editor); never API keys
-├── packs/<pack>@<sha>/   # installed packs, read-only
+├── registry.json         # pinned versions, active revision and exact-version consent
+├── packs/<pack>@<sha>/    # installed packs, read-only
 └── cache/                # image digests, verification results
 ~/patchground/sessions/<date>-<challenge>/
 ├── workspace/            # the user's git repo

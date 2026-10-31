@@ -504,7 +504,7 @@ def test_patch_that_does_not_apply_fails(challenge: Path, box: FakeSandbox) -> N
     patch.write_text(patch.read_text().replace("len(items) // per_page", "len(things) // n"))
     report = validate(challenge, box)
     assert_failed_at(report, StepName.REFERENCE_PASSES, detail="does not apply")
-    assert "patch failed" in report.step(StepName.REFERENCE_PASSES).detail
+    assert "git apply exited 1" in report.step(StepName.REFERENCE_PASSES).detail
     assert "reference" not in [kind for kind, _ in box.calls]
 
 
@@ -561,8 +561,8 @@ def test_patch_creating_a_check_file_clashes(challenge: Path, box: FakeSandbox) 
 def test_git_missing_is_an_environment_error(
     challenge: Path, box: FakeSandbox, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(reference_module.shutil, "which", lambda _name: None)
-    with pytest.raises(VerifyEnvironmentError, match="git"):
+    monkeypatch.setenv("PATH", "")
+    with pytest.raises(VerifyEnvironmentError, match=r"[Gg]it"):
         validate(challenge, box)
 
 

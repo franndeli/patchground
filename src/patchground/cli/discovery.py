@@ -26,8 +26,9 @@ from patchground.packs import (
     DiscoveryFilters,
     DiscoveryResult,
     discover_challenges,
-    show_challenge,
 )
+from patchground.packs.models import PackError
+from patchground.packs.registry import discover_installed, show_reference
 from patchground.spec import ChallengeType, Difficulty
 
 Result = DiscoveryResult | ChallengeDetails
@@ -62,7 +63,7 @@ def _human_list(console: Console, result: DiscoveryResult) -> None:
         console.print(Text(f"no challenges found in {_clean(result.directory)}"))
     for item in result.challenges:
         line = Text()
-        line.append(_clean(item.id), style="bold")
+        line.append(_clean(getattr(item, "reference", item.id)), style="bold")
         line.append(f"  {item.type.value}  {item.difficulty.value}  {item.timebox_minutes}m")
         line.append(f"  {_clean(', '.join(item.languages))}")
         console.print(line)
@@ -111,7 +112,7 @@ def _human(console: Console, result: Result) -> None:
 def _invoke(call: Callable[[], Result], json_mode: bool) -> None:
     try:
         result = call()
-    except DiscoveryError as exc:
+    except (DiscoveryError, PackError) as exc:
         emit_error("environment", str(exc), json_mode)
         raise typer.Exit(EXIT_ERROR) from exc
     except KeyboardInterrupt as exc:
@@ -131,6 +132,9 @@ def list_challenges(
         Path | None,
         typer.Argument(help="Folder whose immediate subfolders are challenges (default: here)."),
     ] = None,
+    installed: Annotated[
+        bool, typer.Option("--installed", help="List installed pack challenges.")
+    ] = False,
     type_: Annotated[
         ChallengeType | None, typer.Option("--type", help="Only this challenge type.")
     ] = None,
@@ -143,12 +147,22 @@ def list_challenges(
 ) -> None:
     """List local challenge folders and report invalid ones; nothing is built or run."""
     filters = DiscoveryFilters(type=type_, lang=lang, difficulty=difficulty, tag=tag)
-    _invoke(lambda: discover_challenges(directory, filters), json_mode)
+    if installed and directory is not None:
+        emit_error("environment", "--installed cannot be combined with a directory", json_mode)
+        raise typer.Exit(EXIT_ERROR)
+    _invoke(
+        lambda: (
+            discover_installed(filters) if installed else discover_challenges(directory, filters)
+        ),
+        json_mode,
+    )
 
 
 def show(
-    path: Annotated[Path, typer.Argument(help="Local challenge folder.")],
+    path: Annotated[
+        str, typer.Argument(help="Local folder, installed ID or pack-name:challenge-id.")
+    ],
     json_mode: JsonOption = False,
 ) -> None:
     """Show a local challenge's metadata and ticket; never the solution or hidden checks."""
-    _invoke(lambda: show_challenge(path), json_mode)
+    _invoke(lambda: show_reference(path), json_mode)

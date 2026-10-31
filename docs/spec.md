@@ -225,7 +225,7 @@ The binary is `patchground` with the short alias `pgnd` (not `pg`, which develop
 | `pgnd doctor` | Check Docker, git, disk; print fixes | M1 |
 | `pgnd sessions` / `pgnd report <session>` | Past sessions and their reports | M2 |
 | `pgnd debrief --ai [--provider]` | AI coaching on a finished session | M3 experiment |
-| `pgnd pack add <git-url>[@ref]`, `pack list\|update\|remove` | Install and manage packs, pinned by commit | M4 |
+| `pgnd pack add <source> [--ref REV]`, `pack list\|update\|remove` | Install and manage packs, pinned by commit | M4 |
 | `pgnd submit --transcript <file>` | Attach an AI-agent transcript as coaching evidence | M4 |
 | `pgnd generate ...` | Generate a verified challenge from a supported repo | M3 as a separate script, M4+ in the CLI |
 | `pgnd config set <key> <value>` | Defaults: provider, model, editor command | M3 |
@@ -423,7 +423,7 @@ Packs are plain git repositories; GitHub is the registry until there is real dem
 **Packs:**
 
 - **`patchground-core`** is the official, curated pack maintained in the main org. It is the quality bar.
-- **Community packs** are any git repo with a valid `pack.yaml`, installed with `pgnd pack add github.com/<user>/<pack>`. They are untrusted: pinned by commit, labelled "unofficial", and nothing from them is built or run without explicit consent.
+- **Community packs** are any git repo with a valid `pack.yaml`, installed with `pgnd pack add https://github.com/<user>/<pack>`. They are untrusted: pinned by commit, labelled "unofficial", and nothing from them is built or run without explicit consent.
 - **Private packs** work the same way, for teams training their own engineers on a stripped copy of their codebase.
 
 **Contributing a challenge:**

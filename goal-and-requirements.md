@@ -130,8 +130,9 @@ Code, docs and CLI output use exactly these terms.
 - **Verified-outcomes report** on submit, including whether the user's regression test fails before
   and passes after (`patchground-contract-feedback`).
 - **Environment doctor** that checks Docker, git and disk and prints exact fixes.
-- **Git-distributed packs** pinned by commit, with consent prompts for untrusted sources
-  (`patchground-contract-security`).
+- **Git-distributed packs** from public HTTPS or committed local repositories, pinned by commit
+  and content identity, with explicit execution consent, reviewed updates and unambiguous discovery.
+  Removing a pack never removes existing sessions (`patchground-contract-security`).
 - **Optional AI layer (BYOK):** an interviewer-style debrief and challenge generation from a supported
   repo, both experimental and kept only if they prove useful (see `patchground-architecture`).
 

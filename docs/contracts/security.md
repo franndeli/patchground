@@ -20,7 +20,7 @@ untrusted challenges in a containerized dev environment.
 
 | Source | Trust | Before build/run |
 | --- | --- | --- |
-| `patchground-core` (official) | Reviewed by maintainers | No prompt |
+| Installed pack, including one named `patchground-core` | Unofficial until an owner-controlled official origin is established | Exact-version consent |
 | A local challenge path the user authored | The user's own code | No prompt |
 | Third-party pack | Untrusted, labelled "unofficial" | Show the Dockerfile, services and test command; require a yes per pack version |
 | Generated challenge | Same as the source repo | Same as the source repo |
@@ -30,7 +30,13 @@ sensitive. Container isolation defaults live in `patchground-contract-execution`
 
 ## Supply chain
 
-- Packs are pinned to a commit SHA; `pack update` shows a change summary and asks for consent again.
+- Packs bind source, commit and captured content identity. Names never establish official trust.
+  `pack update` reviews changes and complete recipes before activating a changed version; consent
+  never silently carries to new content. Managed paths cannot bypass this gate. Installation and
+  read-only inspection do not execute challenge commands; core start/validate enforce consent.
+- Public HTTPS and committed local Git data are supported; credential-bearing URLs and private
+  authentication are refused. Source Git configuration, hooks and filters never execute.
+  Import and preview limits and integrity handling belong to `patchground-packs`.
 - Images are recorded by digest in `verification.json`; a mismatch triggers re-validation.
 
 ## Privacy

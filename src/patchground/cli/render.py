@@ -30,7 +30,7 @@ def emit(
 ) -> None:
     """Write ``result_for_json`` as the single JSON document on stdout, or call ``human``."""
     if json_mode:
-        sys.stdout.write(json.dumps(result_for_json, indent=2, ensure_ascii=False) + "\n")
+        sys.stdout.write(json.dumps(result_for_json, indent=2, ensure_ascii=True) + "\n")
         sys.stdout.flush()
     else:
         human(stdout_console())

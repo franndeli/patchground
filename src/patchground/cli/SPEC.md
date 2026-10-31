@@ -38,6 +38,10 @@ resolves inputs, calls one module entry point, and renders the result.
   Nonzero/limited commands and listings with invalid candidates exit `1`; infrastructure exits `2`.
   `start --no-history` disables new-session checkpoints; start/check display unavailable history
   separately from correctness. History is read-only and available after submission.
+- Pack management and installed discovery delegate to packs. Consent renders complete recipes as
+  literal escaped text, binds interactive retries to the reviewed identity, and never prompts in
+  JSON mode. Raw reference strings preserve explicit local-path syntax. JSON escapes control
+  characters; unexpected validation/transport failures never expose raw tool output.
 - Mapping domain errors to messages and exit codes; manifest errors keep their file and line. Any
   unexpected exception still ends as one `internal` error (exit `2`, one JSON document under
   `--json`), never a traceback that reads as exit `1`.

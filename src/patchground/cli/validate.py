@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Annotated
 
 import typer
 from rich.console import Console
 from rich.text import Text
 
+from patchground.cli.consent import emit_required, with_consent
 from patchground.cli.render import (
     EXIT_ERROR,
     EXIT_FAILED,
@@ -18,6 +18,7 @@ from patchground.cli.render import (
     emit_error,
     progress,
 )
+from patchground.packs.models import ConsentRequired
 from patchground.verify import (
     StepStatus,
     ValidationReport,
@@ -34,10 +35,13 @@ _MARKS = {
 
 def validate(
     path: Annotated[
-        Path, typer.Argument(help="Challenge folder (the one holding challenge.yaml).")
+        str, typer.Argument(help="Local folder, installed ID or pack-name:challenge-id.")
     ],
     json_mode: Annotated[
         bool, typer.Option("--json", help="Print one JSON document on stdout.")
+    ] = False,
+    yes: Annotated[
+        bool, typer.Option("--yes", help="Approve the exact selected pack revision.")
     ] = False,
     no_write: Annotated[
         bool, typer.Option("--no-write", help="Do not write verification.json on success.")
@@ -46,7 +50,20 @@ def validate(
     """Verify outcomes, determinism and supported editable-test tampering resistance."""
     try:
         with progress(json_mode) as notify:
-            report = validate_challenge(path, write=not no_write, progress=notify)
+            report = with_consent(
+                lambda approved, identity: validate_challenge(
+                    path,
+                    write=not no_write,
+                    progress=notify,
+                    yes=approved,
+                    expected_identity=identity,
+                ),
+                yes=yes,
+                json_mode=json_mode,
+            )
+    except ConsentRequired as exc:
+        emit_required(exc, json_mode)
+        raise typer.Exit(EXIT_ERROR) from exc
     except VerifyEnvironmentError as exc:
         emit_error("environment", str(exc), json_mode)
         raise typer.Exit(EXIT_ERROR) from exc
@@ -54,7 +71,7 @@ def validate(
         emit_error("interrupted", "interrupted", json_mode)
         raise typer.Exit(EXIT_INTERRUPTED) from exc
     except Exception as exc:  # last resort: never a traceback, never confused with "invalid"
-        emit_error("internal", f"{type(exc).__name__}: {exc}", json_mode)
+        emit_error("internal", "validation failed unexpectedly", json_mode)
         raise typer.Exit(EXIT_ERROR) from exc
     emit(report.to_dict(), lambda console: _human(console, report), json_mode)
     raise typer.Exit(EXIT_OK if report.valid else EXIT_FAILED)

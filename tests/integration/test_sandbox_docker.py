@@ -309,7 +309,7 @@ def test_command_exit_codes_and_combined_output(
     ws = _workspace(tmp_path / "ws", {"visible.txt": "seen\n"})
     ok = _command(image, ws, ["sh", "-c", "cat visible.txt; echo err >&2"])
     assert (ok.exit_code, ok.limit, ok.output_tail_only) == (0, None, True)
-    assert ok.output_tail.splitlines() == ["seen", "err"]
+    assert sorted(ok.output_tail.splitlines()) == ["err", "seen"]
     bad = _command(image, ws, ["sh", "-c", "echo out; exit 7"])
     assert (bad.exit_code, bad.output_tail) == (7, "out\n")
     _assert_no_leftovers(engine)

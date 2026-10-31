@@ -78,3 +78,8 @@ Fix environment issues reported by `pgnd doctor` before validating. If creation 
 Patchground removes only entries it created whose identity still matches; concurrent additions or
 replacements survive and can leave a partial destination. Inspect it manually before choosing a new
 ID. Do not run multiple writers against an authoring folder.
+
+## Share committed challenges
+
+See [Pinned challenge packs](packs.md) for installation, complete execution-consent reviews,
+updates and removal. Pack operations do not publish a repository or grant official trust.

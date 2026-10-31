@@ -6,6 +6,7 @@ from patchground import __version__
 from patchground.cli.authoring import new
 from patchground.cli.discovery import DiscoveryCommand, list_challenges, show
 from patchground.cli.doctor import doctor
+from patchground.cli.packs import app as packs_app
 from patchground.cli.practice import RunCommand, hint, history, run, sessions
 from patchground.cli.reports import report, submit
 from patchground.cli.sessions import SessionCommand, check, reset, start, status
@@ -44,6 +45,7 @@ app.command("hint", cls=SessionCommand)(hint)
 app.command("sessions", cls=SessionCommand)(sessions)
 app.command("history", cls=SessionCommand)(history)
 app.command("run", cls=RunCommand)(run)
+app.add_typer(packs_app, name="pack")
 
 
 def main() -> None:

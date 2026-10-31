@@ -68,7 +68,7 @@ def test_valid_exits_0(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "wrote c/verification.json" in result.stdout
     assert "building image" in result.stderr
     assert "building image" not in result.stdout
-    assert calls[0]["folder"] == Path("c")
+    assert calls[0]["folder"] == "c"
     assert calls[0]["write"] is True
 
 
@@ -170,11 +170,12 @@ def test_unexpected_error_exits_2_without_traceback(
     assert "Traceback" not in result.output
     if json_mode:
         assert json.loads(result.stdout) == {
-            "error": {"kind": "internal", "message": "RuntimeError: something broke"}
+            "error": {"kind": "internal", "message": "validation failed unexpectedly"}
         }
     else:
         assert result.stdout == ""
-        assert "error: RuntimeError: something broke" in result.stderr
+        assert "error: validation failed unexpectedly" in result.stderr
+    assert "something broke" not in result.output
 
 
 def test_keyboard_interrupt_exits_130(monkeypatch: pytest.MonkeyPatch) -> None:

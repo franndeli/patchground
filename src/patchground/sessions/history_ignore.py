@@ -57,22 +57,29 @@ def _read(path: Path) -> bytes:
             return b""
 
 
-def resolve(workspace: Path, *, source: Path | None = None) -> IgnoreRules | None:
+def resolve(
+    workspace: Path, *, source: Path | None = None, inputs: tuple[Path, ...] = ()
+) -> IgnoreRules | None:
     """Optional boundary: unsupported applicability never means an empty rule set."""
     try:
-        return _resolve(workspace, source=source)
+        return _resolve(workspace, source=source, inputs=inputs)
     except (Exception, KeyboardInterrupt):
         return None
 
 
-def _resolve(workspace: Path, *, source: Path | None = None) -> IgnoreRules:
+def _resolve(
+    workspace: Path, *, source: Path | None = None, inputs: tuple[Path, ...] = ()
+) -> IgnoreRules:
     # Overrides that change repository discovery or inject command configuration cannot
     # be reproduced by this bounded resolver. In particular, never silently drop them.
     allowed = {"GIT_CONFIG_SYSTEM", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_NOSYSTEM"}
     if any(name.startswith("GIT_") and name not in allowed for name in os.environ):
         raise SessionError("unsupported Git context")
     executable = resolve_executable(
-        workspace, workspace.parent / ".session", *((source,) if source is not None else ())
+        workspace,
+        workspace.parent / ".session",
+        *inputs,
+        *((source,) if source is not None else ()),
     )
     # Only ordinary standalone repositories are supported. Gitfiles, linked worktrees,
     # missing metadata and alternate worktree roots require unavailable history.

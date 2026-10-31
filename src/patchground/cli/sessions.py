@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.text import Text
 from typer.core import TyperCommand
 
+from patchground.cli.consent import emit_required, with_consent
 from patchground.cli.render import (
     EXIT_ERROR,
     EXIT_FAILED,
@@ -19,6 +20,7 @@ from patchground.cli.render import (
     emit,
     emit_error,
 )
+from patchground.packs.models import ConsentRequired
 from patchground.sessions import (
     CheckResult,
     ResetResult,
@@ -55,6 +57,8 @@ class SessionCommand(TyperCommand):
 def _human(console: Console, result: Result) -> None:
     if isinstance(result, StartedSession):
         console.print(Text(f"started {result.challenge_id}"))
+        if result.pack is not None:
+            console.print(Text(f"unofficial pack: {result.pack.name} @ {result.pack.commit}"))
         console.print(Text(str(result.workspace)))
         if result.history is not None:
             console.print(Text(f"history: {result.history.state}"))
@@ -90,6 +94,9 @@ def _human(console: Console, result: Result) -> None:
 def _invoke(call: Callable[[], Result], json_mode: bool) -> None:
     try:
         result = call()
+    except ConsentRequired as exc:
+        emit_required(exc, json_mode)
+        raise typer.Exit(EXIT_ERROR) from exc
     except SessionError as exc:
         emit_error("environment", str(exc), json_mode)
         raise typer.Exit(EXIT_ERROR) from exc
@@ -107,15 +114,30 @@ def _invoke(call: Callable[[], Result], json_mode: bool) -> None:
 
 
 def start(
-    path: Annotated[Path, typer.Argument(help="Local authored challenge folder.")],
+    path: Annotated[
+        str, typer.Argument(help="Local folder, installed ID or pack-name:challenge-id.")
+    ],
+    yes: Annotated[
+        bool, typer.Option("--yes", help="Approve the exact selected pack revision.")
+    ] = False,
     no_timer: Annotated[bool, typer.Option("--no-timer")] = False,
     no_history: Annotated[
         bool, typer.Option("--no-history", help="Disable checkpoint history.")
     ] = False,
     json_mode: JsonOption = False,
 ) -> None:
-    """Start a new local challenge session."""
-    _invoke(lambda: start_session(path, timer=not no_timer, history=not no_history), json_mode)
+    """Start an authored or explicitly approved installed challenge."""
+
+    def operation(approved: bool, identity: str | None) -> StartedSession:
+        return start_session(
+            path,
+            timer=not no_timer,
+            history=not no_history,
+            yes=approved,
+            expected_identity=identity,
+        )
+
+    _invoke(lambda: with_consent(operation, yes=yes, json_mode=json_mode), json_mode)
 
 
 def check(session: SessionOption = None, json_mode: JsonOption = False) -> None:

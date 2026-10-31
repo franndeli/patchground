@@ -3,48 +3,24 @@
 from __future__ import annotations
 
 import os
-import stat
 import subprocess
 import tempfile
 from pathlib import Path
 
+from patchground import safeio
 from patchground.sessions.models import SessionError
 
 
 def resolve_executable(*inputs: Path) -> str:
-    """Trust only absolute PATH candidates outside cwd and all supplied input trees.
-
-    PATH is an installation search policy, not proof of executable provenance. Never
-    probe a candidate by running it. Canonicalize both the search path and target so
-    symlinks cannot disguise challenge input as an installed Git executable.
-    """
-    try:
-        roots: list[Path] = []
-        for path in (Path.cwd(), *inputs):
-            roots.extend((path.absolute(), path.resolve(strict=False)))
-        for directory in os.environ.get("PATH", os.defpath).split(os.pathsep):
-            if not Path(directory).is_absolute():
-                continue
-            candidate = Path(directory) / "git"
-            if any(candidate.is_relative_to(root) for root in roots):
-                continue
-            try:
-                executable = candidate.resolve(strict=True)
-                if any(executable.is_relative_to(root) for root in roots):
-                    continue
-                if stat.S_ISREG(executable.stat().st_mode) and os.access(executable, os.X_OK):
-                    return str(executable)
-            except (OSError, RuntimeError):
-                continue
-    except (OSError, RuntimeError):
-        pass
-    raise SessionError("safe Git executable unavailable")
+    return safeio.resolve_git(*inputs, error=SessionError)
 
 
-def initialize(workspace: Path, *, source: Path | None = None) -> None:
+def initialize(
+    workspace: Path, *, source: Path | None = None, inputs: tuple[Path, ...] = ()
+) -> None:
     if (workspace / ".git").exists():
         raise SessionError("refusing to reuse an existing repository")
-    executable = resolve_executable(workspace, *((source,) if source is not None else ()))
+    executable = resolve_executable(workspace, *inputs, *((source,) if source is not None else ()))
     with tempfile.TemporaryDirectory(prefix="patchground-git-") as home:
         # Allowlist, not a GIT_* denylist: config, index, object stores, hooks and
         # process injection settings must not be inherited from the caller.

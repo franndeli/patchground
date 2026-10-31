@@ -4,7 +4,7 @@ type: module-design
 status: draft
 title: "Module: verify"
 parent: patchground-architecture
-depends-on: [patchground-spec, patchground-sandbox]
+depends-on: [patchground-spec, patchground-sandbox, patchground-packs, patchground-safeio]
 implements: [patchground-contract-verification]
 ---
 
@@ -25,9 +25,10 @@ challenge passes or fails the same way everywhere.
 
 ## Boundary
 
-Depends on `spec` and `sandbox`; never on `sessions` (validation has no session). Never modifies the
-challenge folder except to write `verification.json`, or to delete a stale Patchground one when
-validation fails. mypy strict.
+Depends on `spec`, `sandbox`, packs preparation and shared `safeio`; never on `sessions`.
+Installed validation first enforces exact-version consent and works on a disposable verified copy;
+its report uses canonical paths and never writes or deletes cache verification records. Local
+validation may write `verification.json` or delete a stale Patchground record on failure. mypy strict.
 
 ## Implementation notes
 

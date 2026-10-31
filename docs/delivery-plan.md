@@ -107,5 +107,16 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   submission/readback, no command-output persistence and unchanged workspace Git bytes.
 - Periodic capture and snapshot restoration are explicitly deferred. Ignore includes, linked
   worktrees and other unsupported contexts leave optional history unavailable, never weaken filtering.
-- Next: publish the practice wave and design pinned distribution/consent. Human trials and learner
-  cohort remain pending.
+- Practice wave published as `b9dde79`.
+- Pinned packs verified locally: public HTTPS/local committed sources, immutable commit/content
+  identity, installed discovery and complete explicit consent before execution or changed activation.
+  Cache paths cannot bypass consent; removal preserves frozen sessions. Hardened publication retains
+  referenced content after post-commit durability failures and reports partial cleanup honestly.
+- Pack gates: 862 Docker-required tests, lint/format (145 files), types (62 source files), valid spec
+  graph and a clean wheel without AI extras. Wheel checks covered consent, installed validation with
+  no cache writes, and check/submit/report after removal with unchanged workspace Git bytes. HTTPS
+  transport policy is hermetically tested; the end-to-end wheel source was a real local Git repository.
+- A final rerun exposed an existing Docker stdout/stderr ordering assumption. The test now requires
+  both exact lines without inventing cross-stream chronology; container behavior is unchanged.
+- Next: contribution guidance/automation and agreed runner coverage. Human trials and the ten-learner
+  cohort remain pending; no deployment, package publication or release is implied.

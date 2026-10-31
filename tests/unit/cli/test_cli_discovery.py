@@ -147,7 +147,7 @@ def test_unexpected_errors_are_one_document(monkeypatch, tmp_path, error, code, 
     def fail(*args, **kwargs):
         raise error
 
-    monkeypatch.setattr(cli, "show_challenge", fail)
+    monkeypatch.setattr(cli, "show_reference", fail)
     result = runner.invoke(app, ["show", str(tmp_path), "--json"])
     assert result.exit_code == code
     assert json.loads(result.stdout)["error"]["kind"] == kind

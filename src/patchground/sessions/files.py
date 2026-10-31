@@ -5,11 +5,11 @@ from __future__ import annotations
 import os
 import shutil
 import stat
-from collections.abc import Iterator
-from contextlib import ExitStack, contextmanager, suppress
+from contextlib import AbstractContextManager, suppress
 from fnmatch import fnmatch
 from pathlib import Path
 
+from patchground import safeio
 from patchground.sessions.models import SessionError
 
 
@@ -20,60 +20,19 @@ def excluded(name: str) -> bool:
 
 
 def no_links(path: Path) -> None:
-    """Check ancestors even when the destination does not exist yet."""
-    for entry in (*reversed(path.absolute().parents), path.absolute()):
-        if entry.is_symlink():
-            raise SessionError("session paths must not contain symlinks")
+    safeio.no_links(path, error=SessionError, label="session")
 
 
 def safe_path(path: Path, *, directory: bool) -> None:
-    """Reject redirected ancestors as well as redirected leaf entries."""
-    no_links(path)
-    mode = path.lstat().st_mode
-    if not (stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)):
-        raise SessionError("session path has an invalid file type")
+    safeio.safe_path(path, directory=directory, error=SessionError, label="session")
 
 
-@contextmanager
-def open_directory(path: Path) -> Iterator[int]:
-    """Pin every ancestor, not just the leaf, without following any links."""
-    root = os.open(path.absolute().anchor, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
-    try:
-        with ExitStack() as ancestors:
-            descriptor = root
-            for part in path.absolute().parts[1:]:
-                descriptor = ancestors.enter_context(
-                    open_entry(descriptor, part, os.O_RDONLY | os.O_DIRECTORY)
-                )
-            yield descriptor
-    except OSError as exc:
-        raise SessionError("session directory contains a symlink or is unavailable") from exc
-    finally:
-        os.close(root)
+def open_directory(path: Path) -> AbstractContextManager[int]:
+    return safeio.open_directory(path, error=SessionError, label="session")
 
 
-@contextmanager
-def open_entry(parent: int, name: str, flags: int = os.O_RDONLY) -> Iterator[int]:
-    """Validate the opened inode; NONBLOCK prevents a raced-in FIFO from hanging."""
-    before = os.stat(name, dir_fd=parent, follow_symlinks=False)
-    if not (stat.S_ISDIR(before.st_mode) or stat.S_ISREG(before.st_mode)):
-        raise SessionError("session tree contains a symlink or special file")
-    try:
-        descriptor = os.open(name, flags | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
-    except OSError as exc:
-        raise SessionError("session tree contains a symlink or special file or changed") from exc
-    try:
-        actual = os.fstat(descriptor)
-        if (before.st_dev, before.st_ino) != (actual.st_dev, actual.st_ino) or not (
-            stat.S_ISDIR(actual.st_mode) or stat.S_ISREG(actual.st_mode)
-        ):
-            raise SessionError("session tree changed during access")
-        yield descriptor
-        after = os.stat(name, dir_fd=parent, follow_symlinks=False)
-        if (actual.st_dev, actual.st_ino) != (after.st_dev, after.st_ino):
-            raise SessionError("session tree changed during access")
-    finally:
-        os.close(descriptor)
+def open_entry(parent: int, name: str, flags: int = os.O_RDONLY) -> AbstractContextManager[int]:
+    return safeio.open_entry(parent, name, flags, error=SessionError, label="session")
 
 
 def tree(path: Path, *, skip: bool = False) -> list[Path]:

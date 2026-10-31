@@ -51,7 +51,7 @@ def test_enclosing_repository_is_not_discovered(tmp_path: Path) -> None:
     assert listed.stdout == ""  # index untouched
 
 
-def test_check_failure_reports_stderr_and_changes_nothing(tmp_path: Path) -> None:
+def test_check_failure_is_sanitized_and_changes_nothing(tmp_path: Path) -> None:
     workspace = make_workspace(tmp_path / "t")
     (workspace / "app.txt").write_text("something else\n")
     patch = tmp_path / "reference.patch"
@@ -59,7 +59,8 @@ def test_check_failure_reports_stderr_and_changes_nothing(tmp_path: Path) -> Non
     before = snapshot(workspace)
     with pytest.raises(PatchError) as info:
         apply_patch(patch, workspace, tmp_path / "t")
-    assert "app.txt" in info.value.stderr
+    assert info.value.stderr == "git apply exited 1"
+    assert "app.txt" not in str(info.value)
     assert snapshot(workspace) == before
 
 

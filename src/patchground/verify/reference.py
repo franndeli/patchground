@@ -21,6 +21,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from patchground import safeio
 from patchground.verify.errors import VerifyEnvironmentError
 
 GIT_TIMEOUT_SECONDS = 60.0
@@ -87,7 +88,7 @@ _GIT_HARDENING = (
 
 def _git_env(temp_root: Path) -> dict[str, str]:
     return {
-        "PATH": os.environ.get("PATH", os.defpath),
+        "PATH": os.defpath,
         "HOME": str(temp_root),
         "LC_ALL": "C",
         "GIT_CEILING_DIRECTORIES": str(temp_root.parent),
@@ -98,16 +99,13 @@ def _git_env(temp_root: Path) -> dict[str, str]:
     }
 
 
-def _git() -> str:
-    git = shutil.which("git")
-    if git is None:
-        raise VerifyEnvironmentError(
-            "git is not installed or not on PATH; it is needed to apply reference.patch"
-        )
-    return git
+def _git(*inputs: Path) -> str:
+    return safeio.resolve_git(*inputs, error=VerifyEnvironmentError)
 
 
-def apply_patch(patch: Path, target: Path, temp_root: Path) -> None:
+def apply_patch(
+    patch: Path, target: Path, temp_root: Path, *, inputs: tuple[Path, ...] = ()
+) -> None:
     """Apply ``patch`` (paths relative to ``target``, ``-p1``) inside ``target``.
 
     ``temp_root`` is the temporary directory that contains ``target``; an empty bare repository
@@ -116,7 +114,7 @@ def apply_patch(patch: Path, target: Path, temp_root: Path) -> None:
     :class:`PatchError` if git rejects the patch and :class:`VerifyEnvironmentError` if git is
     missing or cannot run.
     """
-    git = _git()
+    git = _git(patch.parent, target, temp_root, *inputs)
     target = target.resolve()
     env = _git_env(temp_root)
     try:
@@ -129,9 +127,7 @@ def apply_patch(patch: Path, target: Path, temp_root: Path) -> None:
         [git, *_GIT_HARDENING, "init", "--bare", "-q", "--template=", str(git_dir)], temp_root, env
     )
     if init.returncode != 0:
-        raise VerifyEnvironmentError(
-            f"git init failed: {init.stderr.strip() or f'exit {init.returncode}'}"
-        )
+        raise VerifyEnvironmentError("could not initialize the isolated reference repository")
     env = {**env, "GIT_DIR": str(git_dir), "GIT_WORK_TREE": str(target)}
     patch_arg = str(patch.resolve())
     for argv in (
@@ -140,7 +136,7 @@ def apply_patch(patch: Path, target: Path, temp_root: Path) -> None:
     ):
         completed = _run_git(argv, target, env)
         if completed.returncode != 0:
-            raise PatchError(completed.stderr.strip() or f"git apply exited {completed.returncode}")
+            raise PatchError(f"git apply exited {completed.returncode}")
 
 
 def _run_git(argv: list[str], cwd: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:

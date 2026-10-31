@@ -112,12 +112,58 @@ class _Layer:
 
 
 def validate_challenge(
+    folder: Path | str,
+    *,
+    limits: Limits = DEFAULT_LIMITS,
+    write: bool = True,
+    sandbox: Sandbox | None = None,
+    progress: Progress | None = None,
+    yes: bool = False,
+    expected_identity: str | None = None,
+    pack_root: Path | None = None,
+) -> ValidationReport:
+    """Authorize installed inputs; validate their captured copy without altering the cache."""
+    from patchground.packs.models import ConsentRequired, PackError
+    from patchground.packs.registry import prepare_execution
+
+    try:
+        with prepare_execution(
+            folder, yes=yes, expected_identity=expected_identity, root=pack_root
+        ) as prepared:
+            report = _validate_challenge(
+                prepared.path,
+                limits=limits,
+                write=write and prepared.pack is None,
+                sandbox=sandbox,
+                progress=progress,
+                input_roots=prepared.input_roots,
+            )
+            if prepared.pack is not None:
+                challenge = (
+                    replace(
+                        report.challenge,
+                        root=prepared.source_path,
+                        manifest_path=prepared.source_path / "challenge.yaml",
+                    )
+                    if report.challenge is not None
+                    else None
+                )
+                report = replace(report, folder=prepared.source_path, challenge=challenge)
+            return report
+    except ConsentRequired:
+        raise
+    except PackError as exc:
+        raise VerifyEnvironmentError(str(exc)) from exc
+
+
+def _validate_challenge(
     folder: Path,
     *,
     limits: Limits = DEFAULT_LIMITS,
     write: bool = True,
     sandbox: Sandbox | None = None,
     progress: Progress | None = None,
+    input_roots: tuple[Path, ...] = (),
 ) -> ValidationReport:
     """Validate the challenge in ``folder`` and return the per-step report.
 
@@ -131,7 +177,7 @@ def validate_challenge(
     folder = Path(folder)
     box: Sandbox = sandbox if sandbox is not None else DockerSandbox()
     notify: Progress = progress if progress is not None else _ignore
-    run = _Validation(folder, box, limits, notify)
+    run = _Validation(folder, box, limits, notify, input_roots=input_roots)
     steps = run.execute()
     report = ValidationReport(
         folder=folder,
@@ -172,8 +218,17 @@ def _ignore(_message: str) -> None:
 class _Validation:
     """State shared between the steps of one validation."""
 
-    def __init__(self, folder: Path, box: Sandbox, limits: Limits, progress: Progress) -> None:
+    def __init__(
+        self,
+        folder: Path,
+        box: Sandbox,
+        limits: Limits,
+        progress: Progress,
+        *,
+        input_roots: tuple[Path, ...] = (),
+    ) -> None:
         self.folder = folder
+        self.input_roots = input_roots
         self.box = box
         self.limits = limits
         self.progress = progress
@@ -365,7 +420,7 @@ class _Validation:
             before = snapshot(copy)
             self.progress("applying reference.patch")
             try:
-                apply_patch(patch, copy, temp_root)
+                apply_patch(patch, copy, temp_root, inputs=(challenge.root, *self.input_roots))
             except PatchError as exc:
                 detail = f"reference.patch does not apply with git apply -p1: {exc.stderr}"
                 raise _StepFailed(_failed(step, started, detail, runs)) from exc
