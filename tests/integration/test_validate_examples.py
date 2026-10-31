@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from patchground.sandbox import Limits, RunResult
+from patchground.sandbox import Limits, RunOutcome, RunResult, TestStatus
 from patchground.verify import VERIFICATION_FILE, StepName, StepStatus, validate_challenge
 from patchground.verify.validate import DockerSandbox
 
@@ -39,6 +39,11 @@ def test_example_is_valid() -> None:
     assert deterministic.status is StepStatus.PASSED
     assert len(deterministic.runs) == 9
     assert len({run.label for run in deterministic.runs}) == 9
+    anti = report.step(StepName.ANTI_GAMING)
+    assert anti.status is StepStatus.PASSED
+    assert [run.label for run in anti.runs] == ["anti-empty", "anti-deleted", "anti-skipped"]
+    assert anti.runs[1].count(TestStatus.FAILED) == 3
+    assert anti.runs[2].count(TestStatus.SKIPPED) == 5
 
 
 @pytest.mark.parametrize(
@@ -85,6 +90,30 @@ def test_cli_end_to_end_json() -> None:
     assert doc["verification_file"] is None
     assert doc["steps"][4]["status"] == "passed"
     assert len(doc["steps"][4]["runs"]) == 9
+    assert doc["steps"][5]["status"] == "passed"
+    assert len(doc["steps"][5]["runs"]) == 3
+
+
+def test_real_container_rejects_editable_test_deletion_bypass(tmp_path: Path) -> None:
+    source = tmp_path / EXAMPLE.name
+    shutil.copytree(EXAMPLE, source, ignore=shutil.ignore_patterns(VERIFICATION_FILE))
+    hook = source / "workspace/conftest.py"
+    hook.write_text(
+        "from pathlib import Path\n"
+        "def pytest_collection_modifyitems(items):\n"
+        "    if not Path('tests/test_pagination.py').exists():\n"
+        "        for item in items:\n"
+        "            item.obj = lambda **kwargs: None\n"
+    )
+    before = hook.read_bytes()
+    report = validate_challenge(source)
+    assert report.failed_step is StepName.ANTI_GAMING
+    anti = report.step(StepName.ANTI_GAMING)
+    assert [run.label for run in anti.runs] == ["anti-empty", "anti-deleted"]
+    assert anti.runs[-1].outcome is RunOutcome.PASSED
+    assert "changed hidden" in anti.detail
+    assert hook.read_bytes() == before
+    assert not (source / VERIFICATION_FILE).exists()
 
 
 def test_real_container_detects_changing_test_identity(tmp_path: Path) -> None:

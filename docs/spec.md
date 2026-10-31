@@ -183,7 +183,9 @@ Rules that follow from this:
 2. **Broken state fails:** the starting workspace fails at least one hidden check.
 3. **Reference passes:** with `reference.patch` applied, all visible and hidden checks pass.
 4. **Deterministic:** steps 2 and 3 give identical results across 3 runs (catches flaky tests).
-5. **Not trivially gamed:** an empty diff fails, and deleting or skipping the failing tests fails.
+5. **Editable-test tampering:** for supported pytest layouts, hidden outcomes remain unchanged
+   after an empty diff and deletion/skipping of conventional editable test modules. Unsupported
+   runners/layouts are explicitly unverified; see `docs/contracts/verification.md` for the limits.
 
 `validate` writes `verification.json` with the image digest, run results and timestamps.
 
@@ -506,7 +508,8 @@ listing does not install packs or resolve IDs. See `docs/first-session.md` for t
 - [ ] Two more challenges (three in total)
 - [ ] `submit` and the verified-outcomes report, including the regression-test check
 - [x] Determinism validation: three runs per workspace variant, comparing per-test evidence
-- [ ] Anti-gaming validation and `pgnd new` scaffold
+- [x] Bounded pytest editable-test tampering probes, with unsupported adapters explicitly unverified
+- [ ] `pgnd new` scaffold and broader validation adapters as needed
 - [ ] `hint`, `run`, `sessions`, `report`; snapshots in internal refs
 - [ ] Give it to about 10 developers preparing for interviews and watch them install, read the ticket, solve and finish
 - [ ] Ask one developer who isn't Fran to author and validate a challenge from the docs alone

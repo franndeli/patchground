@@ -18,7 +18,8 @@ challenge passes or fails the same way everywhere.
 
 - The ordered steps and fail-fast semantics; a structured result naming the failed step and why.
 - Building the workspace variants the steps need, all in temporary copies: the starting state, the
-  reference applied, and the anti-gaming variants (empty diff, failing tests deleted or skipped).
+  reference applied, and the anti-gaming variants (empty diff, editable pytest modules deleted
+  or skipped with hidden checks untouched).
 - Determinism: repeat runs and compare per-test outcomes, not just pass/fail totals.
 - Writing and reading `verification.json`, and detecting a digest mismatch that requires re-validation.
 
@@ -31,8 +32,13 @@ validation fails. mypy strict.
 ## Implementation notes
 
 - Entry point: `validate_challenge(folder, *, limits, write, sandbox, progress) -> ValidationReport`.
-  Steps `manifest`, `build`, `broken_fails`, `reference_passes`, `determinism` run fail-fast;
-  `anti_gaming` remains `not_run`. Determinism reuses the first three summaries as its baselines,
+  All six steps run fail-fast; unsupported anti-gaming adapters/layouts remain explicitly `not_run`.
+  The bounded pytest adapter recognizes direct invocations and static conventional test definitions
+  in safety-checked temporary editable-layer copies, preserving helper-only modules even with test
+  filenames. It appends skip marks without importing code
+  on the host. Observable mutation effects are required before claiming resistance. Hidden outcomes
+  must exactly match the broken baseline as defined by the verification contract.
+  Determinism reuses the first three summaries as its baselines,
   then compares repeats as specified by the verification contract. Reference-copy preparation is
   shared so repeat runs retain the same patch safety and cleanup guarantees. Non-empty
   `environment.services` fails

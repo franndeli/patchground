@@ -1,7 +1,7 @@
-"""Run ``patchground-contract-verification`` steps 0 to 4 against a challenge folder.
+"""Run the supported ``patchground-contract-verification`` gates for a challenge folder.
 
 Steps run in order and stop at the first failure; later steps are reported as ``not_run``.
-Anti-gaming (5) remains deferred and ``not_run``. Problems with the
+Anti-gaming reports ``not_run`` for unsupported runners or editable-test layouts. Problems with the
 host (engine unreachable, git missing, engine failures) are not verdicts on the challenge and
 raise :class:`VerifyEnvironmentError` instead of failing a step.
 
@@ -15,6 +15,7 @@ import os
 import shutil
 import stat
 import tempfile
+from collections import Counter
 from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
@@ -53,11 +54,17 @@ from patchground.verify.result import (
     run_label,
     utc_now,
 )
+from patchground.verify.tampering import (
+    Mutation,
+    UnsupportedTampering,
+    mutate,
+    supports_pytest,
+    test_modules,
+)
 
 DEFAULT_LIMITS = Limits()
 BUILD_LOG_TAIL_LINES = 30
 INCONCLUSIVE = frozenset({RunOutcome.MISSING_RESULTS, RunOutcome.LIMIT_EXCEEDED})
-PLANNED = "planned for M2"
 SERVICES_UNSUPPORTED = (
     "environment.services is not supported yet (deferred beyond the local prototype)"
 )
@@ -183,6 +190,7 @@ class _Validation:
             (StepName.BROKEN_FAILS, self._broken_fails),
             (StepName.REFERENCE_PASSES, self._reference_passes),
             (StepName.DETERMINISM, self._determinism),
+            (StepName.ANTI_GAMING, self._anti_gaming),
         ]
         results: list[StepResult] = []
         failed: StepName | None = None
@@ -201,7 +209,6 @@ class _Validation:
                 self.baselines.extend(result.runs)
             if result.status is StepStatus.FAILED:
                 failed = name
-        results.append(StepResult(StepName.ANTI_GAMING, StepStatus.NOT_RUN, PLANNED))
         return results
 
     # ---------------------------------------------------------------------------------- helpers
@@ -440,6 +447,91 @@ class _Validation:
             step,
             StepStatus.PASSED,
             "identical per-test results across 3 runs of each workspace variant",
+            started,
+            utc_now(),
+            runs=tuple(runs),
+        )
+
+    def _anti_gaming(self, started: str) -> StepResult:
+        step = StepName.ANTI_GAMING
+        challenge = self._loaded()
+        runs: list[RunSummary] = []
+        visible_ids = set(self.baselines[0].ids())
+        expected = Counter(
+            (test.id, test.status) for test in self.baselines[1].tests if test.id not in visible_ids
+        )
+        try:
+            if not supports_pytest(challenge.manifest.environment.test_command):
+                raise UnsupportedTampering("runner is not a supported direct pytest invocation")
+            if not visible_ids:
+                raise UnsupportedTampering("no editable baseline tests were observed")
+            with tempfile.TemporaryDirectory(prefix="patchground-anti-gaming-") as temporary:
+                root = Path(temporary).resolve()
+                checks = self._check_layers()
+                editable = [_Layer("workspace", challenge.root / "workspace")]
+                editable.extend(layer for layer in checks if layer.label == "checks.visible")
+                hidden = [layer for layer in checks if layer.label == "checks.hidden"]
+                mutations: tuple[Mutation, ...] = ("empty", "deleted", "skipped")
+                for mutation in mutations:
+                    label = f"anti-{mutation}"
+                    parent = root / label
+                    parent.mkdir()
+                    copies: list[_Layer] = []
+                    for index, layer in enumerate(editable):
+                        copy = parent / f"layer-{index}"
+                        copy_workspace(layer.path, copy)
+                        copies.append(_Layer(layer.label, copy))
+                    problem = _layer_problem([*copies, *hidden])
+                    if problem is not None:
+                        return _failed(step, started, problem, runs)
+                    modules = test_modules([layer.path for layer in copies])
+                    if not modules:
+                        raise UnsupportedTampering("no conventional editable pytest modules found")
+                    mutate(modules, mutation)
+                    self.progress(f"checking editable-test tampering: {label}")
+                    _, summary = self._run(step, started, label, [*copies, *hidden], runs)
+                    runs.append(summary)
+                    actual = Counter(
+                        (test.id, test.status)
+                        for test in summary.tests
+                        if test.id not in visible_ids
+                    )
+                    if actual != expected:
+                        return _failed(
+                            step,
+                            started,
+                            f"run {label} changed hidden test identities, counts or statuses",
+                            runs,
+                        )
+                    if mutation == "deleted" and visible_ids <= set(summary.ids()):
+                        raise UnsupportedTampering("deleted modules did not remove editable tests")
+                    if mutation == "skipped":
+                        previously_active = {
+                            test.id
+                            for test in self.baselines[0].tests
+                            if test.status is not TestStatus.SKIPPED
+                        }
+                        if not any(
+                            test.id in previously_active and test.status is TestStatus.SKIPPED
+                            for test in summary.tests
+                        ):
+                            raise UnsupportedTampering("skip mutation did not skip editable tests")
+        except UnsupportedTampering as exc:
+            return StepResult(
+                step,
+                StepStatus.NOT_RUN,
+                f"not verified: {exc}",
+                started,
+                utc_now(),
+                runs=tuple(runs),
+            )
+        except OSError as exc:
+            raise VerifyEnvironmentError("anti-gaming temporary files are unavailable") from exc
+        return StepResult(
+            step,
+            StepStatus.PASSED,
+            "hidden outcomes unchanged under empty diff and "
+            "editable pytest module deletion/skipping",
             started,
             utc_now(),
             runs=tuple(runs),

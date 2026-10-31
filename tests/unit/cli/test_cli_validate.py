@@ -28,9 +28,7 @@ def make_report(failed: StepName | None, verification_file: Path | None = None) 
     steps: list[StepResult] = []
     state = StepStatus.PASSED
     for name in StepName:
-        if name is StepName.ANTI_GAMING:
-            steps.append(StepResult(name, StepStatus.NOT_RUN, "planned for M2"))
-        elif name is failed:
+        if name is failed:
             steps.append(StepResult(name, StepStatus.FAILED, f"{name.value} broke [red]x[/]"))
             state = StepStatus.NOT_RUN
         else:
@@ -104,7 +102,9 @@ def test_json_success_is_one_document(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.stderr == ""  # no progress output in JSON mode
 
 
-@pytest.mark.parametrize("failed", [StepName.REFERENCE_PASSES, StepName.DETERMINISM])
+@pytest.mark.parametrize(
+    "failed", [StepName.REFERENCE_PASSES, StepName.DETERMINISM, StepName.ANTI_GAMING]
+)
 def test_json_failure(monkeypatch: pytest.MonkeyPatch, failed: StepName) -> None:
     fake(monkeypatch, make_report(failed))
     result = runner.invoke(app, ["validate", "c", "--json"])

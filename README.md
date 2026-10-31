@@ -73,12 +73,23 @@ verified-outcomes reports arrive later.
 
 `pgnd validate <path>` builds once, proves the broken state fails and the reference passes, then
 checks determinism across three runs each of visible-only, combined and reference checks (nine
-check containers total). Test IDs, statuses, occurrence counts and outcomes must agree; ordering
+check containers for this part). Test IDs, statuses, occurrence counts and outcomes must agree; ordering
 and timing may differ. A mismatch fails at `determinism`. Only structured results are reported.
 
 Success writes a local `verification.json`; failure removes an earlier Patchground record.
 Use `--no-write` for read-only validation. Three stable runs are bounded evidence, not a guarantee
-that a challenge can never be flaky. Anti-gaming validation remains explicitly `not_run`.
+that a challenge can never be flaky.
+
+For supported Python/pytest layouts, `anti_gaming` then probes an empty diff, deletion of editable
+test modules, and skipping those modules (three more containers, twelve total). Hidden test IDs,
+counts and statuses must match the broken baseline exactly. Mutations use disposable copies and
+never change authored files or hidden checks. Conventional `test_*.py` / `*_test.py` modules with
+static `test_*` functions or methods in `Test*` classes are supported; helper-only modules are kept.
+
+Other runners/layouts, absent editable tests, or ineffective mutations are explicitly `not_run`,
+not passed. A `valid` result means all executed gates passed: inspect step statuses before claiming
+anti-gaming coverage. This bounded probe does not prevent malicious test runners, forged results,
+custom discovery/plugin bypasses or local cheating.
 
 ## Develop
 

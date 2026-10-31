@@ -15,13 +15,15 @@ Read the SPEC of the module you are changing and the contracts it implements. If
 code disagree, or a spec is ambiguous, stop and ask. A change that alters a boundary or contract
 updates the owning spec in the same change.
 
-## Current slice: deterministic validation (toward M2)
+## Current slice: bounded anti-gaming validation (toward M2)
 
 M1 provides the local session loop: `start <path>`, `check`, `status`, `reset`, `doctor`, and local
 challenge discovery. The independent fresh-user usability trial remains pending.
-The approved next slice strengthens `pgnd validate`: three runs of each workspace variant,
-comparing per-test evidence on the same built image. Anti-gaming validation and authoring scaffolds
-remain separate future slices. Preserve the hardened Docker execution boundary.
+Validation checks three runs of each workspace variant, comparing per-test evidence on one image.
+The approved anti-gaming slice probes editable pytest module deletion/skipping while preserving
+exact hidden outcomes. Unsupported adapters/layouts remain explicitly unverified; do not silently
+claim universal anti-gaming coverage. Authoring scaffolds remain a separate future slice.
+Preserve the hardened Docker execution boundary.
 Do NOT build: stages, scoring, reports, snapshots, hints, pack management, AI, generator, web UI.
 
 ## Hard rules

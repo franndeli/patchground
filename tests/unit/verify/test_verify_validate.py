@@ -104,9 +104,22 @@ class FakeSandbox:
             self.reference_snapshots.append(reference_module.snapshot(layers[0]))
         if self.run_error is not None:
             raise self.run_error
+        if kind.startswith("anti-"):
+            raw = self.runs["hidden"]
+            editable = {test.id for test in self.runs["visible"].tests}
+            if kind == "anti-deleted":
+                return replace(raw, tests=tuple(t for t in raw.tests if t.id not in editable))
+            if kind == "anti-skipped":
+                return replace(
+                    raw,
+                    tests=tuple(replace(t, status=S) if t.id in editable else t for t in raw.tests),
+                )
+            return raw
         return self.runs[kind]
 
     def kind(self, layers: Sequence[Path]) -> str:
+        if layers[0].parent.name in ("anti-empty", "anti-deleted", "anti-skipped"):
+            return layers[0].parent.name
         if layers[0] != self.root / "workspace":
             return "reference"
         return "hidden" if layers[-1] == self.root / "checks" / "hidden" else "visible"
@@ -160,10 +173,14 @@ def test_valid_challenge_writes_verification_json(challenge: Path, box: FakeSand
 
     assert report.valid
     assert report.failed_step is None
-    assert [s.status for s in report.steps] == [StepStatus.PASSED] * 5 + [StepStatus.NOT_RUN]
+    assert [s.status for s in report.steps] == [StepStatus.PASSED] * 6
     assert "3 runs" in report.step(StepName.DETERMINISM).detail
-    assert [kind for kind, _ in box.calls] == ["build"] + ["visible", "hidden", "reference"] * 3
-    assert report.step(StepName.ANTI_GAMING).detail == "planned for M2"
+    assert [kind for kind, _ in box.calls] == (
+        ["build"]
+        + ["visible", "hidden", "reference"] * 3
+        + ["anti-empty", "anti-deleted", "anti-skipped"]
+    )
+    assert len(report.step(StepName.ANTI_GAMING).runs) == 3
     assert report.verification_file == challenge.resolve() / VERIFICATION_FILE
 
     text = (challenge / VERIFICATION_FILE).read_text()
@@ -659,6 +676,132 @@ def test_determinism_no_write_preserves_existing_record(challenge, box, monkeypa
     report = validate(challenge, box, write=False)
     assert report.failed_step is StepName.DETERMINISM
     assert record.read_text() == STALE_RECORD
+
+
+@pytest.mark.parametrize("variant", ["anti-empty", "anti-deleted", "anti-skipped"])
+@pytest.mark.parametrize("change", ["passed", "skipped", "errored", "missing", "duplicate", "new"])
+def test_anti_gaming_requires_exact_hidden_evidence(challenge, box, monkeypatch, variant, change):
+    original = box.run_check
+
+    def tampered(image, layers, command, *, limits):
+        raw = original(image, layers, command, limits=limits)
+        if box.kind(layers) != variant:
+            return raw
+        tests = list(raw.tests)
+        index = next(i for i, test in enumerate(tests) if test.id == HIDDEN[0])
+        if change in ("passed", "skipped", "errored"):
+            tests[index] = replace(tests[index], status=TestStatus(change))
+        elif change == "missing":
+            tests.pop(index)
+        elif change == "duplicate":
+            tests.append(tests[index])
+        else:
+            tests.append(replace(tests[index], id="unexpected-test"))
+        return replace(raw, tests=tuple(tests), log_tail="PRIVATE-SYNTHETIC-LOG")
+
+    monkeypatch.setattr(box, "run_check", tampered)
+    (challenge / VERIFICATION_FILE).write_text(STALE_RECORD)
+    report = validate(challenge, box)
+    assert_failed_at(report, StepName.ANTI_GAMING, detail="changed hidden test")
+    expected_count = ["anti-empty", "anti-deleted", "anti-skipped"].index(variant) + 1
+    assert len(report.step(StepName.ANTI_GAMING).runs) == expected_count
+    assert len(box.calls) == 10 + expected_count
+    assert "PRIVATE-SYNTHETIC-LOG" not in json.dumps(report.to_dict())
+    assert all(not paths[0].exists() for kind, paths in box.calls if kind.startswith("anti-"))
+
+
+def test_anti_gaming_copies_and_mutates_only_editable_modules(challenge, box, monkeypatch):
+    before = reference_module.snapshot(challenge)
+    original = box.run_check
+
+    def inspect(image, layers, command, *, limits):
+        kind = box.kind(layers)
+        if kind.startswith("anti-"):
+            assert not layers[0].is_relative_to(challenge)
+            assert layers[-1] == challenge.resolve() / "checks/hidden"
+            visible = layers[1] / "tests/test_pagination.py"
+            if kind == "anti-deleted":
+                assert not visible.exists()
+            elif kind == "anti-skipped":
+                assert "mark.skip" in visible.read_text()
+            else:
+                assert (
+                    visible.read_bytes()
+                    == (challenge / "checks/visible/tests/test_pagination.py").read_bytes()
+                )
+        return original(image, layers, command, limits=limits)
+
+    monkeypatch.setattr(box, "run_check", inspect)
+    report = validate(challenge, box, write=False)
+    assert report.step(StepName.ANTI_GAMING).status is StepStatus.PASSED
+    assert reference_module.snapshot(challenge) == before
+
+
+@pytest.mark.parametrize("unsupported", ["runner", "modules", "baseline"])
+def test_anti_gaming_unsupported_is_never_passed(challenge, box, unsupported):
+    if unsupported == "runner":
+        manifest = challenge / "challenge.yaml"
+        manifest.write_text(
+            manifest.read_text().replace("test_command: pytest", "test_command: wrapper")
+        )
+    elif unsupported == "modules":
+        module = challenge / "checks/visible/tests/test_pagination.py"
+        module.rename(module.with_name("custom_checks.py"))
+    else:
+        box.runs["visible"] = result([])
+    report = validate(challenge, box)
+    assert report.valid
+    step = report.step(StepName.ANTI_GAMING)
+    assert step.status is StepStatus.NOT_RUN
+    assert "not verified:" in step.detail
+    assert not step.runs
+    assert len(box.calls) == 10
+
+
+@pytest.mark.parametrize("variant", ["anti-deleted", "anti-skipped"])
+def test_anti_gaming_requires_observable_editable_mutation(challenge, box, monkeypatch, variant):
+    original = box.run_check
+
+    def unchanged(image, layers, command, *, limits):
+        raw = original(image, layers, command, limits=limits)
+        if box.kind(layers) == variant:
+            return box.runs["hidden"]
+        return raw
+
+    monkeypatch.setattr(box, "run_check", unchanged)
+    report = validate(challenge, box)
+    assert report.step(StepName.ANTI_GAMING).status is StepStatus.NOT_RUN
+    assert "did not" in report.step(StepName.ANTI_GAMING).detail
+
+
+@pytest.mark.parametrize("outcome", [RunOutcome.MISSING_RESULTS, RunOutcome.LIMIT_EXCEEDED])
+def test_anti_gaming_inconclusive_is_failure(challenge, box, monkeypatch, outcome):
+    original = box.run_check
+
+    def inconclusive(image, layers, command, *, limits):
+        raw = original(image, layers, command, limits=limits)
+        return replace(raw, outcome=outcome) if box.kind(layers) == "anti-empty" else raw
+
+    monkeypatch.setattr(box, "run_check", inconclusive)
+    report = validate(challenge, box)
+    assert_failed_at(report, StepName.ANTI_GAMING, detail="inconclusive")
+
+
+def test_anti_gaming_environment_error_and_cleanup(challenge, box, monkeypatch):
+    original = box.run_check
+    copies = []
+
+    def unavailable(image, layers, command, *, limits):
+        if box.kind(layers) == "anti-empty":
+            copies.extend(layers[:-1])
+            raise SandboxError("engine unavailable")
+        return original(image, layers, command, limits=limits)
+
+    monkeypatch.setattr(box, "run_check", unavailable)
+    with pytest.raises(VerifyEnvironmentError):
+        validate(challenge, box)
+    assert copies and all(not path.exists() for path in copies)
+    assert not (challenge / VERIFICATION_FILE).exists()
 
 
 def test_atomic_write_failure_keeps_previous_file(

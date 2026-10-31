@@ -32,11 +32,31 @@ Run in order; the first one that doesn't hold fails validation with a non-zero e
    twice in fresh containers on the same image, reapplying the reference to a fresh temporary copy.
    Compare test IDs, statuses, occurrence counts and overall outcome, ignoring order and timing.
    Stop at the first mismatch or inconclusive run, naming the round and variant; engine failures
-   remain environment errors. A successful validation runs nine check containers, builds once,
+   remain environment errors. Through this step validation runs nine check containers, builds once,
    and records all nine labeled summaries under `determinism` (round 1 also appears in steps 2/3).
    Three stable runs provide bounded evidence, not proof of universal determinism.
-5. **Not trivially gamed (deferred):** an empty diff fails, and deleting or skipping the failing
-   tests fails. This gate remains `not_run`; current validity covers executed gates only.
+5. **Editable-test tampering:** keep the broken application and hidden checks unchanged; run an
+   empty diff, deletion of conventional editable test modules, and skipping of those modules in
+   fresh containers. Each probe must preserve the broken baseline's hidden test IDs, occurrence
+   counts and statuses exactly. A lost failure, missing hidden test, new skip or collection failure
+   is not proof of resistance and fails the gate. Engine faults remain environment errors.
+
+   The initial adapter supports direct `pytest` / `python -m pytest` invocations and editable
+   `test_*.py` / `*_test.py` modules in workspace and visible checks, containing static `test_*`
+   functions or methods in `Test*` classes. It does not change conftest, helper-only modules,
+   hidden checks, runner configuration or application code. Deletion and skipping operate on whole
+   matching modules, not individual failing functions; modules containing
+   shared helpers can therefore expose a dependency that authors must resolve. Skipping adds a
+   module-level pytest skip mark, preserving existing module marks.
+
+   Unsupported commands/layouts, no editable baseline tests, or mutations with no observable effect
+   on editable tests report `anti_gaming: not_run` with a reason, never `passed`. Current validity
+   covers executed gates only. A fully supported successful validation adds three runs (twelve
+   check containers total), using one built image. Evidence contains only test IDs/statuses, never
+   mutated source or raw output. All mutations happen in disposable private copies.
+
+   This is bounded evidence against editable-test shortcuts, not protection against malicious
+   authors, forged JUnit, custom discovery/plugins, arbitrary application edits or local cheating.
 
 On success `validate` writes `verification.json`: the image digest, per-step run results (test ids
 and statuses only, never sources or logs) and timestamps. On failure it deletes an existing
