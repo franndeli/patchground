@@ -27,8 +27,16 @@ Run in order; the first one that doesn't hold fails validation with a non-zero e
    skipped counts as not passing, and every test seen in step 2 must be present. The patch is a git
    diff relative to `workspace/` (`a/src/...`), applied with `git apply -p1` to a copy, and must
    change at least one file.
-4. **Deterministic:** steps 2 and 3 give identical per-test results across 3 runs.
-5. **Not trivially gamed:** an empty diff fails, and deleting or skipping the failing tests fails.
+4. **Deterministic:** steps 2 and 3 give identical per-test results across 3 runs of each variant
+   (visible-only, visible+hidden, reference+checks). The first runs count as round 1; repeat each
+   twice in fresh containers on the same image, reapplying the reference to a fresh temporary copy.
+   Compare test IDs, statuses, occurrence counts and overall outcome, ignoring order and timing.
+   Stop at the first mismatch or inconclusive run, naming the round and variant; engine failures
+   remain environment errors. A successful validation runs nine check containers, builds once,
+   and records all nine labeled summaries under `determinism` (round 1 also appears in steps 2/3).
+   Three stable runs provide bounded evidence, not proof of universal determinism.
+5. **Not trivially gamed (deferred):** an empty diff fails, and deleting or skipping the failing
+   tests fails. This gate remains `not_run`; current validity covers executed gates only.
 
 On success `validate` writes `verification.json`: the image digest, per-step run results (test ids
 and statuses only, never sources or logs) and timestamps. On failure it deletes an existing

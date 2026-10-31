@@ -7,7 +7,7 @@ import os
 import shutil
 import subprocess
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 import pytest
@@ -160,8 +160,9 @@ def test_valid_challenge_writes_verification_json(challenge: Path, box: FakeSand
 
     assert report.valid
     assert report.failed_step is None
-    assert [s.status for s in report.steps] == [StepStatus.PASSED] * 4 + [StepStatus.NOT_RUN] * 2
-    assert report.step(StepName.DETERMINISM).detail == "planned for M2"
+    assert [s.status for s in report.steps] == [StepStatus.PASSED] * 5 + [StepStatus.NOT_RUN]
+    assert "3 runs" in report.step(StepName.DETERMINISM).detail
+    assert [kind for kind, _ in box.calls] == ["build"] + ["visible", "hidden", "reference"] * 3
     assert report.step(StepName.ANTI_GAMING).detail == "planned for M2"
     assert report.verification_file == challenge.resolve() / VERIFICATION_FILE
 
@@ -202,8 +203,9 @@ def test_valid_challenge_writes_verification_json(challenge: Path, box: FakeSand
     assert broken["runs"][1]["counts"] == {"passed": 4, "failed": 1, "errored": 0, "skipped": 0}
     assert broken["runs"][1]["tests"][-1] == {"id": HIDDEN[1], "status": "passed"}
     assert doc["steps"][3]["runs"][0]["label"] == "reference+visible+hidden"
-    assert doc["steps"][4]["status"] == "not_run"
-    assert doc["steps"][4]["started_at"] is None
+    assert doc["steps"][4]["status"] == "passed"
+    assert doc["steps"][4]["started_at"] is not None
+    assert len(doc["steps"][4]["runs"]) == 9
 
     # Nothing from the patch or hidden sources ends up in the record.
     assert "math.ceil" not in text
@@ -548,8 +550,115 @@ def test_git_missing_is_an_environment_error(
 
 
 # --------------------------------------------------------------------------------------------------
-# verification.json helpers
+# Determinism and verification.json helpers
 # --------------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("kind", ["visible", "hidden", "reference"])
+@pytest.mark.parametrize("round_number", [2, 3])
+@pytest.mark.parametrize("change", ["status", "id", "missing", "extra", "duplicate", "outcome"])
+def test_determinism_rejects_first_changed_run(
+    challenge, box, monkeypatch, kind, round_number, change
+):
+    original = box.run_check
+    seen = {key: 0 for key in good_runs()}
+
+    def varying(image, layers, command, *, limits):
+        raw = original(image, layers, command, limits=limits)
+        current = box.kind(layers)
+        seen[current] += 1
+        if current != kind or seen[current] != round_number:
+            return raw
+        tests = list(raw.tests)
+        if change == "status":
+            tests[0] = replace(tests[0], status=TestStatus.SKIPPED)
+        elif change == "id":
+            tests[0] = replace(tests[0], id="different-id")
+        elif change == "missing":
+            tests.pop()
+        elif change == "extra":
+            tests.append(replace(tests[0], id="extra-id"))
+        elif change == "duplicate":
+            tests.append(tests[0])
+        outcome = RunOutcome.ERRORED if change == "outcome" else raw.outcome
+        return replace(raw, tests=tuple(tests), outcome=outcome, log_tail="PRIVATE-RUN-LOG")
+
+    monkeypatch.setattr(box, "run_check", varying)
+    (challenge / VERIFICATION_FILE).write_text(STALE_RECORD)
+    report = validate(challenge, box)
+    assert_failed_at(report, StepName.DETERMINISM, detail="differs from round 1")
+    step = report.step(StepName.DETERMINISM)
+    expected_runs = 3 * (round_number - 1) + ["visible", "hidden", "reference"].index(kind) + 1
+    assert len(step.runs) == expected_runs
+    assert len(box.calls) == expected_runs + 1  # exactly one build
+    assert step.runs[-1].label.startswith(f"round-{round_number}:")
+    assert "PRIVATE-RUN-LOG" not in json.dumps(report.to_dict())
+
+
+def test_determinism_ignores_test_order(challenge, box, monkeypatch):
+    original = box.run_check
+
+    def reordered(image, layers, command, *, limits):
+        raw = original(image, layers, command, limits=limits)
+        return replace(raw, tests=tuple(reversed(raw.tests))) if len(box.calls) > 4 else raw
+
+    monkeypatch.setattr(box, "run_check", reordered)
+    report = validate(challenge, box)
+    assert report.valid
+    assert len(report.step(StepName.DETERMINISM).runs) == 9
+    assert len(box.reference_snapshots) == 3
+    assert all(s == box.reference_snapshots[0] for s in box.reference_snapshots)
+    copies = [paths[0] for kind, paths in box.calls if kind == "reference"]
+    assert len(set(copies)) == 3
+    assert all(not path.exists() for path in copies)
+
+
+@pytest.mark.parametrize("outcome", [RunOutcome.MISSING_RESULTS, RunOutcome.LIMIT_EXCEEDED])
+def test_determinism_inconclusive_repeat_is_failed(challenge, box, monkeypatch, outcome):
+    original = box.run_check
+
+    def inconclusive(image, layers, command, *, limits):
+        raw = original(image, layers, command, limits=limits)
+        return (
+            replace(raw, outcome=outcome, log_tail="PRIVATE-RUN-LOG")
+            if len(box.calls) == 5
+            else raw
+        )
+
+    monkeypatch.setattr(box, "run_check", inconclusive)
+    report = validate(challenge, box)
+    assert_failed_at(report, StepName.DETERMINISM, detail="inconclusive")
+    assert len(report.step(StepName.DETERMINISM).runs) == 4
+    assert "PRIVATE-RUN-LOG" not in json.dumps(report.to_dict())
+
+
+def test_determinism_engine_failure_stays_environment_error(challenge, box, monkeypatch):
+    original = box.run_check
+
+    def unavailable(image, layers, command, *, limits):
+        if len(box.calls) == 4:
+            raise SandboxError("engine unavailable")
+        return original(image, layers, command, limits=limits)
+
+    monkeypatch.setattr(box, "run_check", unavailable)
+    with pytest.raises(VerifyEnvironmentError):
+        validate(challenge, box)
+    assert not (challenge / VERIFICATION_FILE).exists()
+
+
+def test_determinism_no_write_preserves_existing_record(challenge, box, monkeypatch):
+    original = box.run_check
+
+    def changing(image, layers, command, *, limits):
+        raw = original(image, layers, command, limits=limits)
+        return replace(raw, tests=()) if len(box.calls) == 5 else raw
+
+    monkeypatch.setattr(box, "run_check", changing)
+    record = challenge / VERIFICATION_FILE
+    record.write_text(STALE_RECORD)
+    report = validate(challenge, box, write=False)
+    assert report.failed_step is StepName.DETERMINISM
+    assert record.read_text() == STALE_RECORD
 
 
 def test_atomic_write_failure_keeps_previous_file(

@@ -28,11 +28,14 @@ Depends on `spec` and `sandbox`; never on `sessions` (validation has no session)
 challenge folder except to write `verification.json`, or to delete a stale Patchground one when
 validation fails. mypy strict.
 
-## M0 implementation notes
+## Implementation notes
 
 - Entry point: `validate_challenge(folder, *, limits, write, sandbox, progress) -> ValidationReport`.
-  Steps `manifest`, `build`, `broken_fails`, `reference_passes` run fail-fast; `determinism` and
-  `anti_gaming` are always `not_run` ("planned for M2"). Non-empty `environment.services` fails
+  Steps `manifest`, `build`, `broken_fails`, `reference_passes`, `determinism` run fail-fast;
+  `anti_gaming` remains `not_run`. Determinism reuses the first three summaries as its baselines,
+  then compares repeats as specified by the verification contract. Reference-copy preparation is
+  shared so repeat runs retain the same patch safety and cleanup guarantees. Non-empty
+  `environment.services` fails
   `manifest` (multi-container services are deferred beyond the single-container prototype).
 - Host problems (engine unreachable, engine errors, git missing, a temp folder or workspace copy
   that fails, a `verification.json` that can't be written or removed) raise

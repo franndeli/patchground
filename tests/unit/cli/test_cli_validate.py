@@ -28,7 +28,7 @@ def make_report(failed: StepName | None, verification_file: Path | None = None) 
     steps: list[StepResult] = []
     state = StepStatus.PASSED
     for name in StepName:
-        if name in (StepName.DETERMINISM, StepName.ANTI_GAMING):
+        if name is StepName.ANTI_GAMING:
             steps.append(StepResult(name, StepStatus.NOT_RUN, "planned for M2"))
         elif name is failed:
             steps.append(StepResult(name, StepStatus.FAILED, f"{name.value} broke [red]x[/]"))
@@ -89,7 +89,7 @@ def test_failed_step_exits_1(monkeypatch: pytest.MonkeyPatch) -> None:
     assert lines[-1] == "invalid: failed at step broken_fails"
     assert any(line.startswith("✗ broken_fails") for line in lines)
     assert "broken_fails broke [red]x[/]" in result.stdout  # details are not Rich markup
-    assert any(line.startswith("- determinism") and "planned for M2" in line for line in lines)
+    assert any(line.startswith("- determinism") and "not run" in line for line in lines)
 
 
 def test_json_success_is_one_document(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -104,13 +104,14 @@ def test_json_success_is_one_document(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.stderr == ""  # no progress output in JSON mode
 
 
-def test_json_failure(monkeypatch: pytest.MonkeyPatch) -> None:
-    fake(monkeypatch, make_report(StepName.REFERENCE_PASSES))
+@pytest.mark.parametrize("failed", [StepName.REFERENCE_PASSES, StepName.DETERMINISM])
+def test_json_failure(monkeypatch: pytest.MonkeyPatch, failed: StepName) -> None:
+    fake(monkeypatch, make_report(failed))
     result = runner.invoke(app, ["validate", "c", "--json"])
     assert result.exit_code == 1
     doc = json.loads(result.stdout)
     assert doc["valid"] is False
-    assert doc["failed_step"] == "reference_passes"
+    assert doc["failed_step"] == failed.value
     assert doc["verification_file"] is None
 
 

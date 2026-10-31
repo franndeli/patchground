@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
 
+from patchground.sandbox import Limits, RunResult
 from patchground.verify import VERIFICATION_FILE, StepName, StepStatus, validate_challenge
+from patchground.verify.validate import DockerSandbox
 
 pytestmark = pytest.mark.docker
 
@@ -31,6 +35,10 @@ def test_example_is_valid() -> None:
     assert len(broken.runs) == 2
     reference = report.step(StepName.REFERENCE_PASSES)
     assert reference.status is StepStatus.PASSED
+    deterministic = report.step(StepName.DETERMINISM)
+    assert deterministic.status is StepStatus.PASSED
+    assert len(deterministic.runs) == 9
+    assert len({run.label for run in deterministic.runs}) == 9
 
 
 @pytest.mark.parametrize(
@@ -75,3 +83,41 @@ def test_cli_end_to_end_json() -> None:
     assert doc["valid"] is True
     assert doc["failed_step"] is None
     assert doc["verification_file"] is None
+    assert doc["steps"][4]["status"] == "passed"
+    assert len(doc["steps"][4]["runs"]) == 9
+
+
+def test_real_container_detects_changing_test_identity(tmp_path: Path) -> None:
+    source = tmp_path / EXAMPLE.name
+    shutil.copytree(EXAMPLE, source, ignore=shutil.ignore_patterns(VERIFICATION_FILE))
+    marker = source / "workspace/tests/test_run_marker.py"
+    marker.parent.mkdir(exist_ok=True)
+    marker.write_text(
+        "import os\nimport pytest\n"
+        '@pytest.mark.parametrize("round_number", [os.environ["PATCHGROUND_TEST_ROUND"]])\n'
+        "def test_run_marker(round_number):\n    assert round_number\n"
+    )
+    before = marker.read_bytes()
+
+    class VaryingEnvironment(DockerSandbox):
+        calls = 0
+
+        def run_check(
+            self, image_id: str, layers: Sequence[Path], command: str, *, limits: Limits
+        ) -> RunResult:
+            round_number = self.calls // 3 + 1
+            self.calls += 1
+            return super().run_check(
+                image_id,
+                layers,
+                f"export PATCHGROUND_TEST_ROUND={round_number}; {command}",
+                limits=limits,
+            )
+
+    sandbox = VaryingEnvironment()
+    report = validate_challenge(source, sandbox=sandbox)
+    assert report.failed_step is StepName.DETERMINISM
+    assert "round-2:workspace+visible" in report.step(StepName.DETERMINISM).detail
+    assert sandbox.calls == 4
+    assert marker.read_bytes() == before
+    assert not (source / VERIFICATION_FILE).exists()

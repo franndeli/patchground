@@ -1,7 +1,7 @@
-"""Run ``patchground-contract-verification`` steps 0 to 3 against a challenge folder.
+"""Run ``patchground-contract-verification`` steps 0 to 4 against a challenge folder.
 
 Steps run in order and stop at the first failure; later steps are reported as ``not_run``.
-Determinism (4) and anti-gaming (5) are planned for M2 and always ``not_run``. Problems with the
+Anti-gaming (5) remains deferred and ``not_run``. Problems with the
 host (engine unreachable, git missing, engine failures) are not verdicts on the challenge and
 raise :class:`VerifyEnvironmentError` instead of failing a step.
 
@@ -15,7 +15,8 @@ import os
 import shutil
 import stat
 import tempfile
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Protocol
@@ -173,6 +174,7 @@ class _Validation:
         self.image_id: str | None = None
         self.hidden_ids: list[str] = []
         self.starting_ids: list[str] = []
+        self.baselines: list[RunSummary] = []
 
     def execute(self) -> list[StepResult]:
         ordered: list[tuple[StepName, Callable[[str], StepResult]]] = [
@@ -180,6 +182,7 @@ class _Validation:
             (StepName.BUILD, self._build),
             (StepName.BROKEN_FAILS, self._broken_fails),
             (StepName.REFERENCE_PASSES, self._reference_passes),
+            (StepName.DETERMINISM, self._determinism),
         ]
         results: list[StepResult] = []
         failed: StepName | None = None
@@ -194,10 +197,11 @@ class _Validation:
             except _StepFailed as exc:
                 result = exc.result
             results.append(result)
+            if name in (StepName.BROKEN_FAILS, StepName.REFERENCE_PASSES):
+                self.baselines.extend(result.runs)
             if result.status is StepStatus.FAILED:
                 failed = name
-        for name in (StepName.DETERMINISM, StepName.ANTI_GAMING):
-            results.append(StepResult(name, StepStatus.NOT_RUN, PLANNED))
+        results.append(StepResult(StepName.ANTI_GAMING, StepStatus.NOT_RUN, PLANNED))
         return results
 
     # ---------------------------------------------------------------------------------- helpers
@@ -338,8 +342,10 @@ class _Validation:
         )
         return StepResult(step, StepStatus.PASSED, detail, started, utc_now(), runs=runs)
 
-    def _reference_passes(self, started: str) -> StepResult:
-        step = StepName.REFERENCE_PASSES
+    @contextmanager
+    def _reference_workspace(
+        self, step: StepName, started: str, runs: Sequence[RunSummary]
+    ) -> Iterator[Path]:
         challenge = self._loaded()
         patch = challenge.root / challenge.manifest.solution
         try:
@@ -355,18 +361,24 @@ class _Validation:
                 apply_patch(patch, copy, temp_root)
             except PatchError as exc:
                 detail = f"reference.patch does not apply with git apply -p1: {exc.stderr}"
-                return _failed(step, started, detail, ())
+                raise _StepFailed(_failed(step, started, detail, runs)) from exc
             if snapshot(copy) == before:
-                return _failed(step, started, "reference.patch applied but changed no files", ())
+                raise _StepFailed(
+                    _failed(step, started, "reference.patch applied but changed no files", runs)
+                )
+            yield copy
+        finally:
+            shutil.rmtree(temp_root, ignore_errors=True)
 
+    def _reference_passes(self, started: str) -> StepResult:
+        step = StepName.REFERENCE_PASSES
+        with self._reference_workspace(step, started, []) as copy:
             self.progress("running checks with reference.patch applied")
             checks = self._check_layers()
             has_visible = any(layer.label == "checks.visible" for layer in checks)
             label = run_label("reference", *(["visible"] if has_visible else []), "hidden")
             layers = [_Layer("the patched workspace (reference.patch)", copy), *checks]
             result, summary = self._run(step, started, label, layers, [])
-        finally:
-            shutil.rmtree(temp_root, ignore_errors=True)
 
         runs = (summary,)
         if not result.tests:
@@ -397,6 +409,41 @@ class _Validation:
             f"({len(self.hidden_ids)} hidden)"
         )
         return StepResult(step, StepStatus.PASSED, detail, started, utc_now(), runs=runs)
+
+    def _determinism(self, started: str) -> StepResult:
+        step = StepName.DETERMINISM
+        runs = [replace(run, label=f"round-1:{run.label}") for run in self.baselines]
+        workspace = _Layer("workspace", self._loaded().root / "workspace")
+        checks = self._check_layers()
+        visible = [layer for layer in checks if layer.label == "checks.visible"]
+
+        def repeat(round_number: int, baseline: RunSummary, layers: Sequence[_Layer]) -> None:
+            label = f"round-{round_number}:{baseline.label}"
+            self.progress(f"checking determinism: {label}")
+            _, summary = self._run(step, started, label, layers, runs)
+            runs.append(summary)
+            expected = sorted((test.id, test.status.value) for test in baseline.tests)
+            actual = sorted((test.id, test.status.value) for test in summary.tests)
+            if summary.outcome != baseline.outcome or actual != expected:
+                raise _StepFailed(_failed(step, started, f"run {label} differs from round 1", runs))
+
+        for round_number in (2, 3):
+            repeat(round_number, self.baselines[0], [workspace, *visible])
+            repeat(round_number, self.baselines[1], [workspace, *checks])
+            with self._reference_workspace(step, started, runs) as copy:
+                repeat(
+                    round_number,
+                    self.baselines[2],
+                    [_Layer("the patched workspace (reference.patch)", copy), *checks],
+                )
+        return StepResult(
+            step,
+            StepStatus.PASSED,
+            "identical per-test results across 3 runs of each workspace variant",
+            started,
+            utc_now(),
+            runs=tuple(runs),
+        )
 
 
 # --------------------------------------------------------------------------------------------------

@@ -43,7 +43,7 @@ def validate(
         bool, typer.Option("--no-write", help="Do not write verification.json on success.")
     ] = False,
 ) -> None:
-    """Verify a challenge: manifest, image build, broken state fails, reference passes."""
+    """Verify a challenge: build, broken/reference outcomes and three-run determinism."""
     try:
         with progress(json_mode) as notify:
             report = validate_challenge(path, write=not no_write, progress=notify)

@@ -505,7 +505,8 @@ listing does not install packs or resolve IDs. See `docs/first-session.md` for t
 
 - [ ] Two more challenges (three in total)
 - [ ] `submit` and the verified-outcomes report, including the regression-test check
-- [ ] Full `validate` (determinism, anti-gaming) and `pgnd new` scaffold
+- [x] Determinism validation: three runs per workspace variant, comparing per-test evidence
+- [ ] Anti-gaming validation and `pgnd new` scaffold
 - [ ] `hint`, `run`, `sessions`, `report`; snapshots in internal refs
 - [ ] Give it to about 10 developers preparing for interviews and watch them install, read the ticket, solve and finish
 - [ ] Ask one developer who isn't Fran to author and validate a challenge from the docs alone

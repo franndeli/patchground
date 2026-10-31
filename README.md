@@ -69,6 +69,17 @@ check does not silently rebuild or pull it. Multi-container services remain defe
 must use `environment.services: []`. A passing check is the current end of an attempt—`submit` and
 verified-outcomes reports arrive later.
 
+## Validate an authored challenge
+
+`pgnd validate <path>` builds once, proves the broken state fails and the reference passes, then
+checks determinism across three runs each of visible-only, combined and reference checks (nine
+check containers total). Test IDs, statuses, occurrence counts and outcomes must agree; ordering
+and timing may differ. A mismatch fails at `determinism`. Only structured results are reported.
+
+Success writes a local `verification.json`; failure removes an earlier Patchground record.
+Use `--no-write` for read-only validation. Three stable runs are bounded evidence, not a guarantee
+that a challenge can never be flaky. Anti-gaming validation remains explicitly `not_run`.
+
 ## Develop
 
 ```sh
