@@ -72,7 +72,7 @@ warn_unused_ignores = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["patchground.spec.*", "patchground.verify.*", "patchground.sandbox.*", "patchground.sessions.*", "patchground.authoring.*"]
+module = ["patchground.spec.*", "patchground.verify.*", "patchground.sandbox.*", "patchground.sessions.*", "patchground.authoring.*", "patchground.report.*"]
 strict = true
 
 [tool.pytest.ini_options]

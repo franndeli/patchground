@@ -81,7 +81,7 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
 ## Current checkpoint
 
 - Product/budget/publication boundaries approved and recorded in the launch brief.
-- Published baseline: bounded anti-gaming validation (`e32befa`); CI and secret scan succeeded.
+- Published authoring/content wave: `323804b`; CI and secret scanning succeeded.
 - First authoring/content wave implemented locally: `new`, packaged runnable starter and three
   curated examples. Full Docker-required suite: 543 passed; lint, format, types and graph passed.
 - Clean installed wheel (no AI extras): new/validate/show/start/check/fix/reset succeeded, all six
@@ -92,5 +92,11 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
 - Independent synthetic author A1 created and adapted a starter from public instructions; both
   validations passed all six gates without authoring help. Evidence/limits are recorded in
   `docs/evaluations/authoring-smoke.md`; this is not a human trial or a learner-cohort attempt.
-- Next: commit/push this verified wave and agree the submit/report/regression-test design. Human
-  trials remain pending.
+- Submit/report design approved and implemented locally: immutable bundles, retryable pre-commit
+  faults, exact interrupted-audit recovery, failed-attempt submission and conservative pytest
+  regression evidence. Structural test changes are facts, never strength grades. Final local gates:
+  667 Docker-required tests passed, plus lint/format/types/spec validation. A clean wheel without AI
+  extras passed failed submission/readback and before-fails/after-passes regression submission,
+  preserving workspace Git state.
+- Next: publish this verified wave, then agree hints/container commands,
+  session browsing and safe snapshot behavior. Human trials and learner cohort remain pending.

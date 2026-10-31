@@ -17,14 +17,37 @@ agent's answer, so the report never claims to.
 
 | Outcome | How it is established |
 | --- | --- |
-| Checks passed | Per-test results of the last check, e.g. 12/12. |
+| Checks passed | Fresh per-test results from the captured submission input, e.g. 12/12; never a stale historical check. |
 | Regression test | The user's new or changed tests run against the pristine original workspace: verified only if they fail there and pass on the final workspace. |
-| Tests deleted or weakened | Removed test files, functions or assertions are flagged. |
+| Test structure | Conventional test-file/function removals and assertion-count decreases are flagged as structural facts, not semantic weakness. |
 | Diff scope | Files and lines changed; files outside `expected_paths`, if declared. |
-| Time and effort | Total time vs timebox, number of checks, hints used. |
+| Time and effort | Time at submission request vs timebox (or timer off), practice checks and hints used; verification probes are separate. |
 
 Each outcome is stated as a fact ("Verified: fails before, passes after"), never as a grade. When an
 outcome cannot be established it says so, rather than guessing.
+
+### Finalization and evidence limits
+
+Submission freezes the checked ordinary files and runs fresh verification. One complete private
+bundle commits the final report. Repeated submit returns it unchanged; later workspace edits do
+not alter evidence. Submitted sessions reject further practice mutations; start a new session.
+Failing checks may finalize (submit exits `1`). Missing, unsupported or unsuccessful regression
+evidence is reported, not treated as a pass or a submission gate. Infrastructure failure before
+commit leaves the attempt open; after publication, retry reconciles the audit without reopening.
+
+The first regression adapter supports conventional static pytest definitions. It selects genuinely
+new/changed tests and compares exact identities/multiplicities on original and final code; unrelated
+pre-existing failures, collection errors, missing/skipped tests and changed test harnesses cannot
+establish a regression. Only individual before-failing/after-passing identities are verified.
+This is bounded evidence, not protection against malicious local forgery or an arbitrary plugin.
+
+Scope includes ordinary Git-ignored files because they were checked. Sensitive patterns and Git
+metadata are excluded. Binary, non-UTF-8 or over-1-MiB file line counts are explicitly unestablished.
+Expected paths are literal paths/directory prefixes. Structural assertion counts cannot judge the
+strength of equivalent rewrites or prove all possible test weakening.
+
+`report` reads saved structured/Markdown evidence without Docker; active sessions have no final
+report. Core outcomes never depend on AI, attached transcripts or source-checkout availability.
 
 ## Part 2: coaching (optional, AI, experimental)
 

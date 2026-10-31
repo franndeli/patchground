@@ -93,6 +93,9 @@ def reset_session(session: Path | None = None, *, root: Path | None = None) -> R
         meta = path / ".session"
         with store.locked(meta):
             record, _, _ = store.load(path)
+            from patchground.sessions.submission import require_active
+
+            require_active(meta)
             with tempfile.TemporaryDirectory(
                 prefix="patchground-reset-", dir=Path(tempfile.gettempdir()).resolve(strict=True)
             ) as temporary:

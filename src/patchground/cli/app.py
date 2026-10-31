@@ -6,6 +6,7 @@ from patchground import __version__
 from patchground.cli.authoring import new
 from patchground.cli.discovery import DiscoveryCommand, list_challenges, show
 from patchground.cli.doctor import doctor
+from patchground.cli.reports import report, submit
 from patchground.cli.sessions import SessionCommand, check, reset, start, status
 from patchground.cli.validate import validate
 
@@ -36,6 +37,8 @@ app.command("doctor", cls=DiscoveryCommand)(doctor)
 app.command("list", cls=DiscoveryCommand)(list_challenges)
 app.command("show", cls=DiscoveryCommand)(show)
 app.command("new", cls=DiscoveryCommand)(new)
+app.command("submit", cls=SessionCommand)(submit)
+app.command("report", cls=SessionCommand)(report)
 
 
 def main() -> None:

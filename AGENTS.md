@@ -19,9 +19,10 @@ updates the owning spec in the same change.
 
 The owner approved expanding beyond M1 toward the roadmap and a public documentation/catalog site
 at patchground.dev. Delivery boundaries and resume context live in `docs/launch-brief.md` and
-`docs/delivery-plan.md`; the shared TODO list tracks active work. Authoring and challenge content
-come next, followed by verified outcomes, practice tools, distribution, the public site and bounded
-optional AI experiments. Each subsystem still requires an accepted design and owning-spec updates.
+`docs/delivery-plan.md`; the shared TODO list tracks active work. Authoring, three curated challenges
+and immutable verified-outcomes reports are implemented. Remaining slices cover practice tools,
+distribution, the public site and bounded optional AI experiments. Each subsystem still requires an
+accepted design and owning-spec updates.
 
 Use existing configured model subscriptions/local models only; do not buy credits or paid services.
 Git pushes are authorized, but DNS changes, production deployments, package publication and release

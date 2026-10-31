@@ -9,7 +9,8 @@ verified outcomes from checks that run in Docker.
 Status: **local prototype with authoring** — create challenges with `new`, validate them,
 discover them with `list` / `show`,
 and practice with `start`, `check`, `status` and `reset`. `doctor` checks environment readiness.
-The fresh-user usability trial is still pending; pack management and reports are not implemented.
+Finish attempts with `submit` and read frozen verified outcomes with `report`.
+The fresh-user usability trial is still pending; pack management is not implemented.
 
 ## Try a local challenge
 
@@ -67,8 +68,34 @@ A check exits `0` only when it has tests and all pass, `1` for nonpassing result
 checks), and `2` for invalid input or infrastructure problems. Raw test output is never printed.
 Status works without Docker. A removed session image must be restored or a new session started;
 check does not silently rebuild or pull it. Multi-container services remain deferred; challenges
-must use `environment.services: []`. A passing check is the current end of an attempt—`submit` and
-verified-outcomes reports arrive later.
+must use `environment.services: []`.
+
+## Finish an attempt
+
+```sh
+pgnd submit
+pgnd report
+# Outside the workspace:
+pgnd report --session <session-path> --json
+```
+
+Submit captures the checked ordinary files, runs fresh checks and saves an immutable local report.
+It can finalize a failed attempt (exit `1`); missing regression evidence is explicit, not a pass or
+submission gate. Repeating submit returns the same result without rerunning. Further check/reset
+operations are rejected; start a new session to practice again. Your workspace remains editable,
+but later edits cannot change the saved report. Report reads need no Docker.
+
+For supported conventional pytest tests, regression evidence selects genuinely new/changed test
+definitions and requires them to fail on original code and pass on final code. Pre-existing failures,
+skips, missing tests, collection problems and unsupported/changed harnesses do not count as proof.
+The report also records changed checked files (including ordinary Git-ignored files), expected-path
+scope, structural test removals, elapsed time and practice-check/hint counts. Binary/non-UTF-8 or
+over-1-MiB line counts are unestablished. Assertion-count reductions are facts, not judgments about
+semantic test strength. There is no overall score or AI judgment.
+
+Infrastructure errors before finalization leave the attempt open. If a failure occurs after the
+bundle is published, retry submit to verify/reconcile it rather than assuming rollback. This is
+local evidence, not tamper-proof attestation. See [the feedback contract](docs/contracts/feedback.md).
 
 ## Author a challenge
 

@@ -54,6 +54,13 @@ validation fails. mypy strict.
   set to a fresh empty bare repo beside the copy and `GIT_WORK_TREE` set to the copy, so no
   repository is discovered. On top: no system/global config or attributes, hooks and fsmonitor off,
   `GIT_CEILING_DIRECTORIES`, a minimal environment.
+- Pytest recognition lives in `verify/pytest_adapter.py`, a pure module (tokenising and `ast`
+  only; it never executes authored code): direct `pytest` / `python -m pytest` command splitting,
+  conventional test filenames, and static `test_*` functions and `TestC::test_*` methods
+  (`test_definitions(path)` bounds source at 1 MiB and raises `UnsupportedPytest`, without source
+  text, for unparsable, oversized or duplicate-named tests). The tampering
+  probes and `report`'s regression evidence share the same basic syntax rules; regression adds
+  size/ambiguity bounds, while `tampering` keeps its public names and behaviour.
 - Test-id integrity: step 2 is inconclusive if a visible test from the first run is missing from the
   second, and step 3 requires every id seen in step 2.
 - Run logs are never surfaced: a run that includes hidden checks may print their source. Step

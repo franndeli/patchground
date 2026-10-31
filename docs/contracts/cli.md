@@ -32,7 +32,8 @@ The binary is `patchground` with the alias `pgnd` (not `pg`, which developers re
 The first playable slice implements `validate`, `start <local-path> [--no-timer]`,
 `check [--session <path>]`, `status [--session <path>]` and
 `reset [--session <path>] [--yes]`, `doctor`, `list [directory]`, `show <path>` and
-`new <id> [--type debug] [--lang python]`,
+`new <id> [--type debug] [--lang python]`, `submit [--session <path>]` and
+`report [--session <path>]`,
 each with `--json`. Start accepts authored
 local paths only; it freezes check inputs and builds, without applying the reference solution.
 Status needs no container engine. Checks with no tests or any skipped test do not count as passing.
@@ -50,6 +51,16 @@ is no overwrite option, Git initialization or automatic container execution. Suc
 JSON returns `{id, path, type, language, files}` with relative paths, never source contents.
 Creation failures exit `2`; safe rollback may leave concurrent additions/replacements intact.
 
+`submit` runs fresh checks against captured input and saves a final report, even for an unsuccessful
+solution. It exits `0` for passing checks, `1` for nonpassing checks and `2` for environment/storage
+problems. Missing regression evidence does not block finalization. Repeated submission returns the
+same frozen result without rerunning. Further check/reset operations are rejected on a submitted
+session; the workspace remains user-owned and editable. `report` reads a saved report without Docker
+and exits `0` even when it describes failed checks; an active session has no final report (exit `2`).
+Both select the current session or explicit `--session`, never an implicit latest session.
+Transcripts and AI remain deferred. Status exposes active/submitted state and stops the timer at
+submission request time.
+
 The table below also describes planned commands and options; it is not a claim that they all exist.
 
 ## Commands
@@ -64,8 +75,9 @@ The table below also describes planned commands and options; it is not a claim t
 | `status` | Current session: elapsed time vs timebox, last check result. |
 | `hint` | Reveal the next hint; logged. |
 | `run -- <cmd>` | Run a command in the challenge container on the internal network. |
-| `submit [--transcript <file>]` | End the session and write the verified-outcomes report. |
-| `sessions` / `report <session>` | Past sessions and their reports. |
+| `submit [--session <path>]` | Finalize captured evidence and write verified outcomes; transcript attachment is deferred. |
+| `report [--session <path>]` | Read an immutable final report without Docker. |
+| `sessions` | Browse past sessions (planned). |
 | `new <id> [--type debug] [--lang python]` | Create a runnable starter in a new folder from packaged templates; never overwrite or execute. |
 | `validate <path> [--no-write]` | Run `patchground-contract-verification`; CI-friendly. Progress goes to stderr; `--no-write` leaves `verification.json` untouched. |
 | `doctor` | Check Docker (or Podman), git, disk; print exact fixes (WSL2 on Windows). |

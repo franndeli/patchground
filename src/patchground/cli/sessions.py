@@ -60,7 +60,7 @@ def _human(console: Console, result: Result) -> None:
     elif isinstance(result, ResetResult):
         console.print(Text(f"reset {result.challenge_id}; timer and history preserved"))
     elif isinstance(result, SessionStatus):
-        console.print(Text(f"session {result.challenge_id}"))
+        console.print(Text(f"session {result.challenge_id}: {result.state}"))
         if result.timer:
             console.print(
                 Text(f"elapsed {int(result.elapsed_seconds)}s / {result.timebox_minutes} minutes")

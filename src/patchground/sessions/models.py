@@ -81,6 +81,8 @@ class SessionStatus(Model):
     workspace: Path
     challenge_id: str
     timer: bool
+    state: Literal["active", "submitted"] = "active"
+    submitted_at: AwareDatetime | None = None
     elapsed_seconds: float
     timebox_minutes: int
     last_check: CheckResult | None

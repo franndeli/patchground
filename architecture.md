@@ -23,7 +23,7 @@ flowchart TD
   packs --> spec
   sessions --> spec & sandbox
   verify --> spec & sandbox
-  report --> sessions & sandbox
+  report --> sessions & sandbox & verify
   sandbox --> spec
   ai --> report & sessions
   generate --> ai & sandbox & verify
@@ -40,7 +40,7 @@ flowchart TD
 | `sessions` | Session lifecycle, workspace repo, event log, check orchestration. | `patchground-sessions` |
 | `sandbox` | Every interaction with the container engine. | `patchground-sandbox` |
 | `verify` | The verification contract run against a challenge folder. | `patchground-verify` |
-| `report` | Deterministic verified outcomes from the event log and git history. | `patchground-report` |
+| `report` | Immutable verified outcomes from captured files, events and container probes. | `patchground-report` |
 | `ai` | Provider abstraction, versioned prompts, the debrief interviewer. Experimental; no SPEC yet. | — |
 | `generate` | Challenge generation pipeline. Starts as a script in `experiments/generate/`, outside the package; no SPEC yet. | — |
 
@@ -48,7 +48,9 @@ Edges not drawn above are forbidden. In particular: nothing below `cli` imports 
 core imports `ai` or `generate`; only `sandbox` imports the Docker SDK; only `sessions` runs git on
 workspaces (others read git data through `sessions`), `packs` runs it only to clone and fetch pack
 sources, and `verify` runs only `git apply` on a throwaway copy of a challenge's `workspace/` (never
-a repo the user owns, never with repository config a challenge could supply). `cli` reaches `sandbox` only for `doctor`'s engine probe.
+a repo the user owns, never with repository config a challenge could supply). `report` uses
+`verify` only for shared pure pytest recognition/static-analysis primitives; submission execution
+still goes through `sandbox`, and sessions never imports report. `cli` reaches `sandbox` only for `doctor`'s engine probe.
 
 ## Cross-cutting decisions
 
@@ -79,7 +81,7 @@ a repo the user owns, never with repository config a challenge could supply). `c
 └── cache/                # image digests, verification results
 ~/patchground/sessions/<date>-<challenge>/
 ├── workspace/            # the user's git repo
-└── .session/             # session.json, events.jsonl, original/, report.md, AI payloads
+└── .session/             # session.json, events.jsonl, original/, submission/, AI payloads
 ```
 
 Sessions always live under `~/patchground/sessions/`; the layout of `.session/` is owned by

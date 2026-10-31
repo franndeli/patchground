@@ -133,6 +133,9 @@ def check_session(
         meta = path / ".session"
         with store.locked(meta):
             record, manifest, _events = store.load(path)
+            from patchground.sessions.submission import require_active
+
+            require_active(meta)
             started = time.monotonic()
             try:
                 # Canonicalize only the system temp parent (e.g. macOS /var),
@@ -173,18 +176,35 @@ def session_status(session: Path | None = None, *, root: Path | None = None) -> 
     try:
         path = store.resolve(session, _root(root))
         record, manifest, events = store.load(path)
+        from patchground.sessions.submission import completed
+
+        saved = completed(path / ".session")
+        receipt = saved[1] if saved else None
         last = next((event for event in reversed(events) if event.type == "check_run"), None)
         return SessionStatus(
             session=path,
             workspace=path / "workspace",
             challenge_id=record.challenge_id,
             timer=record.timer,
-            elapsed_seconds=max(0.0, (now() - record.started_at).total_seconds())
+            state="submitted" if receipt else "active",
+            submitted_at=receipt.requested_at if receipt else None,
+            elapsed_seconds=max(
+                0.0,
+                ((receipt.requested_at if receipt else now()) - record.started_at).total_seconds(),
+            )
             if record.timer
             else 0,
             timebox_minutes=manifest.timebox_minutes,
-            last_check=store.check_from_event(last) if last else None,
-            last_outcome=str(last.data["outcome"]) if last else None,
+            last_check=receipt.final_check
+            if receipt
+            else store.check_from_event(last)
+            if last
+            else None,
+            last_outcome=receipt.final_check.outcome.value
+            if receipt
+            else str(last.data["outcome"])
+            if last
+            else None,
         )
     except (OSError, UnicodeError) as exc:
         raise SessionError(

@@ -28,6 +28,9 @@ resolves inputs, calls one module entry point, and renders the result.
   that is a floor, not a guarantee an image build fits. Paths under home display as `~`.
 - `new`: calls `authoring.create_challenge`; renders the new relative path and validation next
   step, or JSON `{id, path, type, language, files}`. It never runs the new challenge.
+- `submit`/`report`: call the report module and render its versioned facts as JSON or Markdown
+  text. Submit exits `1` for nonpassing final checks; reading that same report succeeds. Status
+  displays active/submitted state; no CLI path reopens a closed attempt.
 - Mapping domain errors to messages and exit codes; manifest errors keep their file and line. Any
   unexpected exception still ends as one `internal` error (exit `2`, one JSON document under
   `--json`), never a traceback that reads as exit `1`.

@@ -53,21 +53,28 @@ def load(path: Path) -> tuple[SessionRecord, ChallengeManifest, list[Event]]:
     safe_path(path, directory=True)
     meta = path / ".session"
     safe_path(meta, directory=True)
-    safe_path(path / "workspace", directory=True)
-    contents: dict[str, str] = {}
+    from patchground.sessions.submission import audit_contents, completed
+
+    saved = completed(meta)
+    if saved is None:
+        safe_path(path / "workspace", directory=True)
+    contents: dict[str, bytes] = {}
     with open_directory(meta) as parent:
         for name in ("session.json", "manifest.json", "TICKET.md", "events.jsonl", "lock"):
             with metadata_file(parent, name) as descriptor:
                 if name in ("session.json", "manifest.json", "events.jsonl"):
-                    with os.fdopen(os.dup(descriptor), "r", encoding="utf-8") as stream:
+                    with os.fdopen(os.dup(descriptor), "rb") as stream:
                         contents[name] = stream.read()
-    tree(meta / "hidden")
-    tree(meta / "original")
+    if saved is None:
+        tree(meta / "hidden")
+        tree(meta / "original")
     try:
         record = SessionRecord.model_validate_json(contents["session.json"])
         manifest = ChallengeManifest.model_validate_json(contents["manifest.json"])
         raw = contents["events.jsonl"]
-        if not raw.endswith("\n"):
+        if saved is not None:
+            raw = audit_contents(raw, saved[1])[0]
+        elif not raw.endswith(b"\n"):
             raise ValueError("truncated events")
         events = [Event.model_validate_json(line) for line in raw.splitlines()]
         if not events or events[0].type != "session_started":
@@ -83,6 +90,19 @@ def load(path: Path) -> tuple[SessionRecord, ChallengeManifest, list[Event]]:
             raise ValueError("inconsistent manifest")
         if manifest.environment.services:
             raise ValueError("unsupported services")
+        submitted = [event for event in events if event.type == "submitted"]
+        if saved is not None:
+            receipt = saved[1]
+            if receipt.requested_at < record.started_at:
+                raise ValueError("submission predates session")
+            if submitted and (
+                len(submitted) != 1
+                or submitted[0].data != {"requested_at": receipt.requested_at.isoformat()}
+                or submitted[0] != Event.model_validate_json(receipt.audit.event)
+            ):
+                raise ValueError("inconsistent submitted event")
+        elif submitted:
+            raise ValueError("submission audit has no bundle")
     except (ValidationError, ValueError, UnicodeError) as exc:
         raise SessionError("corrupt session metadata or events") from exc
     return record, manifest, events
@@ -123,11 +143,16 @@ def metadata_file(parent: int, name: str, flags: int = os.O_RDONLY) -> Iterator[
 
 def append_event(meta: Path, kind: str, data: dict[str, object]) -> None:
     serialized = Event(ts=now(), type=kind, data=data).model_dump_json() + "\n"
-    # A check can take minutes: validate the actual append fd after the sandbox returns.
+    append_bytes(meta, serialized.encode("utf-8"))
+
+
+def append_bytes(meta: Path, serialized: bytes) -> None:
+    """Append exact session-owned event bytes, including deterministic audit recovery suffixes."""
+    # Validate the actual append descriptor after any long-running work.
     with (
         open_directory(meta) as parent,
         metadata_file(parent, "events.jsonl", os.O_WRONLY | os.O_APPEND) as descriptor,
-        os.fdopen(os.dup(descriptor), "a", encoding="utf-8") as stream,
+        os.fdopen(os.dup(descriptor), "ab") as stream,
     ):
         stream.write(serialized)
         stream.flush()
