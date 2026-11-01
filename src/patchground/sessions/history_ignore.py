@@ -23,6 +23,62 @@ class IgnoreRules:
     ignore_case: bool
 
 
+# Variables that editors, terminals and credential helpers export routinely. None of them can
+# change repository discovery or ignore matching, so they do not make capture unavailable.
+_INERT_VARIABLES = frozenset(
+    {
+        "GIT_ASKPASS",
+        "GIT_TERMINAL_PROMPT",
+        "GIT_EDITOR",
+        "GIT_SEQUENCE_EDITOR",
+        "GIT_PAGER",
+        "GIT_SSH",
+        "GIT_SSH_COMMAND",
+        "GIT_SSH_VARIANT",
+        "GIT_AUTHOR_NAME",
+        "GIT_AUTHOR_EMAIL",
+        "GIT_AUTHOR_DATE",
+        "GIT_COMMITTER_NAME",
+        "GIT_COMMITTER_EMAIL",
+        "GIT_COMMITTER_DATE",
+        "GIT_MERGE_AUTOEDIT",
+    }
+)
+_CONFIG_VARIABLE_PREFIXES = ("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_")
+# Injected keys that would change what the learner's Git ignores or how it finds the repository.
+_RELEVANT_CONFIG = ("core.excludesfile", "core.ignorecase", "core.worktree")
+_RELEVANT_CONFIG_PREFIXES = ("include.", "includeif.", "extensions.")
+
+
+def _check_environment() -> None:
+    """Fail closed on any Git override this resolver cannot reproduce."""
+    allowed = {"GIT_CONFIG_SYSTEM", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_NOSYSTEM", "GIT_CONFIG_COUNT"}
+    for name in os.environ:
+        if not name.startswith("GIT_") or name in allowed or name in _INERT_VARIABLES:
+            continue
+        if name.startswith(_CONFIG_VARIABLE_PREFIXES):
+            continue
+        raise SessionError("unsupported Git context")
+    declared = [name for name in os.environ if name.startswith(_CONFIG_VARIABLE_PREFIXES)]
+    count_text = os.environ.get("GIT_CONFIG_COUNT")
+    if count_text is None:
+        if declared:
+            raise SessionError("unsupported Git context")
+        return
+    if not count_text.isascii() or not count_text.isdigit() or int(count_text) > 64:
+        raise SessionError("unsupported Git context")
+    count = int(count_text)
+    expected = {
+        f"{prefix}{index}" for prefix in _CONFIG_VARIABLE_PREFIXES for index in range(count)
+    }
+    if set(declared) != expected:
+        raise SessionError("unsupported Git context")
+    for index in range(count):
+        key = os.environ[f"GIT_CONFIG_KEY_{index}"].strip().lower()
+        if key in _RELEVANT_CONFIG or key.startswith(_RELEVANT_CONFIG_PREFIXES):
+            raise SessionError("unsupported Git context")
+
+
 def _read(path: Path) -> bytes:
     """Missing files are empty; redirected, shared and special files are unavailable."""
     if path == Path(os.devnull):
@@ -72,9 +128,7 @@ def _resolve(
 ) -> IgnoreRules:
     # Overrides that change repository discovery or inject command configuration cannot
     # be reproduced by this bounded resolver. In particular, never silently drop them.
-    allowed = {"GIT_CONFIG_SYSTEM", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_NOSYSTEM"}
-    if any(name.startswith("GIT_") and name not in allowed for name in os.environ):
-        raise SessionError("unsupported Git context")
+    _check_environment()
     executable = resolve_executable(
         workspace,
         workspace.parent / ".session",

@@ -378,6 +378,8 @@ def test_native_git_global_and_configured_exclusions(
         "worktree",
         "environment",
         "environment-config",
+        "environment-config-include",
+        "environment-config-malformed",
         "global-symlink",
     ],
 )
@@ -424,6 +426,15 @@ def test_unresolved_exclusions_fail_closed_preserving_check(
         monkeypatch.setenv("GIT_CONFIG_COUNT", "1")
         monkeypatch.setenv("GIT_CONFIG_KEY_0", "core.excludesFile")
         monkeypatch.setenv("GIT_CONFIG_VALUE_0", str(secret))
+    elif unsafe == "environment-config-include":
+        monkeypatch.setenv("GIT_CONFIG_COUNT", "2")
+        monkeypatch.setenv("GIT_CONFIG_KEY_0", "credential.interactive")
+        monkeypatch.setenv("GIT_CONFIG_VALUE_0", "false")
+        monkeypatch.setenv("GIT_CONFIG_KEY_1", "includeIf.gitdir:/.path")
+        monkeypatch.setenv("GIT_CONFIG_VALUE_1", str(secret))
+    elif unsafe == "environment-config-malformed":
+        monkeypatch.setenv("GIT_CONFIG_COUNT", "1")
+        monkeypatch.setenv("GIT_CONFIG_KEY_0", "credential.interactive")
     else:
         (Path(os.environ["HOME"]) / ".gitconfig").symlink_to(secret)
     # The checker excludes .git itself, so unsafe metadata must not affect checks.
@@ -435,6 +446,23 @@ def test_unresolved_exclusions_fail_closed_preserving_check(
     if before is not None:
         assert git_bytes(workspace) == before
     assert len(history_for_session(started.session, root=root).snapshots) == 1
+
+
+def test_editor_and_credential_environment_keeps_history(authored, root, sandbox, monkeypatch):
+    # Editors, agent terminals and credential helpers export these routinely.
+    monkeypatch.setenv("GIT_ASKPASS", "/nonexistent/askpass")
+    monkeypatch.setenv("GIT_TERMINAL_PROMPT", "0")
+    monkeypatch.setenv("GIT_EDITOR", "true")
+    monkeypatch.setenv("GIT_CONFIG_COUNT", "2")
+    monkeypatch.setenv("GIT_CONFIG_KEY_0", "credential.interactive")
+    monkeypatch.setenv("GIT_CONFIG_VALUE_0", "false")
+    monkeypatch.setenv("GIT_CONFIG_KEY_1", "credential.guiPrompt")
+    monkeypatch.setenv("GIT_CONFIG_VALUE_1", "false")
+    started = start_session(authored, root=root, sandbox=sandbox)
+    assert started.history.state == "recorded"
+    checked = check_session(started.session, root=root, sandbox=sandbox)
+    assert checked.history.state == "recorded"
+    assert history_for_session(started.session, root=root).availability == "available"
 
 
 def test_ignore_inputs_are_captured_before_check(authored, root, sandbox):

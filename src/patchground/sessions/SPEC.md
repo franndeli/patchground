@@ -101,6 +101,11 @@ duration), `reset`, `hint_revealed`, `command_run`, `submitted`, `transcript_att
   and `core.ignoreCase`. Exclusion inputs are resolved before the check runs, separately from the
   exact captured editable input. Config precedence is system, XDG global, home global, local;
   explicit absolute `GIT_CONFIG_SYSTEM`/`GIT_CONFIG_GLOBAL` and disabling system config are honored.
+  Variables editors, agent terminals and credential helpers export routinely (`GIT_ASKPASS`,
+  `GIT_TERMINAL_PROMPT`, editor/pager/SSH and author/committer identity variables) cannot change
+  discovery or ignore matching and are tolerated. Well-formed `GIT_CONFIG_COUNT`/`KEY_n`/`VALUE_n`
+  injection is tolerated only when no injected key is `core.excludesFile`, `core.ignoreCase`,
+  `core.worktree`, `include.*`, `includeIf.*` or `extensions.*`; malformed injection fails closed.
   Git discovers its compiled system-config path via a read-only data query; unsupported discovery
   makes capture unavailable. Configuration is parsed as data via stdin, never copied to disk;
   only exclusion-rule bytes and sanitized fixed private config are written. No raw configuration,
