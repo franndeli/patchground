@@ -48,8 +48,9 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   reliable interview quality. Preserve the implementation privately for follow-up; retain the
   consent/privacy and core-without-AI requirements for any revival. See
   [the evaluation and disposition](evaluations/ai-debrief-smoke.md).
-- Evaluate a bounded generator on supported repositories; retain experimental labeling unless
-  validation and useful-content review support promotion. No inference purchases or hidden costs.
+- The owner also deferred the generator experiment from launch to prioritize learner trials and
+  hardening. No generator evaluation or generator command is claimed. Existing authoring tools and
+  the six curated challenges remain the launch content scope.
 
 ### E. Evaluation and hardening
 
@@ -139,6 +140,6 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   Implementation and integration patches are privately preserved, with no AI code or SDK added to
   the launch build. The restored core passed 1,104 Docker-required tests, Ruff/format and mypy.
   See `evaluations/ai-debrief-smoke.md`; synthetic operator answers are not learner or human trials.
-- Next: separate-owner site handoff, disposition of the generator experiment and core-product
-  evaluation. Human trials and the ten-learner cohort remain pending; no deployment, package
+- The owner also deferred the generator experiment; it has not been evaluated or implemented.
+- Next: separate-owner site handoff and core-product evaluation. Human trials and the ten-learner cohort remain pending; no deployment, package
   publication or release is implied.

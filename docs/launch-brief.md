@@ -67,8 +67,8 @@ established. Inventory does not authorize any production, DNS, package or releas
 - Documentation and a public presence at patchground.dev.
 - Optional AI debrief and generation experiments, with explicit usefulness/quality gates. The owner
   subsequently deferred AI debrief from launch after the local experiment did not establish reliable
-  interview quality; see [the evaluation](evaluations/ai-debrief-smoke.md). Generator disposition is
-  separate and remains pending.
+  interview quality; see [the evaluation](evaluations/ai-debrief-smoke.md). The owner also explicitly
+  deferred the generator experiment to prioritize learner trials and core-product hardening.
 - Broader language/runner support and other expansion only with defined scope and acceptance.
 - Mixed-model synthetic trials, remediation, and separate real-human validation.
 
