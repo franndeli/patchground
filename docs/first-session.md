@@ -23,8 +23,8 @@ use `pgnd validate <path>` separately.
 
 Only start challenges you authored or reviewed. Listing or showing a challenge is not an endorsement.
 Patchground does not run challenge commands on your host, but your editor or agent can execute
-project tooling when you open a workspace. Remote pack installation and consent workflows are not
-part of this prototype.
+project tooling when you open a workspace. Installed packs require an explicit
+consent review before anything builds or runs; see [Pinned challenge packs](packs.md).
 
 ## Solve in your editor
 
@@ -57,7 +57,7 @@ excluded from checkpoint history; unavailable capture is reported separately fro
 There is no periodic capture or snapshot restore command.
 
 When finished, run `pgnd submit` to capture fresh checks and save a factual report, then `pgnd report`
-to read it without Docker. A failed attempt can also be submitted. Supported pytest tests can provide
+to read it without Docker. A failed attempt can also be submitted. Supported pytest and Vitest tests can provide
 regression evidence by failing on original code and passing on final code; unsupported evidence is
 explicit, never a pass. There is no overall score. Submission closes the attempt to further
 check/reset/hint/run operations; your workspace remains editable, but the saved report is immutable.
