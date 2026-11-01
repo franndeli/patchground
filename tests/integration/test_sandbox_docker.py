@@ -464,13 +464,27 @@ def test_command_timeout_and_memory_limits(
         return output_tail(container)
 
     monkeypatch.setattr(sandbox_run, "_output_tail", capture)
-    hog = _command(
-        image,
-        ws,
-        ["python", "-c", "b = bytearray(); [b.extend(bytes(10**7)) for _ in range(100)]"],
-        Limits(memory_bytes=128 * 1024**2),
-    )
-    assert hog.limit == "memory", evidence
+    # Engines can lose the OOM report (containerd#8893: observed on GitHub runners with Docker
+    # 28.0.4, about 2 in 100 runs). Patchground must then not invent a memory label from exit 137,
+    # so every attempt is either labelled "memory" or provably unconfirmed by the engine, and at
+    # least one of up to three attempts must prove the memory label end to end.
+    labelled = 0
+    for _ in range(3):
+        evidence.clear()
+        hog = _command(
+            image,
+            ws,
+            ["python", "-c", "b = bytearray(); [b.extend(bytes(10**7)) for _ in range(100)]"],
+            Limits(memory_bytes=128 * 1024**2),
+        )
+        if hog.limit == "memory":
+            labelled += 1
+            break
+        samples = evidence.get("state_samples_100ms") or [{}]
+        unconfirmed = hog.exit_code == 137 and not any(s.get("OOMKilled") for s in samples)
+        unconfirmed = unconfirmed and not any(e[0] == "oom" for e in evidence.get("events", []))
+        assert hog.limit is None and unconfirmed, (hog, evidence)
+    assert labelled == 1, evidence
     _assert_no_leftovers(engine)
 
 

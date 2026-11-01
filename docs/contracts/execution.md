@@ -51,6 +51,9 @@ is rejected by start and validation; service lifecycle below describes a deferre
   `no-new-privileges`.
 - Limits per run: 2 CPUs, 2 GB memory, 512 PIDs, 10 minutes wall clock. Detected timeout/OOM limits
   are distinct from ordinary failures; PID-limit kills may be observable only through the exit code.
+  OOM is labelled only when the engine reports it. Engines can occasionally lose that report
+  (upstream containerd#8893); such a kill then surfaces like a PID-limit kill, as exit 137 with no
+  label. Exit 137 alone is never reported as a memory limit.
 - Workspace/results volumes disable image copy-up, preserving uid/gid 1000 ownership even with empty
   input. The seed container is never started. Engine logs use bounded rotation (1 MiB, two files).
   Diagnostic output is streamed into a bounded buffer, sanitized, and exposed only as a combined
