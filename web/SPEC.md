@@ -18,6 +18,12 @@ installation; and last the invitation to author or contribute. Authoring and com
 product; they never lead. The annotated report mirrors the sections of `patchground-report` and
 states facts, never judgements such as "weakened".
 
+The hero is a layered scene: an editor window showing the fix as a diff behind the animated
+terminal, with two floating facts (checks run in Docker, Git state untouched), over a CSS-only
+glow and grid. Below it a stats strip is generated from the catalog (counts of challenges,
+languages, kinds of work and timeboxed hours) so it can never go stale. Catalog rows carry a
+language/type tile and a three-segment difficulty bar. Everything is inline SVG or CSS; no images.
+
 The brand is a geometric mark: a square with its missing corner set back in ("the patch"). It is
 inline SVG in every page header and footer, and the same shape is the favicon. Illustrations are
 decorative inline SVG (`aria-hidden`) in the same flat style, with colours from the CSS palette.
