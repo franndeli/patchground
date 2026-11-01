@@ -73,3 +73,11 @@ def test_validate_never_writes_into_the_catalog(reference, monkeypatch) -> None:
     result = CliRunner().invoke(app, ["validate", reference, "--json"])
     assert result.exit_code != 0
     assert seen == {"write": False}
+
+
+def test_builtin_listing_hides_install_paths(tmp_path, monkeypatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["list", "--builtin"])
+    assert result.exit_code == 0
+    assert "pgnd start <id>" in result.stdout
+    assert str(REPO / "examples") not in result.stdout

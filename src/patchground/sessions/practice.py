@@ -51,6 +51,7 @@ class InvalidSession(Model):
 class SessionsList(Model):
     sessions: tuple[SessionListingItem, ...]
     invalid: tuple[InvalidSession, ...]
+    root: Path | None = None
 
 
 class CommandRunResult(Model):
@@ -105,7 +106,7 @@ def list_sessions(*, root: Path | None = None) -> SessionsList:
     try:
         no_links(base)
         if not base.exists():
-            return SessionsList(sessions=(), invalid=())
+            return SessionsList(sessions=(), invalid=(), root=base)
         safe_path(base, directory=True)
         with open_directory(base) as parent, os.scandir(parent) as entries:
             names = sorted(entry.name for entry in entries)
@@ -140,7 +141,7 @@ def list_sessions(*, root: Path | None = None) -> SessionsList:
     except (OSError, UnicodeError) as exc:
         raise SessionError("sessions unavailable: session directory cannot be read") from exc
     items.sort(key=lambda item: (item.started_at, item.session.name), reverse=True)
-    return SessionsList(sessions=tuple(items), invalid=tuple(invalid))
+    return SessionsList(sessions=tuple(items), invalid=tuple(invalid), root=base)
 
 
 def run_session_command(

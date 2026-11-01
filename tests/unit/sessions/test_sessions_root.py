@@ -38,3 +38,18 @@ def test_sessions_created_under_override(authored, sandbox, monkeypatch, tmp_pat
     monkeypatch.setenv(store.SESSIONS_ENV, str(target))
     started = start_session(authored, sandbox=sandbox)
     assert started.session.parent == target.resolve()
+
+
+def test_listing_names_its_root_and_selection_error_points_to_it(
+    authored, sandbox, monkeypatch, tmp_path
+) -> None:
+    from patchground.sessions import start_session
+    from patchground.sessions.practice import list_sessions
+
+    target = tmp_path / "chosen"
+    monkeypatch.setenv(store.SESSIONS_ENV, str(target))
+    start_session(authored, sandbox=sandbox)
+    assert list_sessions().root == target.resolve()
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(SessionError, match="pgnd sessions"):
+        store.resolve(None, target.resolve())

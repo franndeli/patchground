@@ -27,7 +27,7 @@ def root(
         False, "--version", callback=_version, is_eager=True, help="Show the version and exit."
     ),
 ) -> None:
-    """Practice real software engineering on broken repositories.
+    """Practice real software engineering on broken repositories. Checks run in Docker.
 
     `pgnd` is a short alias of `patchground`. New here? Run `pgnd doctor`, then
     `pgnd list --builtin` and `pgnd start <id>`.

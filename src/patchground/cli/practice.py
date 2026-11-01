@@ -63,6 +63,14 @@ def _human(console: Console, result: Result) -> None:
             console.print(Text(f"Hint {result.index}: {result.hint}"))
             console.print(Text(f"{result.remaining} remaining"))
     elif isinstance(result, SessionsList):
+        if result.root is not None:
+            console.print(
+                Text(
+                    f"Every attempt in {_display_path(result.root)} "
+                    "(set PATCHGROUND_SESSIONS_DIR to keep a separate set)",
+                    style="dim",
+                )
+            )
         if not result.sessions:
             console.print(Text("No sessions found."))
         for item in result.sessions:

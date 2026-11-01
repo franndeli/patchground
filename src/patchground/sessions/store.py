@@ -64,7 +64,10 @@ def resolve(session: Path | None, root: Path) -> Path:
     for candidate in (selected, *selected.parents):
         if candidate.parent == root.resolve(strict=True):
             return candidate
-    raise SessionError("select a session with --session or run inside its workspace")
+    raise SessionError(
+        "select a session with --session or run inside its workspace; "
+        "list your attempts with: pgnd sessions"
+    )
 
 
 def load(path: Path) -> tuple[SessionRecord, ChallengeManifest, list[Event]]:

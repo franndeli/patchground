@@ -21,6 +21,9 @@ not a new observation of the live workspace. No LLM is involved.
   `.session/submission/` bundle. The bundle, not a last historical check or live Git state, supplies
   final evidence. Final checks are fresh; unsupported/missing regression evidence never blocks
   submission or silently passes. Failing checks may finalize an unsuccessful attempt.
+  Saved `report.md` escapes Markdown and HTML in untrusted values. Terminal output of `submit` and
+  `report` renders the same facts as plain text (control characters replaced, no escaping) so test
+  IDs stay readable and copyable.
 - **Regression test:** select actual new/changed supported pytest or TypeScript definitions and run identical
   candidate material on disposable original/final-code copies. Only identities failing before and
   passing after are verified; unchanged pre-existing failures cannot establish a regression. Require

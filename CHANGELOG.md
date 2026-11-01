@@ -28,6 +28,8 @@ First public preview. Local-first: no account, no hosted execution, no built-in 
 
 ### Fixed
 
+- Terminal `submit` and `report` output no longer shows Markdown escapes such as `test\_name`.
+
 - Checkpoint history no longer reports "unavailable" in editor and agent terminals that export
   `GIT_ASKPASS` or credential settings through `GIT_CONFIG_COUNT`.
 

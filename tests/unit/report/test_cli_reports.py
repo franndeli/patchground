@@ -55,3 +55,25 @@ def test_unexpected_errors_do_not_leak_detail() -> None:
     assert result.exit_code == 2
     assert "private-detail" not in result.output
     assert json.loads(result.stdout)["error"]["kind"] == "internal"
+
+
+def test_terminal_report_is_plain_text_and_saved_markdown_stays_escaped(
+    session: Path, sandbox
+) -> None:
+    sandbox.result = RunResult(
+        RunOutcome.PASSED,
+        (TestResult("tests.test_x::test_a_b", "test_a_b", "tests.test_x", TestStatus.PASSED),),
+        0,
+        None,
+        "",
+    )
+    with patch("patchground.sandbox.run_check", side_effect=sandbox.run_check):
+        submitted = runner.invoke(app, ["submit", "--session", str(session)])
+    assert "tests.test_x::test_a_b" in submitted.stdout
+    assert "\\_" not in submitted.stdout
+    assert "Attempt complete" in submitted.stdout
+    saved = (session / ".session/submission/report.md").read_text()
+    assert "test\\_a\\_b" in saved
+    shown = runner.invoke(app, ["report", "--session", str(session)])
+    assert "tests.test_x::test_a_b" in shown.stdout and "\\_" not in shown.stdout
+    assert "Attempt complete" not in shown.stdout

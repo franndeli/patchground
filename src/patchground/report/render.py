@@ -7,15 +7,21 @@ import html
 from patchground.report.models import VerifiedReport
 
 
-def _text(value: str) -> str:
-    printable = "".join(char if char.isprintable() else " " for char in value)
-    escaped = html.escape(printable, quote=True)
+def _printable(value: str) -> str:
+    return "".join(char if char.isprintable() else " " for char in value)
+
+
+def _escaped(value: str) -> str:
+    escaped = html.escape(_printable(value), quote=True)
     for char in ("\\", "`", "*", "_", "[", "]", "#", "|", "!"):
         escaped = escaped.replace(char, "\\" + char)
     return escaped
 
 
-def render_markdown(report: VerifiedReport) -> str:
+def render_markdown(report: VerifiedReport, *, terminal: bool = False) -> str:
+    """The saved ``report.md``; ``terminal`` renders the same facts as plain text for a console,
+    without Markdown or HTML escaping (control characters are still replaced)."""
+    _text = _printable if terminal else _escaped
     checks = report.checks
     lines = [
         f"# Verified outcomes: {_text(report.challenge_id)}",

@@ -27,7 +27,7 @@ from patchground.packs import (
     DiscoveryResult,
     discover_challenges,
 )
-from patchground.packs.builtin import builtin_root
+from patchground.packs.builtin import builtin_root, is_builtin_path
 from patchground.packs.execution import InstalledDiscoveryResult
 from patchground.packs.models import PackError
 from patchground.packs.registry import discover_installed, show_reference
@@ -61,6 +61,8 @@ class DiscoveryCommand(TyperCommand):
 
 
 def _human_list(console: Console, result: DiscoveryResult) -> None:
+    if result.challenges and is_builtin_path(Path(result.directory)):
+        console.print(Text("Built-in challenges. Start one with: pgnd start <id>", style="dim"))
     if not result.challenges and not result.invalid:
         console.print(Text(f"no challenges found in {_clean(result.directory)}"))
         if not isinstance(result, InstalledDiscoveryResult) and builtin_root() is not None:
@@ -76,7 +78,8 @@ def _human_list(console: Console, result: DiscoveryResult) -> None:
         line.append(f"  {_clean(', '.join(item.languages))}")
         console.print(line)
         console.print(Text(f"    {_clean(item.title)}"))
-        console.print(Text(f"    {_clean(item.path)}", style="dim"))
+        if not is_builtin_path(Path(item.path)):
+            console.print(Text(f"    {_clean(item.path)}", style="dim"))
     for bad in result.invalid:
         console.print(Text(f"invalid: {_clean(bad.path)}", style="bold red"))
         for issue in bad.issues:

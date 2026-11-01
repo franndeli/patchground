@@ -33,7 +33,7 @@ def _invoke(call: Callable[[], VerifiedReport], json_mode: bool, *, submitting: 
         raise typer.Exit(EXIT_ERROR) from exc
 
     def human(console: Console) -> None:
-        console.print(Text(render_markdown(result)))
+        console.print(Text(render_markdown(result, terminal=True)))
         if submitting:
             console.print(Text("Attempt complete. Read this report again with: pgnd report"))
             console.print(Text("Try another challenge: pgnd list --builtin"))

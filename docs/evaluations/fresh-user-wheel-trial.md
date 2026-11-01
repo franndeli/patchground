@@ -63,11 +63,16 @@ includes `tests/` (challenge versions 1.0.1), and so do the feature starters and
 guidance. Failed checks now point to `pgnd run -- <command>` for visible-test details, and `submit`
 ends with next steps.
 
-## Open follow-ups
+## Follow-ups fixed after round 2
 
-- Terminal output of `report` prints escaped Markdown (`test\_pagination`).
-- `pgnd sessions` lists every attempt on the machine. On the trial machine that included the
-  owner's earlier sessions, which confused both round-2 users.
-- `list --builtin` prints long installed-catalog paths.
+- Terminal `submit`/`report` output is plain text; the saved `report.md` keeps its escaping.
+- `pgnd sessions` names its root and says it lists every attempt there. Commands that cannot select
+  a session point to `pgnd sessions`.
+- `list --builtin` no longer prints installed-catalog paths in human output.
+- The root help says checks run in Docker.
+
+## Still open
+
 - Both round-2 users chose the only beginner challenge. The other five built-ins were not exercised
   from the wheel in this trial; the earlier learner cohort covered them from a prepared session.
+- The "blank lines in check output" from round 1 could not be reproduced in a normal terminal.

@@ -78,7 +78,10 @@ submission request time.
 hint text. No hints or exhaustion succeeds with an explicit empty result and no new event; the result
 includes `total`, so "this challenge has no hints" is distinguishable from "all revealed".
 `sessions` lists local attempts newest first without Docker or implicit selection; invalid candidates
-are reported and cause exit `1`. An empty listing succeeds; inaccessible storage exits `2`.
+are reported and cause exit `1`. An empty listing succeeds; inaccessible storage exits `2`. The
+result names its `root`, and human output says the list covers every attempt there. Commands that
+need a session and cannot select one point to `pgnd sessions`; there is still no implicit fallback.
+Human `list --builtin` output omits installed-catalog paths (JSON keeps them).
 
 `run` requires the `--` boundary. Arguments after it are literal container argv, including flags such
 as `--json`; shell syntax requires an explicit container `sh -c`. Patchground options go before it.
