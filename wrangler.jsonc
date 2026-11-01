@@ -1,0 +1,10 @@
+// Cloudflare Workers static-assets deployment of the public site (patchground.dev).
+// Build first with `npm --prefix web run build`; only the allowlisted files in web/dist are served.
+// No Worker script: Cloudflare serves the files directly. See docs/publishing.md.
+{
+  "name": "patchground",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./web/dist"
+  }
+}

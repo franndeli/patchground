@@ -58,3 +58,4 @@ site/
 # --- pgnd validate output: CI re-validates every push; local image ids don't travel ---
 examples/**/verification.json
 tests/fixtures/**/verification.json
+.wrangler/

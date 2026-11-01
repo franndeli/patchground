@@ -11,13 +11,14 @@ at the time it happens; this document describes the steps, it does not authorize
 2. **PyPI trusted publisher.** On pypi.org → Account → Publishing → *Add a pending publisher*:
    project `patchground`, owner `franndeli`, repository `patchground`, workflow `release.yml`,
    environment `pypi`. No API token is created or stored.
-3. **Cloudflare Pages.** Workers & Pages → Create → Pages → connect the GitHub repository:
-   - production branch `main`; framework preset *None*;
-   - build command `npm --prefix web run build`; build output directory `web/dist`;
-   - environment variable `NODE_VERSION=24`.
-   The build has no dependencies to install and refuses to publish a stale catalog. Then add the custom
-   domain `patchground.dev` to the project; Cloudflare creates the DNS record in the existing zone.
-   Preview deployments for other branches can be disabled in the project settings.
+3. **Cloudflare (Workers static assets).** Workers & Pages → Create → import the GitHub repository:
+   - Worker name `patchground` (must equal `name` in `wrangler.jsonc`); production branch `main`;
+   - build command `npm --prefix web run build`; deploy command `npx wrangler deploy` (default);
+   - build variable `NODE_VERSION=24`.
+   `wrangler.jsonc` serves `web/dist` as static assets with no Worker script. The build has no
+   dependencies to install and refuses to publish a stale catalog. Then add the custom domain
+   `patchground.dev` under the Worker's *Settings → Domains & Routes*; Cloudflare creates the DNS
+   record in the existing zone. Non-production branch builds can be disabled in the build settings.
 
 ## Release checklist
 
