@@ -65,7 +65,10 @@ established. Inventory does not authorize any production, DNS, package or releas
 - Remaining practice commands and safe internal history.
 - Pack distribution, trust/consent, author contribution workflow and validation integration.
 - Documentation and a public presence at patchground.dev.
-- Optional AI debrief and generation experiments, with explicit usefulness/quality gates.
+- Optional AI debrief and generation experiments, with explicit usefulness/quality gates. The owner
+  subsequently deferred AI debrief from launch after the local experiment did not establish reliable
+  interview quality; see [the evaluation](evaluations/ai-debrief-smoke.md). Generator disposition is
+  separate and remains pending.
 - Broader language/runner support and other expansion only with defined scope and acceptance.
 - Mixed-model synthetic trials, remediation, and separate real-human validation.
 

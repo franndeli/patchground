@@ -44,8 +44,10 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
 
 - Build documentation/catalog artifacts for patchground.dev. Review a concrete UI proposal before
   implementing it; choose hosting with the owner before production changes.
-- Implement optional evidence-grounded AI coaching only behind explicit context preview/consent,
-  safe provider configuration and core-without-AI tests.
+- AI coaching is explicitly deferred from launch after the local experiment failed to establish
+  reliable interview quality. Preserve the implementation privately for follow-up; retain the
+  consent/privacy and core-without-AI requirements for any revival. See
+  [the evaluation and disposition](evaluations/ai-debrief-smoke.md).
 - Evaluate a bounded generator on supported repositories; retain experimental labeling unless
   validation and useful-content review support promotion. No inference purchases or hidden costs.
 
@@ -132,5 +134,11 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   types, schema and clean core-wheel starter/submission smoke passed. Integration found and fixed
   private-mode runner resource permissions and read-only snapshot probe copies. See
   `evaluations/coverage-smoke.md`; remote acceptance remains pending until observed.
-- Next: remaining site/optional-AI product work and evaluation. Human trials and the ten-learner
-  cohort remain pending; no deployment, package publication or release is implied.
+- The owner deferred AI coaching from launch after five bounded local-model attempts. The final
+  experimental version did not complete a live interview; an earlier completion had poor questions.
+  Implementation and integration patches are privately preserved, with no AI code or SDK added to
+  the launch build. The restored core passed 1,104 Docker-required tests, Ruff/format and mypy.
+  See `evaluations/ai-debrief-smoke.md`; synthetic operator answers are not learner or human trials.
+- Next: separate-owner site handoff, disposition of the generator experiment and core-product
+  evaluation. Human trials and the ten-learner cohort remain pending; no deployment, package
+  publication or release is implied.
