@@ -90,6 +90,14 @@ def _human(console: Console, result: Result) -> None:
         console.print(Text("  ".join(f"{key}: {value}" for key, value in result.counts.items())))
         if result.limit is not None:
             console.print(Text(f"limit exceeded: {result.limit}"))
+        if not result.passed:
+            console.print(
+                Text(
+                    "Test output is not shown. To see visible-test details, run your test command "
+                    "with: pgnd run -- <command>",
+                    style="dim",
+                )
+            )
         if result.history is not None:
             _history(console, result.history)
 

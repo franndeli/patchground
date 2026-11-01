@@ -3,6 +3,7 @@
 from collections.abc import Callable
 
 import typer
+from rich.console import Console
 from rich.text import Text
 
 from patchground.cli.render import EXIT_ERROR, EXIT_FAILED, EXIT_INTERRUPTED, emit, emit_error
@@ -30,11 +31,14 @@ def _invoke(call: Callable[[], VerifiedReport], json_mode: bool, *, submitting: 
     except Exception as exc:
         emit_error("internal", "report operation failed unexpectedly", json_mode)
         raise typer.Exit(EXIT_ERROR) from exc
-    emit(
-        result.model_dump(mode="json"),
-        lambda console: console.print(Text(render_markdown(result))),
-        json_mode,
-    )
+
+    def human(console: Console) -> None:
+        console.print(Text(render_markdown(result)))
+        if submitting:
+            console.print(Text("Attempt complete. Read this report again with: pgnd report"))
+            console.print(Text("Try another challenge: pgnd list --builtin"))
+
+    emit(result.model_dump(mode="json"), human, json_mode)
     if submitting and not result.checks.passed:
         raise typer.Exit(EXIT_FAILED)
 
