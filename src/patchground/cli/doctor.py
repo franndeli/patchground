@@ -172,6 +172,15 @@ def disk_check(probe: DiskProbe) -> DoctorCheck:
             f"Free at least {minimum} on the disk holding {probe.location}; "
             "review files before deleting them",
         )
+    if problem is DiskProblem.INVALID_SETTING:
+        return DoctorCheck(
+            "disk",
+            CheckStatus.FAILED,
+            f"{probe.location} is set but is not an absolute path",
+            problem.value,
+            f"Set {probe.location} to an absolute directory path, or unset it to use "
+            "~/patchground/sessions",
+        )
     if problem is DiskProblem.NOT_WRITABLE:
         return DoctorCheck(
             "disk",

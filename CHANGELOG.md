@@ -14,14 +14,22 @@ First public preview. Local-first: no account, no hosted execution, no built-in 
 - `submit` and `report`: an immutable, test-backed debrief — check outcomes, regression evidence
   (your test fails on the original code and passes on yours), diff scope and structural test
   observations. Unsupported evidence is reported as such, never as a pass.
-- Six curated challenges across Python and TypeScript, debugging and feature work.
+- Six curated challenges across Python and TypeScript, debugging and feature work, bundled with the
+  CLI: `pgnd list --builtin`, then `pgnd start <id>`. No checkout is needed.
+- `PATCHGROUND_SESSIONS_DIR` keeps sessions somewhere other than `~/patchground/sessions`.
 - Authoring: `new` with four starters (Python/TypeScript × debug/feature) and `validate`, which proves
   in Docker that the broken state fails, the reference passes, results are stable and editable-test
   shortcuts are caught where supported.
 - Pinned challenge packs from public Git repositories, with an explicit consent review before anything
   builds or runs.
 - A reusable GitHub Action that validates committed challenges.
-- `doctor`, `list`, `show`; every command supports `--json`.
+- `doctor`, `list`, `show`; every command supports `--json`. An empty `list` and `start` print the
+  next commands to run.
+
+### Fixed
+
+- Checkpoint history no longer reports "unavailable" in editor and agent terminals that export
+  `GIT_ASKPASS` or credential settings through `GIT_CONFIG_COUNT`.
 
 ### Known limitations
 

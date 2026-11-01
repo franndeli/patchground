@@ -23,6 +23,13 @@ Local `show` reads metadata and a bounded regular ticket, never hidden checks, s
 Existing local folders and explicit paths retain local behavior; unique bare IDs select active
 installed challenges, while ambiguity names qualified `pack-name:challenge-id` alternatives.
 
+A bare ID that is neither a local folder nor installed falls back to the **built-in catalog**: the
+curated `examples/` shipped inside the wheel as `patchground/catalog/` (or `examples/` itself in a
+source checkout). Built-in challenges are first-party content installed with the CLI, so they keep
+local behavior: no registry state, no consent prompt, no `unofficial` label. `list --builtin`
+discovers them with the ordinary local discovery rules. Validation never writes `verification.json`
+into the catalog. Installed and local challenges of the same ID take precedence.
+
 Managed-cache paths never become authored paths, including aliases, missing versions and corrupt
 state. Installed listings verify cached content and expose qualified references and pinned identity;
 invalid content is reported, not repaired. Installed show uses a disposable verified copy without

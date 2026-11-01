@@ -27,6 +27,7 @@ def test_hints_are_frozen_ordered_and_exhaustion_does_not_log(authored, root, sa
     before = events(started.session)
     exhausted = reveal_hint(started.session, root=root)
     assert exhausted.exhausted and exhausted.hint is None and exhausted.remaining == 0
+    assert exhausted.total == 2
     assert events(started.session) == before
     assert [event["data"] for event in before if event["type"] == "hint_revealed"] == [
         {"index": 1},
@@ -37,7 +38,8 @@ def test_hints_are_frozen_ordered_and_exhaustion_does_not_log(authored, root, sa
 def test_no_hints_is_success_without_event(authored, root, sandbox) -> None:
     started = start_session(authored, root=root, sandbox=sandbox)
     before = events(started.session)
-    assert reveal_hint(started.session, root=root).exhausted
+    result = reveal_hint(started.session, root=root)
+    assert result.exhausted and result.total == 0
     assert events(started.session) == before
 
 

@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
+from patchground.sessions.models import SessionError
+from patchground.sessions.store import SESSIONS_ENV
 from patchground.sessions.workflow import _root
 
 MINIMUM_FREE_BYTES = 1024**3
@@ -37,6 +39,7 @@ class DiskProblem(StrEnum):
     LOW_SPACE = "low_space"
     NOT_WRITABLE = "not_writable"
     UNREADABLE = "unreadable"  # no existing ancestor could be inspected
+    INVALID_SETTING = "invalid_setting"  # PATCHGROUND_SESSIONS_DIR is not an absolute path
 
 
 @dataclass(frozen=True)
@@ -86,7 +89,10 @@ def probe_git() -> GitProbe:
 
 def probe_disk(root: Path | None = None, *, minimum_bytes: int = MINIMUM_FREE_BYTES) -> DiskProbe:
     """Check free space and writability at the sessions root, or its nearest existing ancestor."""
-    target = _root(root)
+    try:
+        target = _root(root)
+    except SessionError:
+        return DiskProbe(ok=False, location=SESSIONS_ENV, problem=DiskProblem.INVALID_SETTING)
     location = display_path(target)
     existing = _nearest_existing(target)
     if existing is None:

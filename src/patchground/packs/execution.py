@@ -15,6 +15,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
+from patchground.packs.builtin import builtin_challenge
 from patchground.packs.discovery import (
     ChallengeDetails,
     ChallengeSummary,
@@ -245,7 +246,9 @@ def _locate(reference: str | Path, root: Path) -> Path | _Managed:
             try:
                 return _installed(dict(load_state(root).packs), None, reference)
             except _NotInstalled:
-                pass
+                bundled = builtin_challenge(reference)
+                if bundled is not None:
+                    return bundled
     else:
         candidate = reference
     return _by_path(candidate, root) or candidate

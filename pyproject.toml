@@ -12,7 +12,15 @@ classifiers = [
     "Environment :: Console",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Testing",
+    "Topic :: Education",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
 ]
+keywords = ["practice", "debugging", "software-engineering", "docker", "challenges", "cli"]
 dependencies = [
     "typer>=0.15",
     "rich>=13.9",
@@ -26,6 +34,13 @@ dependencies = [
     "tree-sitter==0.26.0",
     "tree-sitter-typescript==0.23.2",
 ]
+
+[project.urls]
+Homepage = "https://patchground.dev"
+Documentation = "https://github.com/franndeli/patchground#readme"
+Repository = "https://github.com/franndeli/patchground"
+Issues = "https://github.com/franndeli/patchground/issues"
+Changelog = "https://github.com/franndeli/patchground/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 # AI SDKs arrive with the experimental debrief (M3); the core never imports them.
@@ -50,7 +65,11 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/patchground"]
-exclude = ["**/SPEC.md"]
+exclude = ["**/SPEC.md", "**/__pycache__", "**/.pytest_cache", "**/node_modules"]
+
+# The curated examples ship as the built-in catalog (`pgnd list --builtin`).
+[tool.hatch.build.targets.wheel.force-include]
+"examples" = "patchground/catalog"
 
 [tool.ruff]
 line-length = 100

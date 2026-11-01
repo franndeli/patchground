@@ -27,6 +27,8 @@ from patchground.packs import (
     DiscoveryResult,
     discover_challenges,
 )
+from patchground.packs.builtin import builtin_root
+from patchground.packs.execution import InstalledDiscoveryResult
 from patchground.packs.models import PackError
 from patchground.packs.registry import discover_installed, show_reference
 from patchground.spec import ChallengeType, Difficulty
@@ -61,6 +63,12 @@ class DiscoveryCommand(TyperCommand):
 def _human_list(console: Console, result: DiscoveryResult) -> None:
     if not result.challenges and not result.invalid:
         console.print(Text(f"no challenges found in {_clean(result.directory)}"))
+        if not isinstance(result, InstalledDiscoveryResult) and builtin_root() is not None:
+            console.print(
+                Text("Challenges ship with Patchground. To see them:  pgnd list --builtin")
+            )
+            console.print(Text("Start one by ID, e.g.:  pgnd start pagination-last-page"))
+            console.print(Text("Or write your own:  pgnd new my-challenge"))
     for item in result.challenges:
         line = Text()
         line.append(_clean(getattr(item, "reference", item.id)), style="bold")
@@ -135,6 +143,10 @@ def list_challenges(
     installed: Annotated[
         bool, typer.Option("--installed", help="List installed pack challenges.")
     ] = False,
+    builtin: Annotated[
+        bool,
+        typer.Option("--builtin", help="List the curated challenges shipped with Patchground."),
+    ] = False,
     type_: Annotated[
         ChallengeType | None, typer.Option("--type", help="Only this challenge type.")
     ] = None,
@@ -145,22 +157,28 @@ def list_challenges(
     tag: Annotated[str | None, typer.Option("--tag", help="Only challenges with this tag.")] = None,
     json_mode: JsonOption = False,
 ) -> None:
-    """List local challenge folders and report invalid ones; nothing is built or run."""
+    """List challenges (here, built-in or installed) and report invalid ones; nothing runs."""
     filters = DiscoveryFilters(type=type_, lang=lang, difficulty=difficulty, tag=tag)
-    if installed and directory is not None:
-        emit_error("environment", "--installed cannot be combined with a directory", json_mode)
+    if sum((installed, builtin, directory is not None)) > 1:
+        emit_error("environment", "choose one of a directory, --builtin or --installed", json_mode)
         raise typer.Exit(EXIT_ERROR)
-    _invoke(
-        lambda: (
-            discover_installed(filters) if installed else discover_challenges(directory, filters)
-        ),
-        json_mode,
-    )
+    bundled = builtin_root()
+    if builtin and bundled is None:
+        emit_error("environment", "this installation has no built-in challenges", json_mode)
+        raise typer.Exit(EXIT_ERROR)
+
+    def discover() -> Result:
+        if installed:
+            return discover_installed(filters)
+        return discover_challenges(bundled if builtin else directory, filters)
+
+    _invoke(discover, json_mode)
 
 
 def show(
     path: Annotated[
-        str, typer.Argument(help="Local folder, installed ID or pack-name:challenge-id.")
+        str,
+        typer.Argument(help="Local folder, built-in ID, installed ID or pack-name:challenge-id."),
     ],
     json_mode: JsonOption = False,
 ) -> None:

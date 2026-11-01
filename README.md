@@ -1,28 +1,44 @@
-# Patchground
+<p align="center">
+  <img src="https://raw.githubusercontent.com/franndeli/patchground/main/web/public/favicon.svg" width="72" height="72" alt="">
+</p>
 
-*Real code. Real problems. Your tools.*
+<h1 align="center">Patchground</h1>
 
-Open-source, local-first CLI (`patchground`, alias `pgnd`) for practicing real software engineering:
-solve broken or incomplete repositories in your own editor, with your own AI (or none), and get
-verified outcomes from checks that run in Docker.
+<p align="center"><em>Real code. Real problems. Your tools.</em></p>
 
-Status: **local practice prototype** — create challenges with `new`, validate them,
-discover them with `list` / `show`,
-and practice with `start`, `check`, `status`, `hint`, `run` and `reset`.
-Browse attempts with `sessions` and private checkpoints with `history`. `doctor` checks environment readiness.
-Finish attempts with `submit` and read frozen verified outcomes with `report`.
-The fresh-user usability trial is still pending; pack management is not implemented.
+<p align="center">
+  <a href="https://github.com/franndeli/patchground/actions/workflows/ci.yml"><img src="https://github.com/franndeli/patchground/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/franndeli/patchground/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
+  <img src="https://img.shields.io/badge/python-3.12%2B-blue" alt="Python 3.12+">
+  <a href="https://patchground.dev"><img src="https://img.shields.io/badge/website-patchground.dev-0a7" alt="Website"></a>
+</p>
 
-## Try a local challenge
+Patchground is an open-source, local-first CLI (`patchground`, short alias `pgnd`) for practising
+real software engineering. You get a small but realistic repository with a bug to find or a feature
+to finish. You solve it in your own editor, with your own AI or none. Patchground runs the checks,
+including hidden ones, in Docker and reports verified outcomes rather than a score.
 
-Requirements: Python 3.12+, uv, Git and a running Docker engine. From this repository:
+- **Local-first.** No account, no hosted execution, no telemetry. Sessions are plain folders on your
+  machine.
+- **Your tools.** Any editor, any assistant. Patchground never needs an API key.
+- **Verified, not graded.** Checks run in a locked-down container. The final report states facts,
+  such as which tests pass, whether you added a regression test and what you changed. It never gives
+  an overall score.
+
+> **Status: 0.1.0, early release.** Six curated Python and TypeScript challenges ship with the CLI.
+> Difficulty is not yet human-rated.
+
+## Quick start
+
+You need Python 3.12+, [uv](https://docs.astral.sh/uv/), Git and a running Docker engine (Docker
+Desktop on macOS, Docker Engine on Linux, WSL2 on Windows).
 
 ```sh
-uv tool install .
-pgnd doctor
-pgnd list examples
-pgnd show examples/pagination-last-page
-pgnd start examples/pagination-last-page
+uv tool install git+https://github.com/franndeli/patchground   # or: pipx install git+https://...
+pgnd doctor                       # checks Docker, Git and disk space, and prints exact fixes
+pgnd list --builtin               # the curated challenges bundled with the CLI
+pgnd show pagination-last-page    # read the ticket first
+pgnd start pagination-last-page   # builds the image and creates your session workspace
 ```
 
 Open the printed workspace in your editor. From that workspace:
@@ -39,9 +55,12 @@ Outside a session directory, select it explicitly with `pgnd check --session <se
 `pgnd status --session <session-path>`. There is no implicit latest-session fallback. All commands
 support `--json`; `start` also accepts `--no-timer` and `--no-history`. `reset --json` requires `--yes`.
 
-`list [directory]` scans only immediate challenge folders (default: the current directory), with
+`list --builtin` shows the curated challenges bundled with the CLI; `pgnd start <id>` and
+`pgnd show <id>` accept their IDs. `list [directory]` scans only immediate challenge folders
+(default: the current directory), and `list --installed` shows pinned packs. All of them take
 `--type`, `--lang`, `--difficulty` and `--tag` filters. Invalid candidates are reported even when
-filters are active. Discovery never builds, runs or grants trust; start still takes a local path.
+filters are active. Discovery never builds, runs or grants trust. A bare ID resolves to an existing
+local folder first, then a unique installed pack challenge, then a built-in challenge.
 
 Reset restores ordinary starting files and removes ordinary additions, but preserves `.git`,
 credential-pattern entries (`.env*`, `*.pem`, `*.key`, `id_*`), the timer and event history. Stop
@@ -53,9 +72,12 @@ Doctor probes engine reachability/version, Git, and at least 1 GiB free on the s
 not measure the Docker VM disk or guarantee enough space for every image. It never builds or runs a
 challenge. Follow its suggested fixes before starting.
 
-See [the first-session guide](docs/first-session.md) for the full loop and troubleshooting.
+See [the first-session guide](https://github.com/franndeli/patchground/blob/main/docs/first-session.md)
+for the full loop and troubleshooting, and [challenge packs](https://github.com/franndeli/patchground/blob/main/docs/packs.md)
+for installing third-party challenges.
 
-Sessions live under `~/patchground/sessions/`. Each gets a new Git repository with an initial
+Sessions live under `~/patchground/sessions/`; set `PATCHGROUND_SESSIONS_DIR` to an absolute path
+to keep them elsewhere. Each gets a new Git repository with an initial
 baseline commit. Checks never change its HEAD, branches or staging area. The manifest and hidden
 checks are frozen in private session metadata outside the editable workspace; removing the original
 challenge folder does not break the attempt. The reference solution is never copied.
@@ -122,7 +144,7 @@ semantic test strength. There is no overall score or AI judgment.
 
 Infrastructure errors before finalization leave the attempt open. If a failure occurs after the
 bundle is published, retry submit to verify/reconcile it rather than assuming rollback. This is
-local evidence, not tamper-proof attestation. See [the feedback contract](docs/contracts/feedback.md).
+local evidence, not tamper-proof attestation. See [the feedback contract](https://github.com/franndeli/patchground/blob/main/docs/contracts/feedback.md).
 
 ## Author a challenge
 
@@ -135,10 +157,10 @@ pgnd validate my-challenge
 current directory. It refuses any existing destination and never builds or runs automatically.
 Only that template combination is currently supported. The starter includes an intentional defect,
 checks and a reference patch; replace them together rather than changing only the ticket.
-See [the authoring guide](docs/authoring.md) for the full workflow and safety limits.
+See [the authoring guide](https://github.com/franndeli/patchground/blob/main/docs/authoring.md) for the full workflow and safety limits.
 
-The curated examples cover pagination, duplicate charges on retry, and cache expiry. They are
-Docker-validated, not yet human-rated for difficulty or realism.
+The curated challenges live in `examples/` and ship inside the package as the built-in catalog. They
+are Docker-validated, not yet human-rated for difficulty or realism.
 
 ## Validate an authored challenge
 
@@ -164,7 +186,7 @@ custom discovery/plugin bypasses or local cheating.
 
 ## Website
 
-The product homepage lives in [`web/`](web/README.md). Preview it locally with
+The product homepage, [patchground.dev](https://patchground.dev), lives in `web/`. Preview it locally with
 `npm --prefix web run dev`, then open `http://127.0.0.1:4173`. It introduces the CLI, local practice
 workflow and real challenges, with contribution as a secondary path. It does not host execution.
 The challenge catalog is generated from `examples/*/challenge.yaml` (`npm --prefix web run catalog`).
@@ -173,6 +195,7 @@ See the web README for checks, the static build, and the separate deployment app
 ## Develop
 
 ```sh
+git clone https://github.com/franndeli/patchground && cd patchground
 uv sync
 uv run pgnd validate examples/pagination-last-page
 uv run ruff check . && uv run ruff format --check . && uv run mypy

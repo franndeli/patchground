@@ -43,6 +43,7 @@ jobs:
           uv venv --python 3.12 /tmp/verify
           uv pip install --python /tmp/verify/bin/python dist/*.whl
           /tmp/verify/bin/pgnd --version | grep -F "${TAG#v}"
+          (cd /tmp && /tmp/verify/bin/pgnd list --builtin --json) | grep -F '"pagination-last-page"'
           ! /tmp/verify/bin/python -c "import anthropic" 2>/dev/null
           ! /tmp/verify/bin/python -c "import litellm" 2>/dev/null
       - name: checksums

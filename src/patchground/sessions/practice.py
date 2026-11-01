@@ -28,6 +28,7 @@ class HintResult(Model):
     hint: str | None
     remaining: int
     exhausted: bool
+    total: int = 0
 
 
 class SessionListingItem(Model):
@@ -91,6 +92,7 @@ def reveal_hint(session: Path | None = None, *, root: Path | None = None) -> Hin
                 hint=None if exhausted else manifest.hints[index],
                 remaining=max(0, len(manifest.hints) - index - 1),
                 exhausted=exhausted,
+                total=len(manifest.hints),
             )
     except (OSError, UnicodeError) as exc:
         raise SessionError("hint unavailable: invalid session storage") from exc

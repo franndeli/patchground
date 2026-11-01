@@ -27,7 +27,14 @@ def root(
         False, "--version", callback=_version, is_eager=True, help="Show the version and exit."
     ),
 ) -> None:
-    """Practice real software engineering on broken repositories."""
+    """Practice real software engineering on broken repositories.
+
+    `pgnd` is a short alias of `patchground`. New here? Run `pgnd doctor`, then
+    `pgnd list --builtin` and `pgnd start <id>`.
+
+    Sessions are kept in ~/patchground/sessions. To keep them elsewhere, set
+    PATCHGROUND_SESSIONS_DIR to an absolute path.
+    """
 
 
 app.command("validate")(validate)

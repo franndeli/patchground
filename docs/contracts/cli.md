@@ -38,16 +38,22 @@ The local practice loop implements `validate <reference> [--yes]`,
 `report [--session <path>]`, `hint [--session <path>]`, `history [--session <path>]`,
 `sessions` and `run [--session <path>] -- <command> [arguments]`,
 each with `--json`, together with `pack add <source> [--ref REV]`, `pack list`,
-`pack update <name> [--ref REV] [--yes]`, `pack remove <name> [--yes]` and `list --installed`.
-Start accepts local paths or installed references; it freezes check inputs and builds, without
-applying the reference solution.
+`pack update <name> [--ref REV] [--yes]`, `pack remove <name> [--yes]`, `list --installed` and
+`list --builtin`. Start accepts local paths, installed references or built-in IDs; it freezes check
+inputs and builds, without applying the reference solution. Human start output ends with the next
+commands to run from the workspace. Sessions are created under `~/patchground/sessions/`, or under
+`PATCHGROUND_SESSIONS_DIR` when it is set to an absolute path; a relative value is an environment
+error, and doctor reports it as `invalid_setting`.
 Status needs no container engine. Checks with no tests or any skipped test do not count as passing.
 
 Local discovery reads immediate challenge folders only; it never builds, runs, installs, resolves
 IDs or grants trust. `list` returns matching metadata and all invalid candidates; `show` returns
 metadata and ticket. `list --installed` selects installed discovery, cannot combine with a directory,
-and exposes qualified references. Start/show/validate resolve unique installed IDs or
-`pack-name:challenge-id`; existing local folders and explicit paths retain local behavior. Invalid challenge results exit `1`; invalid command arguments or inaccessible
+and exposes qualified references. `list --builtin` lists the curated catalog bundled with the CLI;
+a directory, `--installed` and `--builtin` are mutually exclusive. When plain `list` finds nothing,
+human output points to `list --builtin` and `new`; JSON is unchanged. Start/show/validate resolve
+unique installed IDs or `pack-name:challenge-id`, then built-in IDs; existing local folders and
+explicit paths retain local behavior. Validating a built-in challenge never writes into the catalog. Invalid challenge results exit `1`; invalid command arguments or inaccessible
 directories exit `2`. An empty listing succeeds. Doctor probes engine reachability/version, Git and
 session-disk availability, exits `0` if healthy and `2` otherwise; it does not measure Docker VM disk.
 
@@ -69,7 +75,8 @@ Transcripts and AI remain deferred. Status exposes active/submitted state and st
 submission request time.
 
 `hint` reveals the next hint from frozen authored metadata and records its one-based index, not the
-hint text. No hints or exhaustion succeeds with an explicit empty result and no new event.
+hint text. No hints or exhaustion succeeds with an explicit empty result and no new event; the result
+includes `total`, so "this challenge has no hints" is distinguishable from "all revealed".
 `sessions` lists local attempts newest first without Docker or implicit selection; invalid candidates
 are reported and cause exit `1`. An empty listing succeeds; inaccessible storage exits `2`.
 
@@ -102,7 +109,7 @@ The table below also describes planned commands and options; it is not a claim t
 
 | Command | Behavior |
 | --- | --- |
-| `list [directory] [--installed] [--type] [--lang] [--difficulty] [--tag]` | Local immediate-folder discovery by default; `--installed` selects pinned pack challenges. |
+| `list [directory] [--builtin] [--installed] [--type] [--lang] [--difficulty] [--tag]` | Local immediate-folder discovery by default; `--builtin` selects the bundled curated catalog; `--installed` selects pinned pack challenges. |
 | `show <reference>` | Local or verified installed metadata and ticket; never the solution. |
 | `start <challenge> [--ai allowed\|forbidden] [--no-timer] [--no-history]` | Consent if untrusted, build the image, create the session and workspace, print the ticket and workspace path. |
 | `check` | Run visible and hidden checks; report pass/fail per test. Never touches the user's git state. |

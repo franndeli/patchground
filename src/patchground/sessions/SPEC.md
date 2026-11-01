@@ -17,6 +17,10 @@ exception is described in `patchground-architecture`.
 
 ## Session layout
 
+The sessions root is `~/patchground/sessions/`, or `PATCHGROUND_SESSIONS_DIR` when set. The override
+must be absolute (relative values are rejected so every working directory selects the same root) and
+is canonicalized once; links below it are still refused. Doctor reports an invalid override.
+
 ```
 ~/patchground/sessions/<YYYY-MM-DD>-<challenge-id>/
 ├── workspace/        # the user's repo: challenge workspace/ + visible checks, git init, one initial commit

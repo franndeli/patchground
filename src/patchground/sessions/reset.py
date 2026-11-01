@@ -87,7 +87,7 @@ def reset_session(session: Path | None = None, *, root: Path | None = None) -> R
     """Reset a selected session; confirmation belongs to the CLI."""
     mutated = False
     try:
-        root = (root if root is not None else Path.home() / "patchground/sessions").absolute()
+        root = (root if root is not None else store.default_root()).absolute()
         path = store.resolve(session, root)
         store.load(path)
         meta = path / ".session"

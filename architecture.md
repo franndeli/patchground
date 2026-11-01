@@ -99,8 +99,10 @@ still goes through `sandbox`, and sessions never imports report. `cli` reaches `
 └── .session/             # session.json, events.jsonl, original/, submission/, AI payloads
 ```
 
-Sessions always live under `~/patchground/sessions/`; the layout of `.session/` is owned by
-`patchground-sessions`.
+Sessions live under `~/patchground/sessions/` unless `PATCHGROUND_SESSIONS_DIR` names another
+absolute directory; the layout of `.session/` is owned by `patchground-sessions`. The wheel also
+carries the curated `examples/` as a read-only built-in catalog (`patchground/catalog/`), owned by
+`patchground-packs` resolution.
 
 ## Platforms
 

@@ -55,8 +55,10 @@ def _display_path(path: Path) -> str:
 
 def _human(console: Console, result: Result) -> None:
     if isinstance(result, HintResult):
-        if result.exhausted:
-            console.print(Text("No more authored hints."))
+        if result.exhausted and result.total == 0:
+            console.print(Text("This challenge has no authored hints."))
+        elif result.exhausted:
+            console.print(Text(f"No more authored hints (all {result.total} revealed)."))
         else:
             console.print(Text(f"Hint {result.index}: {result.hint}"))
             console.print(Text(f"{result.remaining} remaining"))

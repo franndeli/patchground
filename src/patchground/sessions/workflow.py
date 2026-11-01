@@ -37,7 +37,7 @@ class Sandbox(Protocol):
 
 
 def _root(root: Path | None) -> Path:
-    return (root if root is not None else Path.home() / "patchground" / "sessions").absolute()
+    return (root if root is not None else store.default_root()).absolute()
 
 
 def start_session(

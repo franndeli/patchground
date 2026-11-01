@@ -17,6 +17,24 @@ from patchground.sessions.files import no_links, open_directory, safe_path, tree
 from patchground.sessions.models import CheckResult, Event, SessionError, SessionRecord, now
 from patchground.spec import ChallengeManifest
 
+SESSIONS_ENV = "PATCHGROUND_SESSIONS_DIR"
+
+
+def default_root() -> Path:
+    """Where sessions live: ``$PATCHGROUND_SESSIONS_DIR`` if set, else ``~/patchground/sessions``.
+
+    A relative override would select different roots from different working directories, so it is
+    rejected rather than silently anchored to the current one. The explicitly chosen path is
+    canonicalized once (``/tmp`` is a symlink on macOS); sessions below it still refuse links.
+    """
+    configured = os.environ.get(SESSIONS_ENV, "").strip()
+    if not configured:
+        return Path.home() / "patchground" / "sessions"
+    path = Path(configured).expanduser()
+    if not path.is_absolute():
+        raise SessionError(f"{SESSIONS_ENV} must be an absolute path")
+    return path.resolve()
+
 
 def allocate(root: Path, challenge_id: str) -> Path:
     no_links(root)

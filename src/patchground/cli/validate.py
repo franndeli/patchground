@@ -18,6 +18,8 @@ from patchground.cli.render import (
     emit_error,
     progress,
 )
+from patchground.packs.builtin import is_builtin_path
+from patchground.packs.execution import resolve_challenge
 from patchground.packs.models import ConsentRequired
 from patchground.verify import (
     StepStatus,
@@ -48,12 +50,14 @@ def validate(
     ] = False,
 ) -> None:
     """Verify outcomes, determinism and supported editable-test tampering resistance."""
+    # The bundled catalog is part of the installed distribution and is never written to.
+    write = not no_write and not _is_builtin(path)
     try:
         with progress(json_mode) as notify:
             report = with_consent(
                 lambda approved, identity: validate_challenge(
                     path,
-                    write=not no_write,
+                    write=write,
                     progress=notify,
                     yes=approved,
                     expected_identity=identity,
@@ -75,6 +79,13 @@ def validate(
         raise typer.Exit(EXIT_ERROR) from exc
     emit(report.to_dict(), lambda console: _human(console, report), json_mode)
     raise typer.Exit(EXIT_OK if report.valid else EXIT_FAILED)
+
+
+def _is_builtin(reference: str) -> bool:
+    try:
+        return is_builtin_path(resolve_challenge(reference).path)
+    except Exception:  # resolution problems are reported by validation itself
+        return False
 
 
 def _human(console: Console, report: ValidationReport) -> None:

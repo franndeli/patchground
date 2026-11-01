@@ -32,6 +32,7 @@ from patchground.sessions import (
     session_status,
     start_session,
 )
+from patchground.sessions.models import SnapshotStatus
 
 Result = StartedSession | CheckResult | SessionStatus | ResetResult
 JsonOption = Annotated[bool, typer.Option("--json", help="Print one JSON document.")]
@@ -61,10 +62,14 @@ def _human(console: Console, result: Result) -> None:
             console.print(Text(f"unofficial pack: {result.pack.name} @ {result.pack.commit}"))
         console.print(Text(str(result.workspace)))
         if result.history is not None:
-            console.print(Text(f"history: {result.history.state}"))
-            if result.history.detail:
-                console.print(Text(result.history.detail))
+            _history(console, result.history)
         console.print(Text(result.ticket))
+        console.print(Text("Next steps:", style="bold"))
+        console.print(Text(f"  cd {result.workspace}"))
+        console.print(Text("  pgnd check     run the checks, including hidden ones"))
+        console.print(Text("  pgnd hint      reveal the next authored hint"))
+        console.print(Text("  pgnd submit    finish with a verified-outcomes report"))
+        console.print(Text("Outside the workspace, add --session " + str(result.session) + "."))
     elif isinstance(result, ResetResult):
         console.print(Text(f"reset {result.challenge_id}; timer and history preserved"))
     elif isinstance(result, SessionStatus):
@@ -86,9 +91,15 @@ def _human(console: Console, result: Result) -> None:
         if result.limit is not None:
             console.print(Text(f"limit exceeded: {result.limit}"))
         if result.history is not None:
-            console.print(Text(f"history: {result.history.state}"))
-            if result.history.detail:
-                console.print(Text(result.history.detail))
+            _history(console, result.history)
+
+
+def _history(console: Console, history: SnapshotStatus) -> None:
+    console.print(Text(f"history: {history.state}"))
+    if history.detail:
+        console.print(
+            Text(f"{history.detail}; optional checkpoints only, checks are unaffected", style="dim")
+        )
 
 
 def _invoke(call: Callable[[], Result], json_mode: bool) -> None:
@@ -126,7 +137,7 @@ def start(
     ] = False,
     json_mode: JsonOption = False,
 ) -> None:
-    """Start an authored or explicitly approved installed challenge."""
+    """Start a challenge: a built-in ID, a local folder or an approved installed pack ID."""
 
     def operation(approved: bool, identity: str | None) -> StartedSession:
         return start_session(

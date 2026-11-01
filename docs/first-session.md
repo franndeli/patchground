@@ -7,15 +7,21 @@ You work in your own editor; Patchground runs challenge checks in Docker.
 
 Install Python 3.12+, uv, Git and Docker (Docker Desktop on macOS; Docker Engine on Linux).
 Start Docker. On Windows use WSL2 with Docker Desktop, and run these commands inside WSL2.
-From a checkout of this repository:
+Then:
 
 ```sh
-uv tool install .
+uv tool install git+https://github.com/franndeli/patchground
 pgnd doctor
-pgnd list examples --lang python
-pgnd show examples/pagination-last-page
-pgnd start examples/pagination-last-page
+pgnd list --builtin --lang python
+pgnd show pagination-last-page
+pgnd start pagination-last-page
 ```
+
+The curated challenges ship inside the package, so a plain install is enough. From a checkout of
+the repository, `uv tool install .` works too, and the same challenges are in `examples/`.
+Sessions are created under `~/patchground/sessions/`. To keep them elsewhere, export
+`PATCHGROUND_SESSIONS_DIR` as an absolute path before running `start`, and keep it set for later
+commands.
 
 The first image build needs network access. Later checks use the frozen local image and an
 internal-only network. Start builds but does not verify the reference solution; challenge authors

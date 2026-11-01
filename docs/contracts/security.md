@@ -22,6 +22,7 @@ untrusted challenges in a containerized dev environment.
 | --- | --- | --- |
 | Installed pack, including one named `patchground-core` | Unofficial until an owner-controlled official origin is established | Exact-version consent |
 | A local challenge path the user authored | The user's own code | No prompt |
+| Built-in catalog challenge (curated `examples/` shipped inside the installed CLI) | First-party, same origin and review as the CLI code that runs it | No prompt; never written to |
 | Third-party pack | Untrusted, labelled "unofficial" | Show the Dockerfile, services and test command; require a yes per pack version |
 | Generated challenge | Same as the source repo | Same as the source repo |
 | Community pack in the public registry | Unofficial; *verified* means it passed `pgnd validate` in Patchground CI at one commit (`patchground-registry`) | CI crawler consents for itself in an isolated read-only job; users still get the per-version prompt on install |

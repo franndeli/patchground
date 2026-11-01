@@ -341,7 +341,7 @@ def _read(meta: Path, ref: str) -> HistoryEntry:
 
 def history_for_session(session: Path | None = None, *, root: Path | None = None) -> HistoryResult:
     """Read evidence-backed checkpoints, including after submission, without repair."""
-    root = (root if root is not None else Path.home() / "patchground" / "sessions").absolute()
+    root = (root if root is not None else store.default_root()).absolute()
     path = store.resolve(session, root)
     record, _manifest, events = store.load(path)
     if not record.history_enabled:
