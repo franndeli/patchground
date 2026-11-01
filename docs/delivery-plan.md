@@ -152,5 +152,10 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   Fresh core-only Python 3.12 installation validated all four starters, verified TypeScript regression
   and preserved Git/immutable reports with execution disabled for saved reads. See
   `evaluations/release-candidate.md` and `evaluations/cli-artifact-manifest.json`.
-- Next: separate-owner site handoff, independent-human acceptance and publication decisions.
+- Site and registry integrated and hardened; intermittent OOM test failure traced to an upstream
+  engine bug and resolved without changing classification (`evaluations/ci-portability.md`).
+- Publication prepared: version 0.1.0, `CHANGELOG.md`, approval-gated release workflow with PyPI
+  trusted publishing, Cloudflare Pages runbook in `publishing.md`. Human trial kit ready in
+  `evaluations/human-trial-kit.md`.
+- Next: owner runs the human sessions and the one-time dashboard setup; then tag on approval.
   No deployment, package upload, release creation or publication approval is implied.

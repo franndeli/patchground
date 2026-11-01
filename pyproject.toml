@@ -1,6 +1,6 @@
 [project]
 name = "patchground"
-version = "0.0.1"
+version = "0.1.0"
 description = "Local-first CLI for practicing real software engineering on broken repositories."
 readme = "README.md"
 license = "Apache-2.0"
@@ -8,7 +8,7 @@ license-files = ["LICENSE"]
 requires-python = ">=3.12"
 authors = [{ name = "Fran Delicado" }]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Testing",

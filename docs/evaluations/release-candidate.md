@@ -45,5 +45,10 @@ product's version behavior was correct and was not changed.
   does not support every runtime assertion form; the earlier intermittent Docker OOM-classification
   observation remains unreproduced, not declared fixed.
 
+The owner has since chosen version **0.1.0**, Cloudflare Pages for the site and PyPI trusted
+publishing. The version is bumped and the release workflow (`.github/workflows/release.yml`) rebuilds
+and re-verifies the distributions from the tagged commit, so the 0.0.1 files above are superseded
+evidence, not the artifacts that will ship. See [the publishing runbook](../publishing.md).
+
 The CLI artifacts are ready for review. These remaining gates prevent a claim that the full public
 product is accepted or launched.
