@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/franndeli/patchground/discussions
+    about: Ask a question or share an idea for a challenge.
+  - name: Report a security vulnerability
+    url: https://github.com/franndeli/patchground/security/advisories/new
+    about: Please report security issues privately.

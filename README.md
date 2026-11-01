@@ -207,6 +207,13 @@ One-time setup per clone: `brew install gitleaks && git config core.hooksPath .g
 
 Specs: `goal-and-requirements.md`, `architecture.md`, `docs/contracts/`, `src/patchground/*/SPEC.md`.
 
+## Contributing and security
+
+Bug reports, challenge feedback and pull requests are welcome; see
+[CONTRIBUTING](https://github.com/franndeli/patchground/blob/main/.github/CONTRIBUTING.md).
+Please report vulnerabilities privately, as described in the
+[security policy](https://github.com/franndeli/patchground/blob/main/.github/SECURITY.md).
+
 ## License
 
 Apache-2.0 for the CLI. Each challenge declares its own `content_license`.

@@ -1,0 +1,18 @@
+name: Challenge feedback
+description: A ticket was unclear, a check seemed wrong or the difficulty felt off.
+labels: [challenge]
+body:
+  - type: input
+    id: challenge
+    attributes:
+      label: Challenge ID
+      placeholder: pagination-last-page
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: What happened?
+      description: Please don't paste hidden test sources or the reference solution.
+    validations:
+      required: true
