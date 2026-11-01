@@ -1,6 +1,6 @@
 spec_version: "0.1"
 id: release-version-ordering
-version: 1.0.0
+version: 1.0.1
 title: Release picker orders version labels incorrectly
 type: debug
 summary: A release-tool library chooses the wrong latest version and misorders prereleases.
@@ -17,7 +17,7 @@ checks:
   visible: checks/visible
   hidden: checks/hidden
 solution: solution/reference.patch
-expected_paths: [src/releasekit/]
+expected_paths: [src/releasekit/, tests/]
 hints:
   - Start with two version labels whose numeric components have different digit counts.
   - Compare prerelease identifiers one position at a time, distinguishing numeric and nonnumeric identifiers.

@@ -1,6 +1,6 @@
 spec_version: "0.1"
 id: cache-expiry
-version: 1.0.0
+version: 1.0.1
 title: Cached profiles never expire while they are being read
 type: debug
 summary: >-
@@ -19,7 +19,7 @@ checks:
   visible: checks/visible
   hidden: checks/hidden
 solution: solution/reference.patch
-expected_paths: [src/profilecache/]
+expected_paths: [src/profilecache/, tests/]
 hints:
   - Write down, for one entry, the clock value at which it should expire, then step through what each method does to that deadline.
   - Is the deadline moved by anything other than a write?

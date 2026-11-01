@@ -249,7 +249,7 @@ def test_valid_challenge_writes_verification_json(challenge: Path, box: FakeSand
     assert doc["format_version"] == 1
     assert doc["challenge"] == {
         "id": "pagination-last-page",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "spec_version": "0.1",
     }
     assert doc["image_id"] == "sha256:fake"

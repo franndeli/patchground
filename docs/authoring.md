@@ -26,6 +26,8 @@ not initialize Git, build an image or run authored code.
 ## Replace the starter as a unit
 
 - `challenge.yaml`: public metadata, environment and check locations; keep the ID/folder aligned.
+  If the ticket asks for a regression test, include the test folder in `expected_paths` (for example
+  `[src/payments/, tests/]`); otherwise the report lists the learner's requested test as out of scope.
 - `TICKET.md`: realistic symptoms, required behavior, constraints and a clear public entry point.
   Do not disclose the fix or require unstated behavior.
 - `workspace/`: the broken application and configuration learners receive. No reference solution

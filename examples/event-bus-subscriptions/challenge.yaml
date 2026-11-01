@@ -1,6 +1,6 @@
 spec_version: "0.1"
 id: event-bus-subscriptions
-version: 1.0.0
+version: 1.0.1
 title: Add unsubscribe and once to the in-process event bus
 type: feature
 summary: >-
@@ -19,7 +19,7 @@ checks:
   visible: checks/visible
   hidden: checks/hidden
 solution: solution/reference.patch
-expected_paths: [src/]
+expected_paths: [src/, tests/]
 hints:
   - Decide what a single emit needs to remember about the subscriptions it will call, and what may change underneath it while it runs.
   - A once subscription has two moments that matter. Which one decides whether it may run again?

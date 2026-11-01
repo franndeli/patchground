@@ -49,7 +49,7 @@ checks:
   visible: checks/visible
   hidden: checks/hidden
 solution: solution/reference.patch
-expected_paths: [src/payments/]     # optional, for diff-scope outcomes
+expected_paths: [src/payments/, tests/]   # optional, for diff-scope outcomes; include where regression tests go
 hints:                              # optional, progressive, each reveal is logged
   - Look at what happens when the provider times out but the charge succeeded.
 debrief:

@@ -1,6 +1,6 @@
 spec_version: "0.1"
 id: csv-import-row-errors
-version: 1.0.0
+version: 1.0.1
 title: Report bad rows from the stock importer instead of stopping at the first
 type: feature
 summary: >-
@@ -19,7 +19,7 @@ checks:
   visible: checks/visible
   hidden: checks/hidden
 solution: solution/reference.patch
-expected_paths: [src/stockimport/]
+expected_paths: [src/stockimport/, tests/]
 hints:
   - Decide where a failure for one row should stop and where it should only be recorded. Which failures can never be limited to one row?
   - Look at when a sku is recorded as seen, and at what must be true of a row before it may reserve that sku.

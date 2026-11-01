@@ -1,6 +1,6 @@
 spec_version: "0.1"
 id: pagination-last-page
-version: 1.0.0
+version: 1.0.1
 title: Last page of search results returns "page out of range"
 type: debug
 summary: >-
@@ -19,7 +19,7 @@ checks:
   visible: checks/visible
   hidden: checks/hidden
 solution: solution/reference.patch
-expected_paths: [src/catalog/]
+expected_paths: [src/catalog/, tests/]
 hints:
   - Compare the number of pages the paginator computes with the number you would count by hand for 25 items, 10 per page.
   - Integer division rounds down. What happens to the items that don't fill a whole page?
