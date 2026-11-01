@@ -50,7 +50,9 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   [the evaluation and disposition](evaluations/ai-debrief-smoke.md).
 - The owner also deferred the generator experiment from launch to prioritize learner trials and
   hardening. No generator evaluation or generator command is claimed. Existing authoring tools and
-  the six curated challenges remain the launch content scope.
+  the six curated challenges remain the launch content scope. A seventh, `refactor`-type
+  challenge (`order-notifications-boundary`) was added after the fresh-user trials to cover
+  architecture work; its hidden checks assert import boundaries and protocol conformance.
 
 ### E. Evaluation and hardening
 

@@ -1,0 +1,5 @@
+- Which dependency direction did you reverse, and what now knows about SQLite and SMTP?
+- Why do the protocols belong to the service's side of the boundary rather than next to the adapters?
+- What did you keep unchanged on purpose, and how did the visible tests help you prove it?
+- Where would an SMS notifier go, and what, if anything, in `service.py` would have to change?
+- If an AI assistant proposed the refactor, what did you verify yourself before accepting it?

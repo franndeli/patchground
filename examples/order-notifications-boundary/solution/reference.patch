@@ -1,0 +1,77 @@
+diff --git a/src/orders/app.py b/src/orders/app.py
+index 5ffe407..f814423 100644
+--- a/src/orders/app.py
++++ b/src/orders/app.py
+@@ -3,7 +3,9 @@
+ from __future__ import annotations
+ 
+ from orders.service import OrderService
++from orders.smtp_gateway import SmtpNotifier
++from orders.sqlite_store import SqliteOrderRepository
+ 
+ 
+ def build_service(db_path: str, outbox: str) -> OrderService:
+-    return OrderService(db_path, outbox)
++    return OrderService(repository=SqliteOrderRepository(db_path), notifier=SmtpNotifier(outbox))
+diff --git a/src/orders/ports.py b/src/orders/ports.py
+new file mode 100644
+index 0000000..437915e
+--- /dev/null
++++ b/src/orders/ports.py
+@@ -0,0 +1,19 @@
++"""What the order service needs from the outside world, as protocols."""
++
++from __future__ import annotations
++
++from typing import Protocol, runtime_checkable
++
++from orders.models import Order
++
++
++@runtime_checkable
++class OrderRepository(Protocol):
++    def save_confirmed(self, order: Order) -> None: ...
++
++    def get(self, order_id: str) -> Order | None: ...
++
++
++@runtime_checkable
++class Notifier(Protocol):
++    def send(self, to: str, subject: str, body: str) -> None: ...
+diff --git a/src/orders/service.py b/src/orders/service.py
+index 91267c6..d5446de 100644
+--- a/src/orders/service.py
++++ b/src/orders/service.py
+@@ -3,8 +3,7 @@
+ from __future__ import annotations
+ 
+ from orders.models import Order
+-from orders.smtp_gateway import SmtpNotifier
+-from orders.sqlite_store import SqliteOrderRepository
++from orders.ports import Notifier, OrderRepository
+ 
+ 
+ def format_confirmation(order: Order) -> tuple[str, str]:
+@@ -16,16 +15,16 @@ def format_confirmation(order: Order) -> tuple[str, str]:
+ 
+ 
+ class OrderService:
+-    def __init__(self, db_path: str, outbox: str) -> None:
+-        self._db_path = db_path
+-        self._outbox = outbox
++    def __init__(self, *, repository: OrderRepository, notifier: Notifier) -> None:
++        self._repository = repository
++        self._notifier = notifier
+ 
+     def confirm(self, order: Order) -> None:
+         if not order.lines:
+             raise ValueError("an order needs at least one line")
+-        SqliteOrderRepository(self._db_path).save_confirmed(order)
++        self._repository.save_confirmed(order)
+         subject, body = format_confirmation(order)
+-        SmtpNotifier(self._outbox).send(order.customer_email, subject, body)
++        self._notifier.send(order.customer_email, subject, body)
+ 
+     def find(self, order_id: str) -> Order | None:
+-        return SqliteOrderRepository(self._db_path).get(order_id)
++        return self._repository.get(order_id)

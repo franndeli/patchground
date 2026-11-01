@@ -1,0 +1,32 @@
+spec_version: "0.1"
+id: order-notifications-boundary
+version: 1.0.0
+title: Put a port between the order service and its storage and email
+type: refactor
+summary: >-
+  OrderService imports and constructs SQLite and SMTP adapters itself, so nothing can be swapped
+  for SMS or for fast tests. Introduce ports, inject the adapters and keep behaviour identical.
+languages: [python]
+tags: [architecture, ports-and-adapters, dependency-inversion, refactoring]
+difficulty: intermediate
+timebox_minutes: 40
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/orders/, tests/]
+hints:
+  - Draw the arrows. Today service -> sqlite_store and service -> smtp_gateway. Which module should own the interface the service calls, so that the arrows point towards the service instead?
+  - A Protocol describes what the service needs; the adapters already have those methods. Make the service receive them instead of building them, and move the construction to app.build_service.
+debrief:
+  questions: debrief/questions.md
+  focus: [design_judgment, test_quality, scope_judgment]
+author: {name: Fran Delicado, github: franndeli}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by: {model: "Claude (Anthropic) via pi coding agent, model id unverified", prompt_version: launch-boundary-v1}

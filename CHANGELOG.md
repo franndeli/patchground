@@ -14,7 +14,8 @@ First public preview. Local-first: no account, no hosted execution, no built-in 
 - `submit` and `report`: an immutable, test-backed debrief — check outcomes, regression evidence
   (your test fails on the original code and passes on yours), diff scope and structural test
   observations. Unsupported evidence is reported as such, never as a pass.
-- Six curated challenges across Python and TypeScript, debugging and feature work, bundled with the
+- Seven curated challenges across Python and TypeScript: debugging, feature work and an
+  architecture refactor (ports and adapters, verified by structural tests), bundled with the
   CLI: `pgnd list --builtin`, then `pgnd start <id>`. No checkout is needed.
 - `PATCHGROUND_SESSIONS_DIR` keeps sessions somewhere other than `~/patchground/sessions`.
 - Authoring: `new` with four starters (Python/TypeScript × debug/feature) and `validate`, which proves

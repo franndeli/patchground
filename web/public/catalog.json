@@ -26,7 +26,7 @@
       "forks": null,
       "verified_at": null,
       "first_seen": null,
-      "challenge_count": 6
+      "challenge_count": 7
     }
   ],
   "challenges": [
@@ -66,6 +66,26 @@
       "provenance": "generated",
       "pack": "patchground-examples",
       "ticket": "https://github.com/franndeli/patchground/blob/main/examples/cache-expiry/TICKET.md"
+    },
+    {
+      "id": "order-notifications-boundary",
+      "title": "Put a port between the order service and its storage and email",
+      "type": "refactor",
+      "summary": "OrderService imports and constructs SQLite and SMTP adapters itself, so nothing can be swapped for SMS or for fast tests. Introduce ports, inject the adapters and keep behaviour identical.",
+      "languages": [
+        "python"
+      ],
+      "tags": [
+        "architecture",
+        "ports-and-adapters",
+        "dependency-inversion",
+        "refactoring"
+      ],
+      "difficulty": "intermediate",
+      "timebox_minutes": 40,
+      "provenance": "generated",
+      "pack": "patchground-examples",
+      "ticket": "https://github.com/franndeli/patchground/blob/main/examples/order-notifications-boundary/TICKET.md"
     },
     {
       "id": "csv-import-row-errors",
