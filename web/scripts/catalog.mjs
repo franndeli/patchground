@@ -193,7 +193,7 @@ export function renderStatus(status, packs) {
 </head>
 <body class="status-page">
   <a class="skip-link" href="#main">Skip to content</a>
-  <header class="site-header"><div class="container header-inner"><a class="brand" href="./"><span class="brand-mark" aria-hidden="true">&gt;_</span>patchground</a><nav class="main-nav" aria-label="Main navigation"><a href="./#challenges">Challenges</a><a href="./#publish">Publish</a><a href="${repo}">GitHub <span aria-hidden="true">↗</span></a></nav></div></header>
+  <header class="site-header"><div class="container header-inner"><a class="brand" href="./"><svg class="brand-logo" viewBox="0 0 64 64" aria-hidden="true"><path class="o" d="M8 8h26v20h22v28H8z"/><rect class="w" x="38" y="8" width="18" height="16"/></svg>patchground</a><nav class="main-nav" aria-label="Main navigation"><a href="./#challenges">Challenges</a><a href="./#publish">Publish</a><a href="${repo}">GitHub <span aria-hidden="true">↗</span></a></nav></div></header>
   <main id="main" tabindex="-1" class="container section">
     <p class="eyebrow">Registry status</p>
     <h1 class="status-title">Every pack the registry has seen</h1>

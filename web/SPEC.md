@@ -11,12 +11,20 @@ implements: [patchground-contract-security]
 
 The public homepage presents the CLI as the product: open-source, local-first practice on real
 codebases, as the alternative to algorithm-puzzle platforms for practical interviews and day-to-day
-engineering. Its order is fixed: what it is and the verified-outcomes moment (hero), why it exists
-(puzzles vs. real work, the three principles), the challenge catalog, installation, and last the
-invitation to author or contribute. Authoring and community support the product; they never lead.
+engineering. Its order is fixed: what it is and the verified-outcomes moment (hero); how it helps
+you practise (how a session works, the skills you practise, the annotated verified-outcomes report,
+who it is for); why it exists (puzzles vs. real work, the three principles); the challenge catalog;
+installation; and last the invitation to author or contribute. Authoring and community support the
+product; they never lead. The annotated report mirrors the sections of `patchground-report` and
+states facts, never judgements such as "weakened".
 
-The page states only what the CLI does today. Install is from a checkout until a package is
-published; packs are described as planned; the hero terminal is labelled an illustration; examples
+The brand is a geometric mark: a square with its missing corner set back in ("the patch"). It is
+inline SVG in every page header and footer, and the same shape is the favicon. Illustrations are
+decorative inline SVG (`aria-hidden`) in the same flat style, with colours from the CSS palette.
+
+The page states only what the CLI does today. Install is from the GitHub repository
+(`uv tool install git+https://...`, curated challenges bundled) until a package is published; packs are described as planned; the hero terminal and the annotated report are labelled
+illustrations; examples
 drafted with an agent are marked AI-generated; the CLI has no built-in AI in this release, so the
 page never promises one; difficulty is "not yet human-rated". No fabricated
 users, metrics, testimonials or results.

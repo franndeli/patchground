@@ -64,6 +64,11 @@ test("the CLI and real-world practice lead; contribution comes last", () => {
   assert.match(hero, /pgnd start[\s\S]*pgnd check[\s\S]*pgnd submit/);
   assert.match(hero, /Verified outcomes/);
   assert.doesNotMatch(hero, /pgnd new|Create a challenge/);
+  assert.ok(section("top") < section("how"));
+  assert.ok(section("how") < section("practice"));
+  assert.ok(section("practice") < section("outcomes"));
+  assert.ok(section("outcomes") < section("who"));
+  assert.ok(section("who") < section("why"));
   assert.ok(section("why") < section("challenges"));
   assert.ok(section("challenges") < section("packs"));
   assert.ok(section("packs") < section("install"));
@@ -75,7 +80,8 @@ test("claims stay within what the CLI does today", () => {
   assert.doesNotMatch(html, /uv tool install patchground|pip install patchground/);
   // Future CLI commands may only appear as explicitly planned, never as instructions.
   for (const m of html.matchAll(/pgnd pack (publish|add)/g)) assert.match(html.slice(Math.max(0, m.index - 200), m.index), /Planned/, m[0]);
-  assert.match(html, /uv tool install \./);
+  assert.match(html, /uv tool install git\+https:\/\/github\.com\/franndeli\/patchground/);
+  assert.match(html, /pgnd list --builtin/);
   assert.match(html, /Installing packs by name from the CLI is planned/);
   assert.match(html, /Planned: <code>pgnd pack publish<\/code>/);
   assert.match(html, /No pull request/);
@@ -83,10 +89,24 @@ test("claims stay within what the CLI does today", () => {
   assert.match(html, /class="window-tag">illustration/);
   // AI coaching is deferred from this release: the page must not promise an in-CLI AI preview.
   assert.doesNotMatch(html, /see exactly what would be sent/);
+  assert.match(html, /class="report-sheet" aria-label="[^"]*\(illustration\)"/);
+  // The report states structural facts about tests; it never judges them "weakened".
+  assert.doesNotMatch(html.match(/<div class="report-sheet"[\s\S]*?<\/div>\s*<ol/)[0], /weakened/);
   assert.doesNotMatch(html + css + script, /\/Users\/|\/home\/|sk-[A-Za-z0-9]{20}|checks\/hidden|reference\.patch/);
   assert.doesNotMatch(html, /<(?:script|link|img|iframe)[^>]+(?:src|href)="https?:/i);
   assert.doesNotMatch(css, /@import|url\(["']?https?:/i);
   assert.doesNotMatch(script, /\b(?:fetch|XMLHttpRequest|localStorage|sessionStorage|eval)\s*[.(]/);
+});
+
+test("the brand is the geometric patch mark, decorative and identical on every page", async () => {
+  const status = await readFile(new URL("status.html", publicRoot), "utf8");
+  const favicon = await readFile(new URL("favicon.svg", publicRoot), "utf8");
+  const mark = /<a class="brand"[^>]*><svg class="brand-logo" viewBox="0 0 64 64" aria-hidden="true">/g;
+  assert.equal(html.match(mark).length, 2);
+  assert.equal(status.match(mark).length, 1);
+  assert.doesNotMatch(html + status, /&gt;_|brand-mark/);
+  assert.match(favicon, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+  for (const svg of html.match(/<svg class="art"[^>]*>/g)) assert.match(svg, /aria-hidden="true"/);
 });
 
 test("every local asset and repository link resolves to an existing file", async () => {

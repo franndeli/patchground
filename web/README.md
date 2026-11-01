@@ -1,6 +1,7 @@
 # Patchground website
 
-The public homepage for the Patchground CLI: what it is, why it exists, the challenge catalog, and
+The public homepage for the Patchground CLI: what it is, how it helps you practise (session flow,
+skills, the verified-outcomes report, who it is for), why it exists, the challenge catalog, and
 how to install it. A standalone static site—no framework, no npm dependencies, no backend. It is
 not a browser runner, a hosted community platform, or a documentation site (docs stay in the repo
 until a docs build exists).
@@ -45,7 +46,7 @@ JSON files before committing.
 
 ```sh
 npm --prefix web run check      # syntax check of all scripts
-npm --prefix web test           # 17 tests: structure, honesty, assets, type floor, catalog, packs, status, behaviour, build
+npm --prefix web test           # 18 tests: structure, honesty, brand, assets, type floor, catalog, packs, status, behaviour, build
 npm --prefix web run build      # web/dist/: index.html, status.html, styles.css, main.js, favicon.svg, catalog.json
 ```
 
@@ -57,8 +58,8 @@ and production deployment are a separate, owner-approved step.
 
 - The CLI and practising on real code lead; authoring/community comes last.
 - No claim beyond what the CLI does today: install is from a checkout until a package is published;
-  `pgnd pack publish` / `pack add <name>` appear only as *planned*; the hero terminal is labelled
-  *illustration*; AI-generated examples say so; *verified* means "passed `pgnd validate` in our CI".
+  `pgnd pack publish` / `pack add <name>` appear only as *planned*; the hero terminal and the
+  annotated report are labelled *illustration*; AI-generated examples say so; *verified* means "passed `pgnd validate` in our CI".
 - No remote fonts, scripts, images, analytics or storage. Everything works without JavaScript;
   JS only adds filtering and copy-to-clipboard.
 - Nothing renders below 11px. Motion is finite and disabled under `prefers-reduced-motion`.
