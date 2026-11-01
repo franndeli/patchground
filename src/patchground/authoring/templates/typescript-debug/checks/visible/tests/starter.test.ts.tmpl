@@ -1,0 +1,10 @@
+import { expect, test } from "vitest";
+import { total } from "../src/starter";
+
+test("total of an empty list is zero", () => {
+  expect(total([])).toBe(0);
+});
+
+test("total ignores a zero final amount", () => {
+  expect(total([4, 5, 0])).toBe(9);
+});

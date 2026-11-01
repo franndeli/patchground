@@ -1,0 +1,10 @@
+diff --git a/src/starter.ts b/src/starter.ts
+--- a/src/starter.ts
++++ b/src/starter.ts
+@@ -5,5 +5,5 @@
+
+ /** Return the mean of the amounts, or 0 for an empty list. */
+ export function average(items: number[]): number {
+-  throw new Error("not implemented");
++  return items.length === 0 ? 0 : total(items) / items.length;
+ }

@@ -2,7 +2,8 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-from patchground.authoring.create import TEMPLATE_FILES
+from patchground import runner_assets
+from patchground.authoring.create import _STARTERS
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -21,5 +22,9 @@ def test_wheel_contains_all_template_assets(tmp_path: Path) -> None:
     assert len(wheels) == 1
     with zipfile.ZipFile(wheels[0]) as wheel:
         names = set(wheel.namelist())
-        for relative in TEMPLATE_FILES:
-            assert f"patchground/authoring/templates/python-debug/{relative}.tmpl" in names
+        for folder, relatives in _STARTERS.values():
+            for relative in relatives:
+                assert f"patchground/authoring/templates/{folder}/{relative}.tmpl" in names
+        assert "patchground/runner_assets/__init__.py" in names
+        for name, content in runner_assets.vitest_assets().items():
+            assert wheel.read(f"patchground/runner_assets/{name}") == content

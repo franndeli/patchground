@@ -1,0 +1,14 @@
+import { expect, test } from "vitest";
+import { total } from "../src/starter";
+
+test("total includes the final amount", () => {
+  expect(total([3, 2])).toBe(5);
+});
+
+test("total of a single amount", () => {
+  expect(total([7])).toBe(7);
+});
+
+test("total handles negative amounts", () => {
+  expect(total([4, -2])).toBe(2);
+});

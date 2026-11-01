@@ -1,0 +1,5 @@
+- Which rules in the ticket did you decide were already satisfied by the strict code, and which did you have to change? How did you check?
+- Where does an invalid row reserve its sku in the strict code, and why did that not matter before non-strict mode existed?
+- How did you decide what non-strict mode does with a malformed CSV, and what did you leave unchanged?
+- Which of your tests would fail if line numbers counted records instead of physical lines?
+- If an AI assistant wrote part of the change, what did you verify yourself before accepting it?

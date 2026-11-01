@@ -70,6 +70,29 @@ def test_structural_counts_are_facts(trees: tuple[Path, Path]) -> None:
     assert evidence.assertion_reductions[0].after == 1
 
 
+def test_vitest_structural_counts_are_explicit_syntax_facts(trees: tuple[Path, Path]) -> None:
+    from patchground.runner_assets import VITEST_COMMAND
+
+    original, final = trees
+    imports = 'import {test, expect} from "vitest";\n'
+    (original / "case.test.ts").write_text(
+        imports
+        + 'test("kept", () => { expect(1).toBe(1); expect(2).toBe(2) });\n'
+        + 'test("removed", () => { expect(1).toBe(1) });'
+    )
+    (final / "case.test.ts").write_text(
+        imports + 'test("kept", () => { expect(true).toBe(true) });'
+    )
+    evidence = structural_evidence(original, final, VITEST_COMMAND)
+    assert evidence.status == "established"
+    assert evidence.removed_tests == ("case.test.ts::removed",)
+    assert evidence.assertion_reductions[0].before == 2
+    assert evidence.assertion_reductions[0].after == 1
+    assert "expect-call" in evidence.reason
+    (final / "case.test.ts").write_text(imports + 'test.skip("kept", () => {});')
+    assert structural_evidence(original, final, VITEST_COMMAND).status == "not_established"
+
+
 def test_unsupported_structure_is_not_claimed(trees: tuple[Path, Path]) -> None:
     original, final = trees
     assert structural_evidence(original, final, "npm test").status == "not_established"

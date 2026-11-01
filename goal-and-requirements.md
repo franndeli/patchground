@@ -126,8 +126,10 @@ Code, docs and CLI output use exactly these terms.
   are discarded.
 - **Isolated verification:** every check runs in a container on an internal-only network with
   resource limits (`patchground-contract-execution`).
-- **Challenge validation and scaffolding:** `pgnd new` and `pgnd validate`, CI-friendly
-  (`patchground-contract-verification`).
+- **Challenge validation and scaffolding:** `pgnd new` supports Python/TypeScript debugging and
+  feature starters; `pgnd validate` is CI-friendly (`patchground-contract-verification`). The curated
+  catalog covers both languages and types. TypeScript correctness means runtime test results, not
+  static type correctness; bounded additional evidence explicitly reports unsupported syntax.
 - **Verified-outcomes report** on submit, including whether the user's regression test fails before
   and passes after (`patchground-contract-feedback`).
 - **Environment doctor** that checks Docker, git and disk and prints exact fixes.

@@ -51,9 +51,9 @@ and exposes qualified references. Start/show/validate resolve unique installed I
 directories exit `2`. An empty listing succeeds. Doctor probes engine reachability/version, Git and
 session-disk availability, exits `0` if healthy and `2` otherwise; it does not measure Docker VM disk.
 
-Authoring `new` creates `<current-directory>/<id>` from packaged runnable Python/debug assets.
-The ID follows the manifest slug rules. Type/language default to debug/python; other combinations
-exit `2` before writing. Any existing destination, including a dangling symlink, is refused. There
+Authoring `new` creates `<current-directory>/<id>` from packaged runnable assets for
+`--type debug|feature` and `--lang python|typescript`. The ID follows the manifest slug rules.
+Defaults remain debug/python; unsupported combinations exit `2` before writing. Any existing destination, including a dangling symlink, is refused. There
 is no overwrite option, Git initialization or automatic container execution. Success exits `0`;
 JSON returns `{id, path, type, language, files}` with relative paths, never source contents.
 Creation failures exit `2`; safe rollback may leave concurrent additions/replacements intact.

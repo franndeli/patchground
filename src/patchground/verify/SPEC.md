@@ -4,7 +4,7 @@ type: module-design
 status: draft
 title: "Module: verify"
 parent: patchground-architecture
-depends-on: [patchground-spec, patchground-sandbox, patchground-packs, patchground-safeio]
+depends-on: [patchground-spec, patchground-sandbox, patchground-packs, patchground-safeio, patchground-runner-assets]
 implements: [patchground-contract-verification]
 ---
 
@@ -18,7 +18,7 @@ challenge passes or fails the same way everywhere.
 
 - The ordered steps and fail-fast semantics; a structured result naming the failed step and why.
 - Building the workspace variants the steps need, all in temporary copies: the starting state, the
-  reference applied, and the anti-gaming variants (empty diff, editable pytest modules deleted
+  reference applied, and the anti-gaming variants (empty diff, editable supported test modules deleted
   or skipped with hidden checks untouched).
 - Determinism: repeat runs and compare per-test outcomes, not just pass/fail totals.
 - Writing and reading `verification.json`, and detecting a digest mismatch that requires re-validation.
@@ -65,6 +65,12 @@ validation may write `verification.json` or delete a stale Patchground record on
   text, for unparsable, oversized or duplicate-named tests). The tampering
   probes and `report`'s regression evidence share the same basic syntax rules; regression adds
   size/ambiguity bounds, while `tampering` keeps its public names and behaviour.
+- TypeScript recognition uses the shared inert Tree-sitter adapter and exact canonical Vitest
+  command from `patchground-runner-assets`. Only conventional `.test.ts` modules with canonical
+  named imports and standalone unique literal test calls are supported; suites, hooks, aliases,
+  modifiers, dynamic registration and ambiguous identities decline additional evidence. Parsing is
+  bounded at 1 MiB/module. Actual editable collection must exactly match static file/name identities
+  before tampering; `.git` and `node_modules` are excluded. No authored code runs on the host.
 - Test-id integrity: step 2 is inconclusive if a visible test from the first run is missing from the
   second, and step 3 requires every id seen in step 2.
 - Run logs are never surfaced: a run that includes hidden checks may print their source. Step

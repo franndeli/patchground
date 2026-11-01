@@ -1,0 +1,33 @@
+spec_version: "0.1"
+id: event-bus-subscriptions
+version: 1.0.0
+title: Add unsubscribe and once to the in-process event bus
+type: feature
+summary: >-
+  A synchronous exact-topic event bus cannot take a subscription back or listen once. Add
+  unsubscribe and once with precise snapshot, re-entrancy and error-collection behavior.
+languages: [typescript]
+tags: [events, reentrancy, error-handling]
+difficulty: intermediate
+timebox_minutes: 45
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: node /opt/patchground/vitest-runner.mjs
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/]
+hints:
+  - Decide what a single emit needs to remember about the subscriptions it will call, and what may change underneath it while it runs.
+  - A once subscription has two moments that matter. Which one decides whether it may run again?
+  - Handle a handler's failure at the place where you call it, not where you finish the loop.
+debrief:
+  questions: debrief/questions.md
+  focus: [requirements_analysis, test_quality, scope_judgment]
+author: {name: Patchground contributors}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by: {model: "Claude Code via Orca worker (model unverified)", prompt_version: launch-event-bus-v1}

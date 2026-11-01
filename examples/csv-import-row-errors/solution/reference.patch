@@ -1,0 +1,74 @@
+diff --git a/src/stockimport/importer.py b/src/stockimport/importer.py
+index 60e061c..3698620 100644
+--- a/src/stockimport/importer.py
++++ b/src/stockimport/importer.py
+@@ -6,8 +6,9 @@ import csv
+ import io
+ import re
+ from collections.abc import Iterator
++from typing import Literal, overload
+
+-from .models import ImportFailed, Item, RowError
++from .models import ImportFailed, ImportResult, Item, RowError
+
+ HEADER = ["sku", "quantity", "unit_price"]
+
+@@ -20,25 +21,40 @@ def _fail(line: int, column: str | None, code: str, message: str) -> ImportFaile
+     return ImportFailed(RowError(line, column, code, message))
+
+
+-def import_inventory(text: str) -> list[Item]:
++@overload
++def import_inventory(text: str) -> list[Item]: ...
++@overload
++def import_inventory(text: str, *, strict: Literal[True]) -> list[Item]: ...
++@overload
++def import_inventory(text: str, *, strict: Literal[False]) -> ImportResult: ...
++def import_inventory(text: str, *, strict: bool = True) -> list[Item] | ImportResult:
+     """Parse ``text`` and return its items in file order.
+
+-    The first problem found stops the import with ``ImportFailed``.
++    Strict (default): the first row problem stops the import with ``ImportFailed``.
++    ``strict=False``: row problems are collected and returned with the accepted items.
++    Header and CSV syntax problems raise ``ImportFailed`` in both modes.
+     """
+     reader = csv.reader(io.StringIO(text, newline=""), strict=True)
+     _read_header(reader)
+     items: list[Item] = []
++    errors: list[RowError] = []
+     seen: set[str] = set()
+     while True:
+         line = reader.line_num + 1  # physical line where the next record starts
+         try:
+             record = next(reader)
+         except StopIteration:
+-            return items
++            return items if strict else ImportResult(items, errors)
+         except csv.Error as exc:
+             raise _fail(line, None, "malformed_csv", str(exc)) from None
+-        if record:  # a physical line with no characters yields []
++        if not record:  # a physical line with no characters yields []
++            continue
++        try:
+             items.append(_parse_record(record, line, seen))
++        except ImportFailed as exc:
++            if strict:
++                raise
++            errors.append(exc.error)
+
+
+ def _read_header(reader: Iterator[list[str]]) -> None:
+@@ -58,7 +74,6 @@ def _parse_record(record: list[str], line: int, seen: set[str]) -> Item:
+         raise _fail(line, "sku", "invalid_sku", f"invalid sku {sku!r}")
+     if sku in seen:
+         raise _fail(line, "sku", "duplicate_sku", f"duplicate sku {sku!r}")
+-    seen.add(sku)
+     if not _QUANTITY.fullmatch(quantity):
+         raise _fail(line, "quantity", "invalid_quantity", f"invalid quantity {quantity!r}")
+     match = _PRICE.fullmatch(price)
+@@ -66,4 +81,5 @@ def _parse_record(record: list[str], line: int, seen: set[str]) -> Item:
+         raise _fail(line, "unit_price", "invalid_price", f"invalid unit_price {price!r}")
+     dollars, fraction = match.groups()
+     cents = int(dollars) * 100 + int((fraction or "").ljust(2, "0"))
++    seen.add(sku)  # only fully valid rows reserve their sku
+     return Item(sku, int(quantity), cents)

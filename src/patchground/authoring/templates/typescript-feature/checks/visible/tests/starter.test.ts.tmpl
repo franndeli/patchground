@@ -1,0 +1,10 @@
+import { expect, test } from "vitest";
+import { average, total } from "../src/starter";
+
+test("total of the amounts", () => {
+  expect(total([4, 5, 0])).toBe(9);
+});
+
+test("average is exported", () => {
+  expect(typeof average).toBe("function");
+});

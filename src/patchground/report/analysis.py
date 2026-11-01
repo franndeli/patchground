@@ -13,7 +13,9 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
 from patchground.sessions.files import open_directory, open_entry, tree
-from patchground.verify.pytest_adapter import UnsupportedPytest, supports_pytest, test_definitions
+from patchground.verify.pytest_adapter import UnsupportedPytest, test_definitions
+from patchground.verify.runners import Runner, is_vitest_path, runner_for, vitest_identity
+from patchground.verify.vitest_adapter import UnsupportedVitest, parse_module
 
 TEXT_LIMIT = 1024 * 1024
 
@@ -126,8 +128,21 @@ def diff_evidence(original: Path, final: Path, expected_paths: tuple[str, ...]) 
     return DiffEvidence(expected_paths=expected_paths, files=tuple(changes))
 
 
+def _assertion_counts(path: Path, runner: Runner, relative: str) -> dict[str, int]:
+    if runner == "vitest":
+        definitions = parse_module(path).definitions
+        for name in definitions:
+            vitest_identity(relative, name)
+        return {name: definition.assertions for name, definition in definitions.items()}
+    return {
+        name: sum(isinstance(node, ast.Assert) for node in ast.walk(definition))
+        for name, definition in test_definitions(path).items()
+    }
+
+
 def structural_evidence(original: Path, final: Path, command: str) -> StructureEvidence:
-    if not supports_pytest(command):
+    runner = runner_for(command)
+    if runner is None:
         return StructureEvidence(status="not_established", reason="unsupported test runner")
     before, after = _file_paths(original), _file_paths(final)
     removed_files: list[str] = []
@@ -136,29 +151,36 @@ def structural_evidence(original: Path, final: Path, command: str) -> StructureE
     unsupported: list[str] = []
     for name in sorted(before.keys() | after.keys()):
         path = Path(name)
-        if path.suffix != ".py" or not (
+        if runner == "vitest":
+            if not is_vitest_path(path):
+                continue
+        elif path.suffix != ".py" or not (
             path.name.startswith("test_") or path.name.endswith("_test.py")
         ):
             continue
         try:
-            old = test_definitions(before[name]) if name in before else {}
-            new = test_definitions(after[name]) if name in after else {}
-        except UnsupportedPytest:
+            old = _assertion_counts(before[name], runner, name) if name in before else {}
+            new = _assertion_counts(after[name], runner, name) if name in after else {}
+        except (UnsupportedPytest, UnsupportedVitest, ValueError):
             unsupported.append(name)
             continue
         if old and name not in after:
             removed_files.append(name)
         removed_tests.extend(f"{name}::{test}" for test in sorted(old.keys() - new.keys()))
         for test in sorted(old.keys() & new.keys()):
-            previous = sum(isinstance(node, ast.Assert) for node in ast.walk(old[test]))
-            current = sum(isinstance(node, ast.Assert) for node in ast.walk(new[test]))
+            previous = old[test]
+            current = new[test]
             if current < previous:
                 reductions.append(
                     AssertionReduction(test=f"{name}::{test}", before=previous, after=current)
                 )
     return StructureEvidence(
         status="not_established" if unsupported else "established",
-        reason="some test source is unsupported" if unsupported else "structural counts only",
+        reason="some test source is unsupported"
+        if unsupported
+        else "structural canonical expect-call counts only"
+        if runner == "vitest"
+        else "structural counts only",
         removed_files=tuple(removed_files),
         removed_tests=tuple(removed_tests),
         assertion_reductions=tuple(reductions),

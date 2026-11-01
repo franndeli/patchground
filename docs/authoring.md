@@ -13,7 +13,9 @@ pgnd validate my-challenge
 ```
 
 The ID must contain lowercase letters/digits separated by single hyphens and must match its folder.
-The current template is Python/debug (also explicit as `--type debug --lang python`). An existing
+Python/debug remains the default. Choose `--type debug|feature` and `--lang python|typescript`
+for any of the four starters, for example `pgnd new my-feature --type feature --lang typescript`.
+An existing
 destination, including an empty directory or symlink, is refused. Choose another ID; there is no
 force flag. Every command supports `--json`.
 
@@ -38,7 +40,12 @@ not initialize Git, build an image or run authored code.
 
 Do not execute challenge code or tests on the host. Use `pgnd validate` and session `pgnd check`.
 For the supported tampering probes, use conventional pytest `test_*.py` / `*_test.py` modules with
-static test functions/methods. Inspect every validation gate: `not_run` is not a pass.
+static test functions/methods. TypeScript starters use a pinned Vitest container toolchain;
+keep the generated environment resources together and the test command unchanged. Use `.test.ts`
+files with named `test`/`expect` imports from `vitest`, standalone literal unique test names and
+callbacks. Suites, hooks, aliases, modifiers, dynamic registration and changed harness/helper inputs
+may make additional evidence unsupported. Runtime checks do not prove TypeScript type correctness.
+Inspect every validation gate: `not_run` is not a pass.
 
 Set honest authorship, licensing and provenance when replacing the starter. Model metadata that
 cannot be established must say so; do not attribute generated work to an unobserved model.

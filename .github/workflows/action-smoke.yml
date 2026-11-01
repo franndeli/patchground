@@ -57,7 +57,10 @@ jobs:
           print(json.dumps(report, ensure_ascii=True))
           assert report['exit_code'] == 0
           assert report['commit'] == os.environ['GITHUB_SHA']
-          assert report['selected']
+          assert {Path(name).name for name in report['selected']} == {
+              'pagination-last-page', 'duplicate-charges-on-retry', 'cache-expiry',
+              'csv-import-row-errors', 'release-version-ordering', 'event-bus-subscriptions',
+          }
           assert report['selection_mode'] == 'fallback_all'
           after = {
               p.as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()

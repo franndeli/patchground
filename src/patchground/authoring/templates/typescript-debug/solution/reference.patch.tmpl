@@ -1,0 +1,9 @@
+diff --git a/src/starter.ts b/src/starter.ts
+--- a/src/starter.ts
++++ b/src/starter.ts
+@@ -1,4 +1,4 @@
+ /** Return the sum of the supplied integer amounts. */
+ export function total(items: number[]): number {
+-  return items.slice(0, -1).reduce((sum, amount) => sum + amount, 0);
++  return items.reduce((sum, amount) => sum + amount, 0);
+ }

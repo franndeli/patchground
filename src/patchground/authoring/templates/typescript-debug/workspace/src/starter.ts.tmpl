@@ -1,0 +1,4 @@
+/** Return the sum of the supplied integer amounts. */
+export function total(items: number[]): number {
+  return items.slice(0, -1).reduce((sum, amount) => sum + amount, 0);
+}

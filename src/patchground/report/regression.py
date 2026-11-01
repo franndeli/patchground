@@ -1,9 +1,9 @@
 """Regression-test evidence: do the learner's new or changed tests fail before and pass after?
 
-The probe is deliberately narrow and conservative. It supports direct ``pytest`` commands and
-static, conventionally named test functions/methods. Candidates are exactly the test definitions
-that are new or changed between the captured original and final trees. They are run alone (by node
-id) twice inside the sandbox with identical test material and a fixed runner configuration: once
+The probe supports direct ``pytest`` commands and the canonical frozen Vitest runner, using
+static conventional test definitions. Candidates are exactly the test definitions
+that are new or changed between the captured original and final trees. They are selected alone
+twice inside the sandbox with identical test material and a fixed runner configuration: once
 against the original code and once against the final code. Anything the probe cannot reason about
 is reported as ``not_established`` rather than guessed, and nothing here ever runs on the host.
 
@@ -23,20 +23,28 @@ import tempfile
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict
 
 from patchground import sandbox as engine
+from patchground.runner_assets import VITEST_COMMAND
 from patchground.sandbox import RunOutcome, RunResult, TestResult, TestStatus
 from patchground.sessions.models import CheckTest
+from patchground.verify import vitest_adapter
 from patchground.verify.pytest_adapter import (
     TestNode,
     UnsupportedPytest,
     is_test_filename,
     split_pytest_command,
     test_definitions,
+)
+from patchground.verify.runners import (
+    VITEST_EXCLUDED_PARTS,
+    is_vitest_path,
+    runner_for,
+    vitest_identity,
 )
 
 Status = Literal["verified", "not_verified", "not_established"]
@@ -103,11 +111,14 @@ class _Unsupported(Exception):
 @dataclass(frozen=True)
 class _Candidate:
     module: str  # relative POSIX path of the test module
-    qualname: str  # ``test_x`` or ``TestC::test_x``
+    qualname: str  # Python qualified name or exact Vitest literal name
+    exact_identity: bool = False
 
     @property
     def id(self) -> str:
-        """The JUnit identity (``tests.test_x.TestC::test_x``) pytest reports for this test."""
+        """The runner-specific JUnit identity, preserving literal Vitest names."""
+        if self.exact_identity:
+            return vitest_identity(self.module, self.qualname)
         *classes, name = self.qualname.split("::")
         dotted = ".".join([self.module.removesuffix(".py").replace("/", "."), *classes])
         return f"{dotted}::{name}"
@@ -145,10 +156,19 @@ def evaluate_regression(
         _copy(plan.original_files, before_tree)
         _copy(plan.final_files, after_tree)
         for module in plan.test_modules:
-            _copy_file(plan.final_files[module], before_tree / module)
+            if plan.exact_identities and module not in plan.final_files:
+                (before_tree / module).unlink()
+                continue
+            material = plan.final_files[module]
+            _copy_file(material, before_tree / module)
+            if plan.exact_identities:
+                _copy_file(material, after_tree / module)
+                names = {c.qualname for c in plan.candidates if c.module == module}
+                for tree in (before_tree, after_tree):
+                    vitest_adapter.select_tests(tree / module, names)
         before = sandbox.run_check(image_id, [before_tree], plan.command)
         before_tests = _sanitized(before.tests)
-        stop = _judge_before(before, ids)
+        stop = _judge_before(before, ids, exact=plan.exact_identities)
         if stop is not None:
             return RegressionEvidence(
                 status=stop[0],
@@ -160,7 +180,7 @@ def evaluate_regression(
         after = sandbox.run_check(image_id, [after_tree], plan.command)
     after_tests = _sanitized(after.tests)
     outcomes = {"before_outcome": before.outcome.value, "after_outcome": after.outcome.value}
-    stop = _judge_after(after, ids)
+    stop = _judge_after(after, ids, exact=plan.exact_identities)
     if stop is None:
         stop = _same_identities(before, after)
     verified = _verified(before, after)
@@ -190,12 +210,15 @@ class _Plan:
     original_files: dict[str, Path]
     final_files: dict[str, Path]
     command: str
+    exact_identities: bool = False
 
 
 def _plan(original: Path, final: Path, command: str) -> _Plan:
     split = split_pytest_command(command)
     if split is None:
-        raise _Unsupported("the test command is not a direct pytest invocation")
+        if runner_for(command) == "vitest":
+            return _vitest_plan(original, final, command)
+        raise _Unsupported("the test command is not a supported frozen runner invocation")
     invocation, arguments = split
     options, scope = _runner_options(arguments)
     original_files, final_files = _files(original), _files(final)
@@ -214,6 +237,96 @@ def _plan(original: Path, final: Path, command: str) -> _Plan:
         _check_scope(candidates, scope)
         command = _selected_command(invocation, options, candidates)
     return _Plan(tuple(candidates), tuple(modules), original_files, final_files, command)
+
+
+def _vitest_plan(original: Path, final: Path, command: str) -> _Plan:
+    original_files = _files(original, excluded=VITEST_EXCLUDED_PARTS)
+    final_files = _files(final, excluded=VITEST_EXCLUDED_PARTS)
+    changed = {
+        rel
+        for rel in original_files.keys() | final_files.keys()
+        if rel not in original_files
+        or rel not in final_files
+        or not filecmp.cmp(original_files[rel], final_files[rel], shallow=False)
+    }
+    parsed: list[dict[str, vitest_adapter.TestModule]] = []
+    try:
+        for files in (original_files, final_files):
+            parsed.append(
+                {
+                    rel: vitest_adapter.parse_module(path)
+                    for rel, path in files.items()
+                    if is_vitest_path(PurePosixPath(rel))
+                }
+            )
+    except vitest_adapter.UnsupportedVitest as exc:
+        raise _Unsupported(f"a TypeScript test module cannot be analysed: {exc}") from exc
+    before, after = parsed
+    candidates: list[_Candidate] = []
+    for rel, module in sorted(after.items()):
+        previous = before.get(rel)
+        for name, definition in module.definitions.items():
+            old = previous.definitions.get(name) if previous is not None else None
+            if old is not None and old.fingerprint == definition.fingerprint:
+                continue
+            candidate = _Candidate(rel, name, exact_identity=True)
+            try:
+                vitest_identity(rel, name)
+            except ValueError as exc:
+                raise _Unsupported("a TypeScript test identity cannot be selected safely") from exc
+            candidates.append(candidate)
+    if len(candidates) > MAX_CANDIDATES:
+        raise _Unsupported("too many new or changed tests to select safely")
+    if candidates:
+        for rel in before.keys() & after.keys():
+            if before[rel].helper_fingerprint != after[rel].helper_fingerprint:
+                raise _Unsupported("TypeScript test imports or helpers changed")
+        homes = {rel.rpartition("/")[0] for rel in before.keys() | after.keys()}
+        for rel in changed:
+            name = rel.rsplit("/", 1)[-1]
+            if _vitest_harness_file(name):
+                raise _Unsupported("TypeScript runner, dependency or configuration files changed")
+            if (rel in before and before[rel].definitions) or (
+                rel in after and after[rel].definitions
+            ):
+                continue
+            directory = rel.rpartition("/")[0]
+            near = any(
+                directory == home or (home and directory.startswith(home + "/")) for home in homes
+            )
+            if near or HARNESS_PARTS & set(directory.split("/")):
+                raise _Unsupported("helper or harness files near the tests changed")
+    if candidates:
+        selected_modules = sorted({c.module for c in candidates})
+        command = f"{VITEST_COMMAND} --files {shlex.join(selected_modules)}"
+    return _Plan(
+        tuple(candidates),
+        tuple(sorted(before.keys() | after.keys())),
+        original_files,
+        final_files,
+        command,
+        exact_identities=True,
+    )
+
+
+def _vitest_harness_file(name: str) -> bool:
+    return name in {
+        "package.json",
+        "package-lock.json",
+        "npm-shrinkwrap.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+        "bun.lock",
+        "bun.lockb",
+        "pnpm-workspace.yaml",
+        ".npmrc",
+        ".yarnrc",
+        ".yarnrc.yml",
+        ".node-version",
+        ".nvmrc",
+        "Dockerfile",
+        "vitest-runner.mjs",
+    } or name.startswith(("vitest.config.", "vite.config.", "tsconfig.", "Dockerfile."))
 
 
 def _runner_options(arguments: list[str]) -> tuple[list[str], list[str]]:
@@ -264,7 +377,7 @@ def _normalized(path: str) -> str:
     return "/".join(parts)
 
 
-def _files(root: Path) -> dict[str, Path]:
+def _files(root: Path, *, excluded: frozenset[str] = frozenset()) -> dict[str, Path]:
     """Map relative POSIX path -> ordinary file; anything unusual makes the tree unsupported."""
     if not root.is_dir() or root.is_symlink():
         raise _Unsupported("a captured tree is missing or not a directory")
@@ -273,7 +386,7 @@ def _files(root: Path) -> dict[str, Path]:
         base = Path(dirpath)
         kept = []
         for name in sorted(dirnames):
-            if name in SKIPPED_PARTS:
+            if name in SKIPPED_PARTS or name in excluded:
                 continue
             if (base / name).is_symlink():
                 raise _Unsupported("a captured tree contains a symbolic link")
@@ -387,7 +500,10 @@ def _selected_command(
 
 def _copy_file(source: Path, target: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
+    target.unlink(missing_ok=True)
     shutil.copy2(source, target)
+    # Captures are read-only; only these private disposable copies may be mutated.
+    target.chmod(stat.S_IMODE(target.stat().st_mode) | stat.S_IWUSR)
 
 
 def _copy(files: dict[str, Path], target: Path) -> None:
@@ -419,10 +535,12 @@ def _inconclusive(label: str, run: RunResult) -> Verdict:
     return None
 
 
-def _collected(label: str, run: RunResult, ids: Sequence[str]) -> Verdict:
+def _collected(label: str, run: RunResult, ids: Sequence[str], *, exact: bool = False) -> Verdict:
     if any(len(test.id) > 240 or not test.id.isprintable() for test in run.tests):
         return "not_established", "test identities cannot be reported safely without alteration"
-    seen = {_base(t) for t in run.tests}
+    if exact and Counter(t.id for t in run.tests) != Counter(ids):
+        return "not_verified", f"selected tests were not collected exactly on the {label} code"
+    seen = {t.id if exact else _base(t) for t in run.tests}
     if not set(ids) <= seen or not seen <= set(ids):
         return (
             "not_verified",
@@ -431,8 +549,8 @@ def _collected(label: str, run: RunResult, ids: Sequence[str]) -> Verdict:
     return None
 
 
-def _judge_before(run: RunResult, ids: Sequence[str]) -> Verdict:
-    stop = _inconclusive("original", run) or _collected("original", run, ids)
+def _judge_before(run: RunResult, ids: Sequence[str], *, exact: bool = False) -> Verdict:
+    stop = _inconclusive("original", run) or _collected("original", run, ids, exact=exact)
     if stop is not None:
         return stop
     if any(t.status not in (TestStatus.PASSED, TestStatus.FAILED) for t in run.tests):
@@ -444,8 +562,8 @@ def _judge_before(run: RunResult, ids: Sequence[str]) -> Verdict:
     return None
 
 
-def _judge_after(run: RunResult, ids: Sequence[str]) -> Verdict:
-    stop = _inconclusive("final", run) or _collected("final", run, ids)
+def _judge_after(run: RunResult, ids: Sequence[str], *, exact: bool = False) -> Verdict:
+    stop = _inconclusive("final", run) or _collected("final", run, ids, exact=exact)
     if stop is not None:
         return stop
     if any(t.status != TestStatus.PASSED for t in run.tests):

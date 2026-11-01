@@ -1,0 +1,82 @@
+diff --git a/src/bus.ts b/src/bus.ts
+index 60d54f7..86d7dec 100644
+--- a/src/bus.ts
++++ b/src/bus.ts
+@@ -3,30 +3,65 @@
+ export type Handler = (payload: unknown) => void;
+ export type Unsubscribe = () => void;
+
++interface Subscription {
++  readonly handler: Handler;
++  readonly once: boolean;
++  consumed: boolean;
++}
++
+ export class EventBus {
+-  private readonly handlers = new Map<string, Handler[]>();
++  private readonly subscriptions = new Map<string, Subscription[]>();
+
+   /** Register `handler` for exactly `topic`. Handlers run in registration order. */
+   on(topic: string, handler: Handler): Unsubscribe {
+-    const list = this.handlers.get(topic) ?? [];
+-    list.push(handler);
+-    this.handlers.set(topic, list);
+-    // Not implemented yet: there is no way to take a subscription back.
+-    return () => {};
++    return this.subscribe(topic, handler, false);
+   }
+
+-  /** Not implemented yet. */
+-  once(_topic: string, _handler: Handler): Unsubscribe {
+-    throw new Error("EventBus.once is not implemented");
++  /** Like `on`, but the handler is consumed immediately before its first call. */
++  once(topic: string, handler: Handler): Unsubscribe {
++    return this.subscribe(topic, handler, true);
+   }
+
+-  /** Call every handler registered for `topic` and return how many were called. */
++  /**
++   * Call the subscriptions that exist when the emit starts and return how many handlers were called.
++   * Throws an AggregateError after the last turn if any handler threw.
++   */
+   emit(topic: string, payload?: unknown): number {
++    const captured = [...(this.subscriptions.get(topic) ?? [])];
++    const errors: unknown[] = [];
+     let called = 0;
+-    for (const handler of this.handlers.get(topic) ?? []) {
+-      handler(payload);
++    for (const subscription of captured) {
++      if (subscription.once) {
++        if (subscription.consumed) continue;
++        subscription.consumed = true;
++        this.remove(topic, subscription);
++      }
+       called += 1;
++      try {
++        subscription.handler(payload);
++      } catch (error) {
++        errors.push(error);
++      }
++    }
++    if (errors.length > 0) {
++      throw new AggregateError(errors, `${errors.length} handler(s) threw while emitting "${topic}"`);
+     }
+     return called;
+   }
++
++  private subscribe(topic: string, handler: Handler, once: boolean): Unsubscribe {
++    const subscription: Subscription = { handler, once, consumed: false };
++    const list = this.subscriptions.get(topic) ?? [];
++    list.push(subscription);
++    this.subscriptions.set(topic, list);
++    return () => this.remove(topic, subscription);
++  }
++
++  private remove(topic: string, subscription: Subscription): void {
++    const list = this.subscriptions.get(topic);
++    const index = list === undefined ? -1 : list.indexOf(subscription);
++    if (list === undefined || index === -1) return;
++    list.splice(index, 1);
++    if (list.length === 0) this.subscriptions.delete(topic);
++  }
+ }

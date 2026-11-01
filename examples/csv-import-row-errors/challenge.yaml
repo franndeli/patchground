@@ -1,0 +1,33 @@
+spec_version: "0.1"
+id: csv-import-row-errors
+version: 1.0.0
+title: Report bad rows from the stock importer instead of stopping at the first
+type: feature
+summary: >-
+  A strict CSV stock importer aborts at the first bad row. Add a non-strict mode that returns the
+  valid items and one precise error per rejected row, keeping strict behavior unchanged.
+languages: [python]
+tags: [csv, validation, parsing, error-handling]
+difficulty: intermediate
+timebox_minutes: 45
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/stockimport/]
+hints:
+  - Decide where a failure for one row should stop and where it should only be recorded. Which failures can never be limited to one row?
+  - Look at when a sku is recorded as seen, and at what must be true of a row before it may reserve that sku.
+  - Keep one place that judges a row. Strict and non-strict mode should differ only in what happens to the error it produces.
+debrief:
+  questions: debrief/questions.md
+  focus: [requirements_analysis, test_quality, scope_judgment]
+author: {name: Patchground contributors}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by: {model: "Claude Code via Orca worker (model unverified)", prompt_version: launch-csv-import-v1}

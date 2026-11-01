@@ -18,8 +18,12 @@ def _human(console: Console, result: CreatedChallenge) -> None:
 
 def new(
     challenge_id: Annotated[str, typer.Argument(help="New challenge id and folder name.")],
-    type_: Annotated[str, typer.Option("--type", help="Template type (debug).")] = "debug",
-    language: Annotated[str, typer.Option("--lang", help="Template language (python).")] = "python",
+    type_: Annotated[
+        str, typer.Option("--type", help="Template type (debug or feature).")
+    ] = "debug",
+    language: Annotated[
+        str, typer.Option("--lang", help="Template language (python or typescript).")
+    ] = "python",
     json_mode: Annotated[bool, typer.Option("--json", help="Print one JSON document.")] = False,
 ) -> None:
     """Create a runnable authored challenge without building or running it."""

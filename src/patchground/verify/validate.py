@@ -54,12 +54,13 @@ from patchground.verify.result import (
     run_label,
     utc_now,
 )
+from patchground.verify.runners import runner_for
 from patchground.verify.tampering import (
     Mutation,
     UnsupportedTampering,
     mutate,
-    supports_pytest,
     test_modules,
+    vitest_identities,
 )
 
 DEFAULT_LIMITS = Limits()
@@ -517,8 +518,11 @@ class _Validation:
             (test.id, test.status) for test in self.baselines[1].tests if test.id not in visible_ids
         )
         try:
-            if not supports_pytest(challenge.manifest.environment.test_command):
-                raise UnsupportedTampering("runner is not a supported direct pytest invocation")
+            runner = runner_for(challenge.manifest.environment.test_command)
+            if runner is None:
+                raise UnsupportedTampering(
+                    "runner is not a supported pytest or frozen Vitest recipe"
+                )
             if not visible_ids:
                 raise UnsupportedTampering("no editable baseline tests were observed")
             with tempfile.TemporaryDirectory(prefix="patchground-anti-gaming-") as temporary:
@@ -540,10 +544,17 @@ class _Validation:
                     problem = _layer_problem([*copies, *hidden])
                     if problem is not None:
                         return _failed(step, started, problem, runs)
-                    modules = test_modules([layer.path for layer in copies])
+                    paths = [layer.path for layer in copies]
+                    if runner == "vitest" and vitest_identities(paths) != Counter(
+                        test.id for test in self.baselines[0].tests
+                    ):
+                        raise UnsupportedTampering(
+                            "editable TypeScript collection differs from static test identities"
+                        )
+                    modules = test_modules(paths, runner=runner)
                     if not modules:
-                        raise UnsupportedTampering("no conventional editable pytest modules found")
-                    mutate(modules, mutation)
+                        raise UnsupportedTampering("no conventional editable test modules found")
+                    mutate(modules, mutation, runner=runner)
                     self.progress(f"checking editable-test tampering: {label}")
                     _, summary = self._run(step, started, label, [*copies, *hidden], runs)
                     runs.append(summary)
@@ -586,8 +597,7 @@ class _Validation:
         return StepResult(
             step,
             StepStatus.PASSED,
-            "hidden outcomes unchanged under empty diff and "
-            "editable pytest module deletion/skipping",
+            "hidden outcomes unchanged under empty diff and editable test module deletion/skipping",
             started,
             utc_now(),
             runs=tuple(runs),

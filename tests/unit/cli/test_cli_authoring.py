@@ -53,3 +53,39 @@ def test_new_hides_unexpected_exception_detail() -> None:
     assert result.exit_code == 2
     assert "private-detail" not in result.output
     assert json.loads(result.stdout)["error"]["kind"] == "internal"
+
+
+def test_new_feature_python_json(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(
+        app, ["new", "new-one", "--type", "feature", "--lang", "python", "--json"]
+    )
+    assert result.exit_code == 0
+    body = json.loads(result.stdout)
+    assert (body["type"], body["language"]) == ("feature", "python")
+    assert len(body["files"]) == 8
+
+
+def test_new_typescript_reports_selected_starter(tmp_path: Path, monkeypatch) -> None:
+    from patchground import runner_assets
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(runner_assets, "vitest_assets", lambda: {"Dockerfile": b"x"}, raising=False)
+    result = runner.invoke(
+        app, ["new", "new-one", "--type", "debug", "--lang", "typescript", "--json"]
+    )
+    assert result.exit_code == 0
+    body = json.loads(result.stdout)
+    assert (body["type"], body["language"]) == ("debug", "typescript")
+    assert "environment/Dockerfile" in body["files"]
+    assert "private" not in result.output
+
+
+def test_new_unsupported_combination_writes_nothing(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(
+        app, ["new", "new-one", "--type", "review", "--lang", "typescript", "--json"]
+    )
+    assert result.exit_code == 2
+    assert "supported templates" in json.loads(result.stdout)["error"]["message"]
+    assert list(tmp_path.iterdir()) == []

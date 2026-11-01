@@ -126,5 +126,11 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   Docker-required tests, lint/format, types and clean-wheel/Action-shell smoke without AI passed.
   Integration caught and fixed original-source Git selection, installer Python import exposure and
   root-challenge folder identity. See `evaluations/automation-smoke.md` for evidence and limits.
-- Next: agreed runner coverage and remaining product/evaluation work. Human trials and the ten-learner
+- Runner/catalog expansion implemented: six challenges across Python/TypeScript and debug/feature,
+  four packaged starters, a pinned Vitest harness and inert Tree-sitter evidence adapter. TypeScript
+  tests establish runtime behavior only. Local acceptance: 1,104 Docker-required tests, lint/format,
+  types, schema and clean core-wheel starter/submission smoke passed. Integration found and fixed
+  private-mode runner resource permissions and read-only snapshot probe copies. See
+  `evaluations/coverage-smoke.md`; remote acceptance remains pending until observed.
+- Next: remaining site/optional-AI product work and evaluation. Human trials and the ten-learner
   cohort remain pending; no deployment, package publication or release is implied.

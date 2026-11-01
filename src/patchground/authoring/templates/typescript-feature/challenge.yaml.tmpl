@@ -1,0 +1,22 @@
+spec_version: "0.1"
+id: __CHALLENGE_ID__
+version: 0.1.0
+title: Add an average to the line-item helpers
+type: feature
+summary: Add the missing average helper without changing the existing total.
+languages: [typescript]
+tags: [starter]
+difficulty: beginner
+timebox_minutes: 15
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: node /opt/patchground/vitest-runner.mjs
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/]
+author: {name: Challenge author}
+content_license: CC-BY-4.0

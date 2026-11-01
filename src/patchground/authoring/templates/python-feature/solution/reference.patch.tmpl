@@ -1,0 +1,9 @@
+diff --git a/src/starter.py b/src/starter.py
+--- a/src/starter.py
++++ b/src/starter.py
+@@ -4,4 +4,4 @@
+
+ def average(items: list[int]) -> float:
+     """Return the mean of the amounts, or 0.0 for an empty list."""
+-    raise NotImplementedError
++    return sum(items) / len(items) if items else 0.0

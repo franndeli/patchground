@@ -18,7 +18,8 @@ build) and no API key.
 ```mermaid
 flowchart TD
   cli --> authoring & packs & sessions & verify & report & sandbox
-  authoring --> spec
+  authoring --> spec & runner_assets
+  verify --> runner_assets
   automation --> packs & verify & spec & safeio
   cli -. lazy .-> ai & generate
   packs --> spec & safeio
@@ -37,6 +38,7 @@ flowchart TD
 | `cli` | Commands, terminal and `--json` output, consent prompts. No business logic. | `patchground-cli` |
 | `authoring` | Safe local scaffolding from packaged runnable templates; no execution. | `patchground-authoring` |
 | `automation` | Committed changed-challenge selection and safe aggregate results for the in-repository Action. | `patchground-automation` |
+| `runner_assets` | Canonical portable container harness and locked toolchain bytes; no host execution. | `patchground-runner-assets` |
 | `spec` | Manifest models, loading, schema export. Depends on nothing internal. | `patchground-spec` |
 | `packs` | Pinned distribution, immutable content, resolution and execution consent. | `patchground-packs` |
 | `safeio` | Shared descriptor-safe filesystem access and Git executable selection. | `patchground-safeio` |
@@ -52,7 +54,7 @@ core imports `ai` or `generate`; only `sandbox` imports the Docker SDK; only `se
 workspaces (others read git data through `sessions`), `packs` runs isolated Git retrieval and raw
 object inspection without loading source configuration, and `verify` runs only `git apply` on a
 throwaway copy of a challenge's `workspace/` (never a repo the user owns, never with repository config a challenge could supply). `report` uses
-`verify` only for shared pure pytest recognition/static-analysis primitives; submission execution
+`verify` only for shared pure pytest/TypeScript recognition and static-analysis primitives; submission execution
 still goes through `sandbox`, and sessions never imports report. `cli` reaches `sandbox` only for `doctor`'s engine probe.
 
 ## Cross-cutting decisions
@@ -64,6 +66,11 @@ still goes through `sandbox`, and sessions never imports report. `cli` reaches `
   `patchground-contract-security`.
 - **Two-phase execution.** Building an image may use the network; running checks never does. See
   `patchground-contract-execution`.
+- **Runtime TypeScript, not type checking.** A pinned Vitest harness normalizes identities and
+  withholds JUnit on runner-wide faults without changing global sandbox exit semantics. Shared
+  Tree-sitter parsing supplies bounded tampering/regression evidence without importing authored
+  code. Canonical `runner_assets` bytes are copied into portable authored environments; neither
+  `authoring` nor `verify` executes those assets on the host.
 - **AI is a lazy leaf.** `ai` is imported only inside the AI commands, and its SDKs ship as the
   optional `patchground[ai]` extra. A core install without the extra must import and run every
   non-AI command. The `ai` module exposes one `Provider` protocol (`complete`, `estimate_tokens`);

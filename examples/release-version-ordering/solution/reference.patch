@@ -1,0 +1,36 @@
+--- a/src/releasekit/ordering.ts
++++ b/src/releasekit/ordering.ts
+@@ -6,15 +6,29 @@
+   return a === b ? 0 : a < b ? -1 : 1;
+ }
+
++function numeric(a: string, b: string): Order {
++  return a.length === b.length ? lexical(a, b) : a.length < b.length ? -1 : 1;
++}
++
+ function precedence(a: Version, b: Version): Order {
+   for (let i = 0; i < 3; i += 1) {
+-    const order = lexical(a.core[i], b.core[i]);
++    const order = numeric(a.core[i], b.core[i]);
+     if (order !== 0) return order;
+   }
+   if (a.prerelease.length === 0 && b.prerelease.length === 0) return 0;
+-  if (a.prerelease.length === 0) return -1;
+-  if (b.prerelease.length === 0) return 1;
+-  return lexical(a.prerelease.join("."), b.prerelease.join("."));
++  if (a.prerelease.length === 0) return 1;
++  if (b.prerelease.length === 0) return -1;
++  for (let i = 0; i < Math.min(a.prerelease.length, b.prerelease.length); i += 1) {
++    const left = a.prerelease[i];
++    const right = b.prerelease[i];
++    const leftNumeric = /^[0-9]+$/.test(left);
++    const rightNumeric = /^[0-9]+$/.test(right);
++    const order = leftNumeric && rightNumeric ? numeric(left, right)
++      : leftNumeric !== rightNumeric ? (leftNumeric ? -1 : 1) : lexical(left, right);
++    if (order !== 0) return order;
++  }
++  return a.prerelease.length === b.prerelease.length ? 0
++    : a.prerelease.length < b.prerelease.length ? -1 : 1;
+ }
+
+ export function compare(a: string, b: string): Order {

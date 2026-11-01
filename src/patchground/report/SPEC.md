@@ -21,7 +21,7 @@ not a new observation of the live workspace. No LLM is involved.
   `.session/submission/` bundle. The bundle, not a last historical check or live Git state, supplies
   final evidence. Final checks are fresh; unsupported/missing regression evidence never blocks
   submission or silently passes. Failing checks may finalize an unsuccessful attempt.
-- **Regression test:** select actual new/changed conventional pytest definitions and run identical
+- **Regression test:** select actual new/changed supported pytest or TypeScript definitions and run identical
   candidate material on disposable original/final-code copies. Only identities failing before and
   passing after are verified; unchanged pre-existing failures cannot establish a regression. Require
   matching identities/multiplicities, successful final runner outcome and every selected final test
@@ -30,6 +30,11 @@ not a new observation of the live workspace. No LLM is involved.
   Select at most 200 definitions, parsing at most 1 MiB per module; reject identities that would
   require display truncation/sanitization. Frozen `testpaths` is compatible with explicit candidate
   selection; changed runner configuration, collection controls and ambiguous helper changes are not.
+  Canonical Vitest evidence uses the shared Tree-sitter adapter, exact single-occurrence
+  `file::name` identities and internal exact-file selection. Both probe trees use identical selected
+  final test material; deleted modules are not restored. Imports/helpers and dependency/configuration
+  changes are conservatively rejected. Captures stay read-only; only disposable copied files become
+  owner-writable for selection, preserving executable bits and all live learner Git state.
 - **Test structure:** conventional test-file/function removals and decreases in AST assertion counts.
   These are structural facts, never proof that an equivalent rewrite is semantically weaker.
 - **Diff scope:** captured ordinary files versus original, including Git-ignored ordinary files but
@@ -44,6 +49,6 @@ not a new observation of the live workspace. No LLM is involved.
 ## Boundary
 
 Depends on `sessions` for captures, persistence and lifecycle, `sandbox` for regression runs and
-`verify` for shared pure pytest/static-analysis helpers. Never shells out to Git, imports AI or
+`verify` for shared pure pytest/TypeScript static-analysis helpers. Never shells out to Git, imports AI or
 produces a score. Engine/storage faults before finalization remain retryable; an already published
 bundle is never reopened after an audit failure. mypy strict.

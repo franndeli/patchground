@@ -41,13 +41,21 @@ Run in order; the first one that doesn't hold fails validation with a non-zero e
    counts and statuses exactly. A lost failure, missing hidden test, new skip or collection failure
    is not proof of resistance and fails the gate. Engine faults remain environment errors.
 
-   The initial adapter supports direct `pytest` / `python -m pytest` invocations and editable
+   The Python adapter supports direct `pytest` / `python -m pytest` invocations and editable
    `test_*.py` / `*_test.py` modules in workspace and visible checks, containing static `test_*`
    functions or methods in `Test*` classes. It does not change conftest, helper-only modules,
    hidden checks, runner configuration or application code. Deletion and skipping operate on whole
    matching modules, not individual failing functions; modules containing
    shared helpers can therefore expose a dependency that authors must resolve. Skipping adds a
    module-level pytest skip mark, preserving existing module marks.
+
+   The TypeScript adapter recognizes the canonical `node /opt/patchground/vitest-runner.mjs`
+   recipe and `.test.ts` modules with named `test`/`it` and `expect` imports from `vitest`, unique
+   literal top-level test names and callbacks. Tree-sitter parses source without executing it;
+   suites, hooks, aliases, modifiers and dynamic registration are unsupported for this evidence.
+   Editable runtime identities must match the static collection exactly. Deletion removes supported
+   modules; skipping rewrites their registered calls. Hidden modules remain untouched. Runtime tests
+   are not static type checking. See `patchground-runner-assets` for the frozen harness boundary.
 
    Unsupported commands/layouts, no editable baseline tests, or mutations with no observable effect
    on editable tests report `anti_gaming: not_run` with a reason, never `passed`. Current validity

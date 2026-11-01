@@ -1,0 +1,11 @@
+# Line-item totals are sometimes too small
+
+The total displayed for a list of integer amounts is sometimes smaller than expected.
+An empty list should total zero, and every supplied amount should contribute exactly once.
+
+Investigate `total` in `src/starter.ts`. Keep its public API and add a regression test.
+Run `pgnd check` from a session workspace to verify the fix in Docker.
+
+This is a tiny teaching starter for challenge authors, not a curated realistic exercise.
+Authors should replace its story, application, tests and reference together, then run
+`pgnd validate` before sharing it.

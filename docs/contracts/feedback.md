@@ -35,10 +35,15 @@ Failing checks may finalize (submit exits `1`). Missing, unsupported or unsucces
 evidence is reported, not treated as a pass or a submission gate. Infrastructure failure before
 commit leaves the attempt open; after publication, retry reconciles the audit without reopening.
 
-The first regression adapter supports conventional static pytest definitions. It selects genuinely
+Regression adapters support conventional static pytest definitions and the bounded TypeScript
+subset in `patchground-contract-verification`. They select genuinely
 new/changed tests and compares exact identities/multiplicities on original and final code; unrelated
 pre-existing failures, collection errors, missing/skipped tests and changed test harnesses cannot
 establish a regression. Only individual before-failing/after-passing identities are verified.
+Vitest selection requires exact file/name identities and identical selected final test material in
+both disposable trees, frozen imports/helpers and unchanged harness/dependency files. Deleted final
+test modules are never restored. Source parsing is bounded at 1 MiB/module and selection at 200
+candidates. Unsupported syntax or harness ambiguity is explicitly `not_established`.
 This is bounded evidence, not protection against malicious local forgery or an arbitrary plugin.
 
 Scope includes ordinary Git-ignored files because they were checked. Sensitive patterns and Git

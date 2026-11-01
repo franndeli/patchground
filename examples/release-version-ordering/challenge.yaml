@@ -1,0 +1,31 @@
+spec_version: "0.1"
+id: release-version-ordering
+version: 1.0.0
+title: Release picker orders version labels incorrectly
+type: debug
+summary: A release-tool library chooses the wrong latest version and misorders prereleases.
+languages: [typescript]
+tags: [semver, ordering, releases]
+difficulty: intermediate
+timebox_minutes: 45
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: node /opt/patchground/vitest-runner.mjs
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/releasekit/]
+hints:
+  - Start with two version labels whose numeric components have different digit counts.
+  - Compare prerelease identifiers one position at a time, distinguishing numeric and nonnumeric identifiers.
+  - A release and its prereleases share the same core version; build metadata never decides precedence.
+debrief:
+  questions: debrief/questions.md
+  focus: [debugging_method, test_quality, scope_judgment]
+author: {name: Patchground contributors}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by: {model: "Codex configured default (model unverified)", prompt_version: launch-release-order-v1}

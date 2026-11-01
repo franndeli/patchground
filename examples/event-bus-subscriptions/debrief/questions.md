@@ -1,0 +1,5 @@
+- Which sentences of the ticket told you what a handler added or removed during an emit should do, and how did you turn them into tests?
+- Why can a once subscription be skipped at its turn in an outer emit, and why is an unsubscribed one not skipped? Where in your code is that difference?
+- What did you decide about a handler that throws, and what state is the bus in afterwards?
+- Which behavior did you keep unchanged, and which test protects it?
+- If an AI assistant wrote part of the change, what did you verify yourself before accepting it?

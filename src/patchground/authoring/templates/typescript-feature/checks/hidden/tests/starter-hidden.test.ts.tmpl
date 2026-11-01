@@ -1,0 +1,14 @@
+import { expect, test } from "vitest";
+import { average } from "../src/starter";
+
+test("average of the amounts", () => {
+  expect(average([2, 4])).toBe(3);
+});
+
+test("average of one amount", () => {
+  expect(average([7])).toBe(7);
+});
+
+test("average of an empty list is zero", () => {
+  expect(average([])).toBe(0);
+});

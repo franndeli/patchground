@@ -6,11 +6,12 @@ import os
 import re
 from contextlib import ExitStack, suppress
 from importlib.resources import files
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from patchground import runner_assets
 from patchground.spec import ManifestError, load_challenge
 from patchground.spec.models import SLUG_PATTERN
 
@@ -26,6 +27,25 @@ TEMPLATE_FILES = (
 )
 
 
+_TYPESCRIPT_FILES = (
+    "challenge.yaml",
+    "TICKET.md",
+    "workspace/package.json",
+    "workspace/src/starter.ts",
+    "checks/visible/tests/starter.test.ts",
+    "checks/hidden/tests/starter-hidden.test.ts",
+    "solution/reference.patch",
+)
+# (type, language) -> bundled template folder and its template-backed relative files. TypeScript
+# starters additionally receive the canonical runner environment from `runner_assets`.
+_STARTERS = {
+    ("debug", "python"): ("python-debug", TEMPLATE_FILES),
+    ("feature", "python"): ("python-feature", TEMPLATE_FILES),
+    ("debug", "typescript"): ("typescript-debug", _TYPESCRIPT_FILES),
+    ("feature", "typescript"): ("typescript-feature", _TYPESCRIPT_FILES),
+}
+
+
 class AuthoringError(Exception):
     """Invalid scaffold input, an occupied destination or unavailable local storage."""
 
@@ -35,8 +55,8 @@ class CreatedChallenge(BaseModel):
 
     id: str
     path: Path
-    type: Literal["debug"] = "debug"
-    language: Literal["python"] = "python"
+    type: Literal["debug", "feature"] = "debug"
+    language: Literal["python", "typescript"] = "python"
     files: tuple[str, ...] = TEMPLATE_FILES
 
 
@@ -45,21 +65,47 @@ def _identity(parent: int, name: str) -> tuple[int, int]:
     return info.st_dev, info.st_ino
 
 
+def _runner_environment() -> dict[str, bytes]:
+    """Canonical TypeScript environment files, verbatim and keyed by path under environment/."""
+    try:
+        assets = runner_assets.vitest_assets()
+    except Exception as exc:
+        raise AuthoringError("TypeScript runner assets are unavailable") from exc
+    if "Dockerfile" not in assets:
+        raise AuthoringError("TypeScript runner assets are incomplete")
+    names = set(assets)
+    for name, content in assets.items():
+        path = PurePosixPath(name)
+        if (
+            not isinstance(content, bytes)
+            or path.is_absolute()
+            or str(path) != name
+            or ".." in path.parts
+            or "\\" in name
+            or any(str(parent) in names for parent in path.parents)
+        ):
+            raise AuthoringError("TypeScript runner assets are invalid")
+    return {f"environment/{name}": content for name, content in assets.items()}
+
+
 def create_challenge(
     challenge_id: str, *, type_: str = "debug", language: str = "python"
 ) -> CreatedChallenge:
     """Reserve cwd/id exclusively; never overwrite, run a challenge or initialize Git."""
     if re.fullmatch(SLUG_PATTERN, challenge_id) is None:
         raise AuthoringError("id must use lowercase letters, digits and single hyphens")
-    if (type_, language) != ("debug", "python"):
-        raise AuthoringError("supported template: --type debug --lang python")
-    template = files("patchground.authoring").joinpath("templates", "python-debug")
+    if (type_, language) not in _STARTERS:
+        raise AuthoringError("supported templates: --type debug|feature --lang python|typescript")
+    folder, names = _STARTERS[(type_, language)]
+    template = files("patchground.authoring").joinpath("templates", folder)
     contents = {
         name: template.joinpath(name + ".tmpl")
         .read_bytes()
         .replace(b"__CHALLENGE_ID__", challenge_id.encode("ascii"))
-        for name in TEMPLATE_FILES
+        for name in names
     }
+    if language == "typescript":
+        contents.update(_runner_environment())
     created: list[tuple[int, str, tuple[int, int], bool]] = []
     with ExitStack() as handles:
         try:
@@ -122,4 +168,12 @@ def create_challenge(
                     "could not create the scaffold; check disk space and directory access"
                 ) from exc
             raise
-    return CreatedChallenge(id=challenge_id, path=Path(challenge_id))
+    return CreatedChallenge.model_validate(
+        {
+            "id": challenge_id,
+            "path": Path(challenge_id),
+            "type": type_,
+            "language": language,
+            "files": tuple(contents),
+        }
+    )

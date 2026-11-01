@@ -168,6 +168,55 @@ def assert_failed_at(report: ValidationReport, name: StepName, *, detail: str = 
 # --------------------------------------------------------------------------------------------------
 
 
+def _as_vitest(challenge: Path, box: FakeSandbox) -> tuple[str, str]:
+    from patchground.runner_assets import VITEST_COMMAND
+
+    manifest = challenge / "challenge.yaml"
+    manifest.write_text(
+        manifest.read_text().replace(
+            "pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml", VITEST_COMMAND
+        )
+    )
+    (challenge / "checks/visible/tests/visible.test.ts").write_text(
+        'import {test, expect} from "vitest"; test("works", () => {expect(1).toBe(1)});'
+    )
+    visible, hidden = "tests/visible.test.ts::works", "tests/hidden.test.ts::hidden behavior"
+    box.runs = {
+        "visible": result([(visible, P)]),
+        "hidden": result([(visible, P), (hidden, F)]),
+        "reference": result([(visible, P), (hidden, P)]),
+    }
+    return visible, hidden
+
+
+def test_frozen_vitest_runs_all_tampering_probes(challenge: Path, box: FakeSandbox) -> None:
+    _as_vitest(challenge, box)
+    report = validate(challenge, box, write=False)
+    assert report.valid
+    step = report.step(StepName.ANTI_GAMING)
+    assert step.status is StepStatus.PASSED
+    assert len(step.runs) == 3
+
+
+@pytest.mark.parametrize("duplicate", [True, False])
+def test_vitest_collection_must_match_static_definitions(
+    challenge: Path, box: FakeSandbox, duplicate: bool
+) -> None:
+    visible, hidden = _as_vitest(challenge, box)
+    extra = visible if duplicate else "tests/visible.test.ts::generated"
+    box.runs = {
+        "visible": result([(visible, P), (extra, P)]),
+        "hidden": result([(visible, P), (extra, P), (hidden, F)]),
+        "reference": result([(visible, P), (extra, P), (hidden, P)]),
+    }
+    report = validate(challenge, box, write=False)
+    assert report.valid
+    step = report.step(StepName.ANTI_GAMING)
+    assert step.status is StepStatus.NOT_RUN
+    assert "collection" in step.detail
+    assert not step.runs
+
+
 def test_valid_challenge_writes_verification_json(challenge: Path, box: FakeSandbox) -> None:
     report = validate(challenge, box)
 
