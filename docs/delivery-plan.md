@@ -60,6 +60,9 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   the actual access boundary; prompt restrictions are not an adversarial sandbox.
 - Distinguish product defects, solver failures, environment failures and inconclusive trials.
   Fix product defects and rerun affected cases without rewriting original trial outcomes.
+- Two rounds of wheel-only "fresh user" trials (synthetic) are recorded in
+  `evaluations/fresh-user-wheel-trial.md`; their product defects were fixed and round 2 completed
+  the full loop. They do not replace the independent-human gate.
 - Keep real-human onboarding/authoring trials as separately pending acceptance gates.
 
 ### F. Release preparation and publication
