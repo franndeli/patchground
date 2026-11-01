@@ -147,5 +147,10 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   regression evidence and one correctly declined unsupported TypeScript analysis. All ten preserved
   learner Git and repeatable immutable reports. No coordinator help or hints were used during solving.
   See `evaluations/learner-cohort.md` and its structured facts for limitations and secondary findings.
-- Next: separate-owner site handoff, independent-human acceptance and release-artifact review.
-  No deployment, package publication or release is implied.
+- CLI wheel and source distribution were built from committed `7097b36` at the unchanged version
+  0.0.1 and retained locally. Rebuilding from the source distribution produced an identical wheel.
+  Fresh core-only Python 3.12 installation validated all four starters, verified TypeScript regression
+  and preserved Git/immutable reports with execution disabled for saved reads. See
+  `evaluations/release-candidate.md` and `evaluations/cli-artifact-manifest.json`.
+- Next: separate-owner site handoff, independent-human acceptance and publication decisions.
+  No deployment, package upload, release creation or publication approval is implied.
