@@ -1,0 +1,46 @@
+name: oom-stress
+
+# Manually triggered, bounded repeat of the Docker memory-limit check on fresh GitHub runners.
+# Diagnostic only: it never changes classification semantics or publishes anything.
+on:
+  workflow_dispatch:
+    inputs:
+      repeats:
+        description: "Repeats per runner (1-20)"
+        default: "10"
+
+permissions:
+  contents: read
+
+jobs:
+  memory-limit:
+    name: memory limit repeat ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    env:
+      PATCHGROUND_REQUIRE_DOCKER: "1"
+      REPEATS: ${{ inputs.repeats }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked
+      - name: repeat the strict memory-limit test
+        run: |
+          set -eu
+          case "$REPEATS" in ''|*[!0-9]*) echo "repeats must be a number"; exit 2;; esac
+          [ "$REPEATS" -ge 1 ] && [ "$REPEATS" -le 20 ] || { echo "repeats must be 1-20"; exit 2; }
+          failures=0
+          for i in $(seq "$REPEATS"); do
+            if ! uv run pytest -q --tb=short -p no:cacheprovider \
+                "tests/integration/test_sandbox_docker.py::test_command_timeout_and_memory_limits"; then
+              failures=$((failures + 1))
+            fi
+          done
+          echo "shard ${{ matrix.shard }}: $failures of $REPEATS repeats failed"
+          [ "$failures" -eq 0 ]
