@@ -52,3 +52,25 @@ evidence, not the artifacts that will ship. See [the publishing runbook](../publ
 
 The CLI artifacts are ready for review. These remaining gates prevent a claim that the full public
 product is accepted or launched.
+
+## 0.1.0 candidate, 2026-11-01
+
+Run after the fresh-user trials, the built-in catalog and the seventh (refactor) challenge, on
+macOS with Docker 28.5.2, Python 3.12.
+
+- `docs/evaluations/release-candidate-check.sh` passed: through an installed wheel in a fresh
+  virtual environment with its own sessions directory, every built-in challenge (7) went through
+  show, start, failing check, status, hint, reference patch, passing check, available history,
+  passing submit, report, post-submit rejection and listing; reset restored a workspace; the four
+  `new` starters validated; a local pack was added, refused without consent, started with `--yes`,
+  listed and removed.
+- Full suite: 1,021 non-Docker and 103 Docker tests passed; ruff, mypy and the schema export are
+  clean; `twine check` passes on the wheel and sdist.
+- Publication readiness: the PyPI name `patchground` is unclaimed (`/simple/patchground/` → 404).
+  `release.yml` publishes through the `pypi` environment (owner `franndeli`, repository
+  `patchground`, workflow `release.yml`), which matches the pending trusted publisher the owner
+  registered. Whether that registration exists can only be seen from the owner's PyPI account;
+  the first tagged release is the only end-to-end proof. Both the `release` and `pypi` GitHub
+  environments require the owner's approval and accept only `v*` tags. An earlier environment named
+  `papi` would not have gated the upload; it was replaced.
+- Not covered: Linux and WSL2 hosts, Podman, a cold Docker image cache, and any human session.
