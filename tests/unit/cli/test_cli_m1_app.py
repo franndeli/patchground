@@ -20,6 +20,7 @@ def test_discovery_commands_registered():
         "duplicate-charges-on-retry",
         "cache-expiry",
         "csv-import-row-errors",
+        "order-notifications-boundary",
     }
     shown = runner.invoke(app, ["show", str(EXAMPLES / "pagination-last-page"), "--json"])
     assert shown.exit_code == 0
