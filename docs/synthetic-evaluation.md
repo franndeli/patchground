@@ -16,8 +16,10 @@ understood the ticket. Human onboarding and independent-human authoring gates re
 1. Freeze the product commit, challenge revisions and public instructions; validate each challenge.
 2. Smoke-test selected model/agent configurations through the same visible supervised runner. A CLI
    being installed or authenticated is not proof a specific model or tool-use mode works.
-3. Register the ten assignments before collecting outcomes. Spread attempts across the three
-   curated challenges and available tiers; explain unavoidable imbalances and unavailable models.
+3. Register the ten assignments before collecting outcomes. The owner approved coverage of all six
+   curated Python/TypeScript challenges: each receives at least one attempt, with the remaining four
+   used for cross-model comparisons. Spread attempts across available tiers; explain unavoidable
+   imbalances and unavailable models.
 4. Record exact model ID and agent version/configuration where available. Do not infer capability
    rankings from marketing names; tier labels are hypotheses, not measured results.
 5. Verify original/reference artifacts stay outside learner-provided material. Provide only the
@@ -72,5 +74,11 @@ provider usage statistics are observations only, not inferred bills.
 
 ## Current status
 
-Protocol approved; no learner cohort has run yet. Candidate access inventory is in
-`docs/launch-brief.md`. Model assignments remain pending smoke tests and the integrated product.
+The owner approved all-six-challenge coverage and a four-Codex/four-Sonnet/two-Haiku mix.
+All three configurations passed visible supervised file-read/write smoke tests; the exact
+configuration evidence and ten assignments are registered in
+[`evaluations/learner-cohort-registration.json`](evaluations/learner-cohort-registration.json).
+The frozen core-only wheel and all six challenges passed installed-CLI Docker validation.
+Shared instructions are in [`evaluations/learner-instructions.md`](evaluations/learner-instructions.md).
+No learner attempt has run at registration. The separately owned website is outside this CLI
+candidate evaluation, and independent-human acceptance remains pending.

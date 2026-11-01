@@ -1,0 +1,57 @@
+{
+  "format_version": 1,
+  "status": "registered_before_learner_attempts",
+  "product_commit": "44da6dd238bff5ce7c367f542dcba539dec29299",
+  "challenge_revision": "44da6dd238bff5ce7c367f542dcba539dec29299",
+  "instructions": "docs/evaluations/learner-instructions.md",
+  "scope": "CLI candidate only; separately owned website is not evaluated here",
+  "max_concurrent_learners": 2,
+  "max_check_invocations": 20,
+  "stop_rule": "Challenge timebox or 20 check invocations, whichever occurs first",
+  "configurations": {
+    "codex": {
+      "agent": "codex",
+      "agent_version": "0.166.0",
+      "selection": "configured default",
+      "configured_model": "gpt-6.1-sol",
+      "configured_effort": "low",
+      "observed_model": null,
+      "access": "existing ChatGPT authentication through existing loopback proxy",
+      "smoke": "passed exact file read/write and supervised completion; model identity unavailable in worker runtime report"
+    },
+    "sonnet": {
+      "agent": "claude",
+      "agent_version": "2.1.316",
+      "selection": "configured default: sonnet",
+      "worker_reported_model": "claude-sonnet-5-5",
+      "model_evidence": "worker-reported runtime environment metadata, not independent provider attestation",
+      "access": "existing Claude Max subscription",
+      "smoke": "passed exact file read/write and supervised completion"
+    },
+    "haiku": {
+      "agent": "claude",
+      "agent_version": "2.1.316",
+      "selection": "explicit haiku alias",
+      "worker_reported_model": "claude-haiku-5-5",
+      "model_evidence": "worker-reported runtime environment metadata, not independent provider attestation",
+      "access": "existing Claude Max subscription",
+      "smoke": "passed exact file read/write and supervised completion"
+    }
+  },
+  "tier_limits": "Haiku is the smaller-model comparison hypothesis. No capability ranking or backend identity is inferred from marketing labels. Local Ollama learner tooling is not evaluated in this cohort.",
+  "assignments": [
+    {"attempt_id": "L01", "configuration": "codex", "challenge": "duplicate-charges-on-retry", "timebox_minutes": 45},
+    {"attempt_id": "L02", "configuration": "sonnet", "challenge": "cache-expiry", "timebox_minutes": 30},
+    {"attempt_id": "L03", "configuration": "haiku", "challenge": "pagination-last-page", "timebox_minutes": 20},
+    {"attempt_id": "L04", "configuration": "codex", "challenge": "csv-import-row-errors", "timebox_minutes": 45},
+    {"attempt_id": "L05", "configuration": "sonnet", "challenge": "duplicate-charges-on-retry", "timebox_minutes": 45},
+    {"attempt_id": "L06", "configuration": "codex", "challenge": "event-bus-subscriptions", "timebox_minutes": 45},
+    {"attempt_id": "L07", "configuration": "sonnet", "challenge": "csv-import-row-errors", "timebox_minutes": 45},
+    {"attempt_id": "L08", "configuration": "haiku", "challenge": "cache-expiry", "timebox_minutes": 30},
+    {"attempt_id": "L09", "configuration": "codex", "challenge": "release-version-ordering", "timebox_minutes": 45},
+    {"attempt_id": "L10", "configuration": "sonnet", "challenge": "event-bus-subscriptions", "timebox_minutes": 45}
+  ],
+  "coverage_limits": "Seven Python and three TypeScript attempts. Four challenges receive cross-configuration comparisons; pagination and release ordering receive one attempt each. Too small and unbalanced for comparative performance claims.",
+  "access_boundary": "Fresh session workspaces outside the implementation checkout; provided material contains public ticket, workflow instructions and editable files/visible checks only. Prompt restrictions are not a filesystem security sandbox. Original/reference materials remain outside the provided material but are not adversarially inaccessible on the local machine.",
+  "acceptance_limits": "Synthetic learners do not establish independent-human usability, authoring acceptance or coaching usefulness. No purchases, deployments, releases or package publication are authorized by this registration."
+}
