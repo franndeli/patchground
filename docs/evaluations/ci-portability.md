@@ -36,3 +36,19 @@ paths; late diagnostic evidence cannot rewrite the already classified result.
 - The intermittent OOM root cause remains open; a future failure now carries diagnostic evidence.
 
 These are engineering checks, not synthetic learner attempts or independent-human acceptance.
+
+## Root cause of the OOM symptom
+
+A manually triggered stress workflow (`oom-stress.yml`: 10 fresh GitHub runners × 10 repeats of the
+memory-limit test) reproduced it in **2 of 100** runs (run 41322438975). The diagnostics showed the
+same shape both times: Docker 28.0.4, exit 137, `OOMKilled: false` across eleven state samples over
+~1 second, and an event stream containing only `die`, no `oom`. The engine never reported the OOM.
+This matches the open upstream containerd issue of lost TaskOOM events (containerd#8893).
+
+Patchground behaved as its contract requires: without engine evidence it did not label exit 137 as
+a memory limit. The test, not the product, assumed the engine always reports OOM. The test now runs
+the hog up to three times: every attempt must be either labelled `memory` or provably unconfirmed by
+the engine (exit 137, no `OOMKilled`, no `oom` event, no label), and at least one attempt must prove
+the memory label end to end. A mislabel still fails. The execution contract now states that a lost
+engine report surfaces as an unlabelled exit 137. The same stress workflow then passed **100 of 100**
+(run 41323311373). Production classification is unchanged.
