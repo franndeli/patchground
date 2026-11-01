@@ -52,7 +52,10 @@ Read-only inventory found Pi, Codex, Claude Code and Ollama installed. Codex rep
 subscription authentication; Claude Code reports an authenticated claude.ai account. Ollama lists
 `ornith-1.5:9b` locally. No credentials were printed or copied, and no inference was purchased.
 These are launch candidates, not proof that every model alias or tool-use mode works; each selected
-learner configuration needs a supervised smoke trial before inclusion in the cohort.
+learner configuration needs a supervised smoke trial before inclusion in the cohort. The selected
+Codex/Sonnet/Haiku configurations subsequently passed those smoke trials and completed the registered
+[ten-attempt cohort](evaluations/learner-cohort.md). Its evidence does not establish human usability
+or independently attest effective provider model identities.
 
 GitHub CLI, uv and Docker are installed. Existing Git pushes and CI workflows already operate.
 Hosting provider, DNS control, package-publisher identity and release permissions are not yet

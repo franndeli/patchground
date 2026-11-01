@@ -22,8 +22,10 @@ at patchground.dev. Delivery boundaries and resume context live in `docs/launch-
 `docs/delivery-plan.md`; the shared TODO list tracks active work. Four Python/TypeScript debugging/feature starters, six curated challenges
 and immutable verified-outcomes reports are implemented, together with hints, disposable diagnostic
 commands, session browsing, private checkpoint history and consent-gated pinned packs. Consent-gated contribution automation and bounded TypeScript runner evidence are implemented.
-Remaining slices cover the public site and bounded optional AI experiments. Each subsystem still requires an
-accepted design and owning-spec updates.
+The ten-attempt synthetic learner cohort is complete; it does not establish human usability.
+The owner deferred AI coaching and generation from launch. Remaining gates cover the separately owned
+public site, independent-human acceptance and approval-gated publication. Each subsystem still requires
+an accepted design and owning-spec updates.
 
 Use existing configured model subscriptions/local models only; do not buy credits or paid services.
 Git pushes are authorized, but DNS changes, production deployments, package publication and release

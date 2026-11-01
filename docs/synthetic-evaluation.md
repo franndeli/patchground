@@ -80,5 +80,9 @@ configuration evidence and ten assignments are registered in
 [`evaluations/learner-cohort-registration.json`](evaluations/learner-cohort-registration.json).
 The frozen core-only wheel and all six challenges passed installed-CLI Docker validation.
 Shared instructions are in [`evaluations/learner-instructions.md`](evaluations/learner-instructions.md).
-No learner attempt has run at registration. The separately owned website is outside this CLI
-candidate evaluation, and independent-human acceptance remains pending.
+All ten registered attempts are now complete: ten passing saved submissions, nine verified
+regressions and one explicitly unsupported regression result. See the
+[aggregate report](evaluations/learner-cohort.md) and
+[structured facts](evaluations/learner-cohort-results.json).
+The separately owned website is outside this CLI candidate evaluation, and independent-human
+acceptance remains pending. Original registration and trial outcomes are retained unchanged.

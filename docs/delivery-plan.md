@@ -134,12 +134,18 @@ ideas receive explicit dispositions; they are not silently treated as mandatory 
   tests establish runtime behavior only. Local acceptance: 1,104 Docker-required tests, lint/format,
   types, schema and clean core-wheel starter/submission smoke passed. Integration found and fixed
   private-mode runner resource permissions and read-only snapshot probe copies. See
-  `evaluations/coverage-smoke.md`; remote acceptance remains pending until observed.
+  `evaluations/coverage-smoke.md`. The later frozen CLI candidate `44da6dd` passed remote CI,
+  validation Action smoke and secret scanning.
 - The owner deferred AI coaching from launch after five bounded local-model attempts. The final
   experimental version did not complete a live interview; an earlier completion had poor questions.
   Implementation and integration patches are privately preserved, with no AI code or SDK added to
   the launch build. The restored core passed 1,104 Docker-required tests, Ruff/format and mypy.
   See `evaluations/ai-debrief-smoke.md`; synthetic operator answers are not learner or human trials.
 - The owner also deferred the generator experiment; it has not been evaluated or implemented.
-- Next: separate-owner site handoff and core-product evaluation. Human trials and the ten-learner cohort remain pending; no deployment, package
-  publication or release is implied.
+- Ten registered synthetic learner attempts are complete across all six challenges and the approved
+  four-Codex/four-Sonnet/two-Haiku mix. All ten saved submissions passed checks; nine established
+  regression evidence and one correctly declined unsupported TypeScript analysis. All ten preserved
+  learner Git and repeatable immutable reports. No coordinator help or hints were used during solving.
+  See `evaluations/learner-cohort.md` and its structured facts for limitations and secondary findings.
+- Next: separate-owner site handoff, independent-human acceptance and release-artifact review.
+  No deployment, package publication or release is implied.

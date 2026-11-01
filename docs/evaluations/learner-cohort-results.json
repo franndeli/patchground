@@ -1,0 +1,924 @@
+{
+  "format_version": 1,
+  "product_commit": "44da6dd238bff5ce7c367f542dcba539dec29299",
+  "registration_commit": "ba0a7400e8d1e96c7ec276a6f212cd53e88021ef",
+  "registration_file": "docs/evaluations/learner-cohort-registration.json",
+  "aggregate": {
+    "attempts": 10,
+    "challenges_covered": 6,
+    "completed_unassisted": 10,
+    "passing_saved_submissions": 10,
+    "regression_verified": 9,
+    "regression_not_established": 1,
+    "recorded_check_invocations": 16,
+    "hints_revealed": 0,
+    "coordinator_assisted_attempts": 0,
+    "git_preservation_confirmed": 10,
+    "identical_saved_report_reads": 10,
+    "independent_human_acceptance": "not established"
+  },
+  "limits": [
+    "Synthetic coding agents, not independent humans or evidence of demand/usability.",
+    "Coordinator installed the candidate and started each session; learner installation/discovery was not tested.",
+    "Uneven small cohort, repeated challenges and differing added tests; no statistical model ranking or overall score.",
+    "Configured client model selection and worker-reported identity are not independent backend attestation.",
+    "Prompt restrictions and separate workspaces are not a filesystem security sandbox; transcript inputs/results were clipped.",
+    "TypeScript checks establish runtime behavior, not static compiler correctness.",
+    "Website, deployment, package publication, release creation and independent-human gates remain outside these outcomes."
+  ],
+  "attempts": [
+    {
+      "attempt_id": "L01",
+      "configuration": "codex",
+      "challenge": "duplicate-charges-on-retry",
+      "timebox_minutes": 45,
+      "outcome_category": "completed unassisted",
+      "category_basis": "Saved checks passed within budget; no coordinator help or recovery during the attempt. This is a workflow category, not an engineering score.",
+      "worker_reported_model": null,
+      "elapsed_seconds": 48.137483,
+      "check_invocations_recorded": 2,
+      "hints_revealed": 0,
+      "stop_reason": "submitted with passing checks",
+      "final_check_outcome": "passed",
+      "final_check_counts": {
+        "passed": 26,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression_status": "verified",
+      "regression_reason": "selected tests fail on the original code and pass on the final",
+      "verified_regression_identities": 2,
+      "structural_test_evidence": {
+        "status": "established",
+        "removed_file_count": 0,
+        "removed_test_count": 0,
+        "assertion_reduction_count": 0,
+        "unsupported_file_count": 0,
+        "limit": "Counts are structural observations, not semantic test-strength judgments. Null means not established."
+      },
+      "changed_files": [
+        {
+          "path": "src/payments/service.py",
+          "kind": "modified",
+          "added_lines": 2,
+          "removed_lines": 2,
+          "outside_expected": false
+        },
+        {
+          "path": "tests/test_checkout.py",
+          "kind": "modified",
+          "added_lines": 44,
+          "removed_lines": 1,
+          "outside_expected": true
+        }
+      ],
+      "commands_from_structured_events": [
+        {
+          "command": "start",
+          "actor": "coordinator",
+          "outcome": "started"
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "failed",
+          "counts": {
+            "passed": 19,
+            "failed": 4,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 26,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "submit",
+          "actor": "learner",
+          "outcome": "saved"
+        }
+      ],
+      "command_record_limit": "Read-only status/report calls and host file-edit commands are not exhaustively recorded by product events.",
+      "coordinator_assistance": [],
+      "environment_recovery_during_attempt": [],
+      "reference_exposure": "none reported or indicated in the bounded tool-call inspection; absence is not proven",
+      "trace_audit_complete": false,
+      "trace_audit_limit": "Bounded metadata inspection is not a complete security audit or filesystem sandbox.",
+      "initial_tracked_material_matches_frozen_workspace_and_visible_checks": true,
+      "learner_git_bytes_unchanged": true,
+      "repeated_saved_report_identical": true,
+      "secondary_findings": [],
+      "worker_settled_and_released": true
+    },
+    {
+      "attempt_id": "L02",
+      "configuration": "sonnet",
+      "challenge": "cache-expiry",
+      "timebox_minutes": 30,
+      "outcome_category": "completed unassisted",
+      "category_basis": "Saved checks passed within budget; no coordinator help or recovery during the attempt. This is a workflow category, not an engineering score.",
+      "worker_reported_model": "claude-sonnet-5-5",
+      "elapsed_seconds": 45.369047,
+      "check_invocations_recorded": 1,
+      "hints_revealed": 0,
+      "stop_reason": "submitted with passing checks",
+      "final_check_outcome": "passed",
+      "final_check_counts": {
+        "passed": 25,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression_status": "verified",
+      "regression_reason": "selected tests fail on the original code and pass on the final",
+      "verified_regression_identities": 4,
+      "structural_test_evidence": {
+        "status": "established",
+        "removed_file_count": 0,
+        "removed_test_count": 0,
+        "assertion_reduction_count": 0,
+        "unsupported_file_count": 0,
+        "limit": "Counts are structural observations, not semantic test-strength judgments. Null means not established."
+      },
+      "changed_files": [
+        {
+          "path": "src/profilecache/cache.py",
+          "kind": "modified",
+          "added_lines": 4,
+          "removed_lines": 4,
+          "outside_expected": false
+        },
+        {
+          "path": "tests/test_cache.py",
+          "kind": "modified",
+          "added_lines": 63,
+          "removed_lines": 0,
+          "outside_expected": true
+        }
+      ],
+      "commands_from_structured_events": [
+        {
+          "command": "start",
+          "actor": "coordinator",
+          "outcome": "started"
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 25,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "submit",
+          "actor": "learner",
+          "outcome": "saved"
+        }
+      ],
+      "command_record_limit": "Read-only status/report calls and host file-edit commands are not exhaustively recorded by product events.",
+      "coordinator_assistance": [],
+      "environment_recovery_during_attempt": [],
+      "reference_exposure": "none reported or indicated in the bounded tool-call inspection; absence is not proven",
+      "trace_audit_complete": false,
+      "trace_audit_limit": "Bounded metadata inspection is not a complete security audit or filesystem sandbox.",
+      "initial_tracked_material_matches_frozen_workspace_and_visible_checks": true,
+      "learner_git_bytes_unchanged": true,
+      "repeated_saved_report_identical": true,
+      "secondary_findings": [],
+      "worker_settled_and_released": true
+    },
+    {
+      "attempt_id": "L03",
+      "configuration": "haiku",
+      "challenge": "pagination-last-page",
+      "timebox_minutes": 20,
+      "outcome_category": "completed unassisted",
+      "category_basis": "Saved checks passed within budget; no coordinator help or recovery during the attempt. This is a workflow category, not an engineering score.",
+      "worker_reported_model": null,
+      "elapsed_seconds": 19.668017,
+      "check_invocations_recorded": 1,
+      "hints_revealed": 0,
+      "stop_reason": "submitted with passing checks",
+      "final_check_outcome": "passed",
+      "final_check_counts": {
+        "passed": 11,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression_status": "verified",
+      "regression_reason": "selected tests fail on the original code and pass on the final",
+      "verified_regression_identities": 1,
+      "structural_test_evidence": {
+        "status": "established",
+        "removed_file_count": 0,
+        "removed_test_count": 0,
+        "assertion_reduction_count": 0,
+        "unsupported_file_count": 0,
+        "limit": "Counts are structural observations, not semantic test-strength judgments. Null means not established."
+      },
+      "changed_files": [
+        {
+          "path": "src/catalog/pagination.py",
+          "kind": "modified",
+          "added_lines": 1,
+          "removed_lines": 1,
+          "outside_expected": false
+        },
+        {
+          "path": "tests/test_pagination.py",
+          "kind": "modified",
+          "added_lines": 11,
+          "removed_lines": 0,
+          "outside_expected": true
+        }
+      ],
+      "commands_from_structured_events": [
+        {
+          "command": "start",
+          "actor": "coordinator",
+          "outcome": "started"
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 11,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "submit",
+          "actor": "learner",
+          "outcome": "saved"
+        }
+      ],
+      "command_record_limit": "Read-only status/report calls and host file-edit commands are not exhaustively recorded by product events.",
+      "coordinator_assistance": [],
+      "environment_recovery_during_attempt": [],
+      "reference_exposure": "none reported or indicated in the bounded tool-call inspection; absence is not proven",
+      "trace_audit_complete": false,
+      "trace_audit_limit": "Bounded metadata inspection is not a complete security audit or filesystem sandbox.",
+      "initial_tracked_material_matches_frozen_workspace_and_visible_checks": true,
+      "learner_git_bytes_unchanged": true,
+      "repeated_saved_report_identical": true,
+      "secondary_findings": [],
+      "worker_settled_and_released": true
+    },
+    {
+      "attempt_id": "L04",
+      "configuration": "codex",
+      "challenge": "csv-import-row-errors",
+      "timebox_minutes": 45,
+      "outcome_category": "completed unassisted",
+      "category_basis": "Saved checks passed within budget; no coordinator help or recovery during the attempt. This is a workflow category, not an engineering score.",
+      "worker_reported_model": null,
+      "elapsed_seconds": 58.888132,
+      "check_invocations_recorded": 2,
+      "hints_revealed": 0,
+      "stop_reason": "submitted with passing checks",
+      "final_check_outcome": "passed",
+      "final_check_counts": {
+        "passed": 150,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression_status": "verified",
+      "regression_reason": "selected tests fail on the original code and pass on the final",
+      "verified_regression_identities": 18,
+      "structural_test_evidence": {
+        "status": "established",
+        "removed_file_count": 0,
+        "removed_test_count": 0,
+        "assertion_reduction_count": 0,
+        "unsupported_file_count": 0,
+        "limit": "Counts are structural observations, not semantic test-strength judgments. Null means not established."
+      },
+      "changed_files": [
+        {
+          "path": "src/stockimport/importer.py",
+          "kind": "modified",
+          "added_lines": 16,
+          "removed_lines": 7,
+          "outside_expected": false
+        },
+        {
+          "path": "tests/test_import.py",
+          "kind": "modified",
+          "added_lines": 66,
+          "removed_lines": 0,
+          "outside_expected": true
+        }
+      ],
+      "commands_from_structured_events": [
+        {
+          "command": "start",
+          "actor": "coordinator",
+          "outcome": "started"
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "failed",
+          "counts": {
+            "passed": 22,
+            "failed": 110,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 150,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "submit",
+          "actor": "learner",
+          "outcome": "saved"
+        }
+      ],
+      "command_record_limit": "Read-only status/report calls and host file-edit commands are not exhaustively recorded by product events.",
+      "coordinator_assistance": [],
+      "environment_recovery_during_attempt": [],
+      "reference_exposure": "none reported or indicated in the bounded tool-call inspection; absence is not proven",
+      "trace_audit_complete": false,
+      "trace_audit_limit": "Bounded metadata inspection is not a complete security audit or filesystem sandbox.",
+      "initial_tracked_material_matches_frozen_workspace_and_visible_checks": true,
+      "learner_git_bytes_unchanged": true,
+      "repeated_saved_report_identical": true,
+      "secondary_findings": [],
+      "worker_settled_and_released": true
+    },
+    {
+      "attempt_id": "L05",
+      "configuration": "sonnet",
+      "challenge": "duplicate-charges-on-retry",
+      "timebox_minutes": 45,
+      "outcome_category": "completed unassisted",
+      "category_basis": "Saved checks passed within budget; no coordinator help or recovery during the attempt. This is a workflow category, not an engineering score.",
+      "worker_reported_model": "claude-sonnet-5-5",
+      "elapsed_seconds": 19.404951,
+      "check_invocations_recorded": 1,
+      "hints_revealed": 0,
+      "stop_reason": "submitted with passing checks",
+      "final_check_outcome": "passed",
+      "final_check_counts": {
+        "passed": 25,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression_status": "verified",
+      "regression_reason": "selected tests fail on the original code and pass on the final",
+      "verified_regression_identities": 1,
+      "structural_test_evidence": {
+        "status": "established",
+        "removed_file_count": 0,
+        "removed_test_count": 0,
+        "assertion_reduction_count": 2,
+        "unsupported_file_count": 0,
+        "limit": "Counts are structural observations, not semantic test-strength judgments. Null means not established."
+      },
+      "changed_files": [
+        {
+          "path": "src/payments/service.py",
+          "kind": "modified",
+          "added_lines": 1,
+          "removed_lines": 2,
+          "outside_expected": false
+        },
+        {
+          "path": "tests/test_checkout.py",
+          "kind": "modified",
+          "added_lines": 32,
+          "removed_lines": 17,
+          "outside_expected": true
+        }
+      ],
+      "commands_from_structured_events": [
+        {
+          "command": "start",
+          "actor": "coordinator",
+          "outcome": "started"
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 25,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "submit",
+          "actor": "learner",
+          "outcome": "saved"
+        }
+      ],
+      "command_record_limit": "Read-only status/report calls and host file-edit commands are not exhaustively recorded by product events.",
+      "coordinator_assistance": [],
+      "environment_recovery_during_attempt": [],
+      "reference_exposure": "none reported or indicated in the bounded tool-call inspection; absence is not proven",
+      "trace_audit_complete": false,
+      "trace_audit_limit": "Bounded metadata inspection is not a complete security audit or filesystem sandbox.",
+      "initial_tracked_material_matches_frozen_workspace_and_visible_checks": true,
+      "learner_git_bytes_unchanged": true,
+      "repeated_saved_report_identical": true,
+      "secondary_findings": [],
+      "worker_settled_and_released": true
+    },
+    {
+      "attempt_id": "L06",
+      "configuration": "codex",
+      "challenge": "event-bus-subscriptions",
+      "timebox_minutes": 45,
+      "outcome_category": "completed unassisted",
+      "category_basis": "Saved checks passed within budget; no coordinator help or recovery during the attempt. This is a workflow category, not an engineering score.",
+      "worker_reported_model": null,
+      "elapsed_seconds": 62.839039,
+      "check_invocations_recorded": 2,
+      "hints_revealed": 0,
+      "stop_reason": "submitted with passing checks",
+      "final_check_outcome": "passed",
+      "final_check_counts": {
+        "passed": 50,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression_status": "verified",
+      "regression_reason": "selected tests fail on the original code and pass on the final",
+      "verified_regression_identities": 5,
+      "structural_test_evidence": {
+        "status": "established",
+        "removed_file_count": 0,
+        "removed_test_count": 0,
+        "assertion_reduction_count": 0,
+        "unsupported_file_count": 0,
+        "limit": "Counts are structural observations, not semantic test-strength judgments. Null means not established."
+      },
+      "changed_files": [
+        {
+          "path": "src/bus.ts",
+          "kind": "modified",
+          "added_lines": 41,
+          "removed_lines": 11,
+          "outside_expected": false
+        },
+        {
+          "path": "tests/event-bus.test.ts",
+          "kind": "modified",
+          "added_lines": 101,
+          "removed_lines": 0,
+          "outside_expected": true
+        }
+      ],
+      "commands_from_structured_events": [
+        {
+          "command": "start",
+          "actor": "coordinator",
+          "outcome": "started"
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "failed",
+          "counts": {
+            "passed": 10,
+            "failed": 35,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 50,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "submit",
+          "actor": "learner",
+          "outcome": "saved"
+        }
+      ],
+      "command_record_limit": "Read-only status/report calls and host file-edit commands are not exhaustively recorded by product events.",
+      "coordinator_assistance": [],
+      "environment_recovery_during_attempt": [],
+      "reference_exposure": "none reported or indicated in the bounded tool-call inspection; absence is not proven",
+      "trace_audit_complete": false,
+      "trace_audit_limit": "Bounded metadata inspection is not a complete security audit or filesystem sandbox.",
+      "initial_tracked_material_matches_frozen_workspace_and_visible_checks": true,
+      "learner_git_bytes_unchanged": true,
+      "repeated_saved_report_identical": true,
+      "secondary_findings": [],
+      "worker_settled_and_released": true
+    },
+    {
+      "attempt_id": "L07",
+      "configuration": "sonnet",
+      "challenge": "csv-import-row-errors",
+      "timebox_minutes": 45,
+      "outcome_category": "completed unassisted",
+      "category_basis": "Saved checks passed within budget; no coordinator help or recovery during the attempt. This is a workflow category, not an engineering score.",
+      "worker_reported_model": "claude-sonnet-5-5",
+      "elapsed_seconds": 66.938081,
+      "check_invocations_recorded": 2,
+      "hints_revealed": 0,
+      "stop_reason": "submitted with passing checks",
+      "final_check_outcome": "passed",
+      "final_check_counts": {
+        "passed": 174,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression_status": "verified",
+      "regression_reason": "selected tests fail on the original code and pass on the final",
+      "verified_regression_identities": 41,
+      "structural_test_evidence": {
+        "status": "established",
+        "removed_file_count": 0,
+        "removed_test_count": 0,
+        "assertion_reduction_count": 0,
+        "unsupported_file_count": 0,
+        "limit": "Counts are structural observations, not semantic test-strength judgments. Null means not established."
+      },
+      "changed_files": [
+        {
+          "path": "src/stockimport/importer.py",
+          "kind": "modified",
+          "added_lines": 94,
+          "removed_lines": 32,
+          "outside_expected": false
+        },
+        {
+          "path": "tests/test_import.py",
+          "kind": "modified",
+          "added_lines": 120,
+          "removed_lines": 13,
+          "outside_expected": true
+        }
+      ],
+      "commands_from_structured_events": [
+        {
+          "command": "start",
+          "actor": "coordinator",
+          "outcome": "started"
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 174,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 174,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "submit",
+          "actor": "learner",
+          "outcome": "saved"
+        }
+      ],
+      "command_record_limit": "Read-only status/report calls and host file-edit commands are not exhaustively recorded by product events.",
+      "coordinator_assistance": [],
+      "environment_recovery_during_attempt": [],
+      "reference_exposure": "none reported or indicated in the bounded tool-call inspection; absence is not proven",
+      "trace_audit_complete": false,
+      "trace_audit_limit": "Bounded metadata inspection is not a complete security audit or filesystem sandbox.",
+      "initial_tracked_material_matches_frozen_workspace_and_visible_checks": true,
+      "learner_git_bytes_unchanged": true,
+      "repeated_saved_report_identical": true,
+      "secondary_findings": [],
+      "worker_settled_and_released": true
+    },
+    {
+      "attempt_id": "L08",
+      "configuration": "haiku",
+      "challenge": "cache-expiry",
+      "timebox_minutes": 30,
+      "outcome_category": "completed unassisted",
+      "category_basis": "Saved checks passed within budget; no coordinator help or recovery during the attempt. This is a workflow category, not an engineering score.",
+      "worker_reported_model": null,
+      "elapsed_seconds": 57.649024,
+      "check_invocations_recorded": 1,
+      "hints_revealed": 0,
+      "stop_reason": "submitted with passing checks",
+      "final_check_outcome": "passed",
+      "final_check_counts": {
+        "passed": 35,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression_status": "verified",
+      "regression_reason": "selected tests fail on the original code and pass on the final",
+      "verified_regression_identities": 14,
+      "structural_test_evidence": {
+        "status": "established",
+        "removed_file_count": 0,
+        "removed_test_count": 0,
+        "assertion_reduction_count": 2,
+        "unsupported_file_count": 0,
+        "limit": "Counts are structural observations, not semantic test-strength judgments. Null means not established."
+      },
+      "changed_files": [
+        {
+          "path": "src/profilecache/cache.py",
+          "kind": "modified",
+          "added_lines": 30,
+          "removed_lines": 25,
+          "outside_expected": false
+        },
+        {
+          "path": "src/profilecache/client.py",
+          "kind": "modified",
+          "added_lines": 3,
+          "removed_lines": 4,
+          "outside_expected": false
+        },
+        {
+          "path": "tests/test_cache.py",
+          "kind": "modified",
+          "added_lines": 106,
+          "removed_lines": 12,
+          "outside_expected": true
+        }
+      ],
+      "commands_from_structured_events": [
+        {
+          "command": "start",
+          "actor": "coordinator",
+          "outcome": "started"
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 35,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "submit",
+          "actor": "learner",
+          "outcome": "saved"
+        }
+      ],
+      "command_record_limit": "Read-only status/report calls and host file-edit commands are not exhaustively recorded by product events.",
+      "coordinator_assistance": [],
+      "environment_recovery_during_attempt": [],
+      "reference_exposure": "none reported or indicated in the bounded tool-call inspection; absence is not proven",
+      "trace_audit_complete": false,
+      "trace_audit_limit": "Bounded metadata inspection is not a complete security audit or filesystem sandbox.",
+      "initial_tracked_material_matches_frozen_workspace_and_visible_checks": true,
+      "learner_git_bytes_unchanged": true,
+      "repeated_saved_report_identical": true,
+      "secondary_findings": [
+        {
+          "kind": "learner_reported_baseline_mismatch",
+          "description": "Worker reported ellipsis-only committed baseline bodies. Coordinator compared initial Git blobs against the frozen committed challenge: all three named files matched exactly and had zero ellipsis-only lines. Git hashes remained unchanged. The cause of the worker/tool-view mismatch is unestablished; it is not evidence that Patchground shipped stubs."
+        }
+      ],
+      "worker_settled_and_released": true
+    },
+    {
+      "attempt_id": "L09",
+      "configuration": "codex",
+      "challenge": "release-version-ordering",
+      "timebox_minutes": 45,
+      "outcome_category": "completed unassisted",
+      "category_basis": "Saved checks passed within budget; no coordinator help or recovery during the attempt. This is a workflow category, not an engineering score.",
+      "worker_reported_model": null,
+      "elapsed_seconds": 59.832872,
+      "check_invocations_recorded": 2,
+      "hints_revealed": 0,
+      "stop_reason": "submitted with passing checks",
+      "final_check_outcome": "passed",
+      "final_check_counts": {
+        "passed": 16,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression_status": "verified",
+      "regression_reason": "selected tests fail on the original code and pass on the final",
+      "verified_regression_identities": 3,
+      "structural_test_evidence": {
+        "status": "established",
+        "removed_file_count": 0,
+        "removed_test_count": 0,
+        "assertion_reduction_count": 0,
+        "unsupported_file_count": 0,
+        "limit": "Counts are structural observations, not semantic test-strength judgments. Null means not established."
+      },
+      "changed_files": [
+        {
+          "path": "src/releasekit/ordering.ts",
+          "kind": "modified",
+          "added_lines": 20,
+          "removed_lines": 4,
+          "outside_expected": false
+        },
+        {
+          "path": "tests/releasekit.test.ts",
+          "kind": "modified",
+          "added_lines": 45,
+          "removed_lines": 0,
+          "outside_expected": true
+        }
+      ],
+      "commands_from_structured_events": [
+        {
+          "command": "start",
+          "actor": "coordinator",
+          "outcome": "started"
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "failed",
+          "counts": {
+            "passed": 8,
+            "failed": 5,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 16,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "submit",
+          "actor": "learner",
+          "outcome": "saved"
+        }
+      ],
+      "command_record_limit": "Read-only status/report calls and host file-edit commands are not exhaustively recorded by product events.",
+      "coordinator_assistance": [],
+      "environment_recovery_during_attempt": [],
+      "reference_exposure": "none reported or indicated in the bounded tool-call inspection; absence is not proven",
+      "trace_audit_complete": false,
+      "trace_audit_limit": "Bounded metadata inspection is not a complete security audit or filesystem sandbox.",
+      "initial_tracked_material_matches_frozen_workspace_and_visible_checks": true,
+      "learner_git_bytes_unchanged": true,
+      "repeated_saved_report_identical": true,
+      "secondary_findings": [],
+      "worker_settled_and_released": true
+    },
+    {
+      "attempt_id": "L10",
+      "configuration": "sonnet",
+      "challenge": "event-bus-subscriptions",
+      "timebox_minutes": 45,
+      "outcome_category": "completed unassisted",
+      "category_basis": "Saved checks passed within budget; no coordinator help or recovery during the attempt. This is a workflow category, not an engineering score.",
+      "worker_reported_model": "claude-sonnet-5-5",
+      "elapsed_seconds": 32.744461,
+      "check_invocations_recorded": 2,
+      "hints_revealed": 0,
+      "stop_reason": "submitted with passing checks",
+      "final_check_outcome": "passed",
+      "final_check_counts": {
+        "passed": 48,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression_status": "not_established",
+      "regression_reason": "a TypeScript test module cannot be analysed: Registration symbols are shadowed, leaked or unsupported",
+      "verified_regression_identities": 0,
+      "structural_test_evidence": {
+        "status": "not_established",
+        "removed_file_count": null,
+        "removed_test_count": null,
+        "assertion_reduction_count": null,
+        "unsupported_file_count": 1,
+        "limit": "Counts are structural observations, not semantic test-strength judgments. Null means not established."
+      },
+      "changed_files": [
+        {
+          "path": "src/bus.ts",
+          "kind": "modified",
+          "added_lines": 44,
+          "removed_lines": 13,
+          "outside_expected": false
+        },
+        {
+          "path": "tests/event-bus.test.ts",
+          "kind": "modified",
+          "added_lines": 90,
+          "removed_lines": 39,
+          "outside_expected": true
+        }
+      ],
+      "commands_from_structured_events": [
+        {
+          "command": "start",
+          "actor": "coordinator",
+          "outcome": "started"
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "failed",
+          "counts": {
+            "passed": 47,
+            "failed": 1,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "check",
+          "actor": "learner",
+          "outcome": "passed",
+          "counts": {
+            "passed": 48,
+            "failed": 0,
+            "errored": 0,
+            "skipped": 0
+          }
+        },
+        {
+          "command": "submit",
+          "actor": "learner",
+          "outcome": "saved"
+        }
+      ],
+      "command_record_limit": "Read-only status/report calls and host file-edit commands are not exhaustively recorded by product events.",
+      "coordinator_assistance": [],
+      "environment_recovery_during_attempt": [],
+      "reference_exposure": "none reported or indicated in the bounded tool-call inspection; absence is not proven",
+      "trace_audit_complete": false,
+      "trace_audit_limit": "Bounded metadata inspection is not a complete security audit or filesystem sandbox.",
+      "initial_tracked_material_matches_frozen_workspace_and_visible_checks": true,
+      "learner_git_bytes_unchanged": true,
+      "repeated_saved_report_identical": true,
+      "secondary_findings": [
+        {
+          "kind": "documented_static_evidence_limit",
+          "description": "expect.assertions(2) lies outside the bounded static adapter. The final runtime checks passed, while regression and test-structure evidence correctly remained not_established. Removing the counter only in a scratch copy allowed inert parsing; no learner file or saved report was modified."
+        }
+      ],
+      "worker_settled_and_released": true
+    }
+  ]
+}
