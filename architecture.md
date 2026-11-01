@@ -46,8 +46,9 @@ flowchart TD
 | `sandbox` | Every interaction with the container engine. | `patchground-sandbox` |
 | `verify` | The verification contract run against a challenge folder. | `patchground-verify` |
 | `report` | Immutable verified outcomes from captured files, events and container probes. | `patchground-report` |
-| `ai` | Provider abstraction, versioned prompts, the debrief interviewer. Experimental; no SPEC yet. | — |
-| `generate` | Challenge generation pipeline. Starts as a script in `experiments/generate/`, outside the package; no SPEC yet. | — |
+| `registry/` | Public index of community packs: scheduled discovery by GitHub topic, re-validation in CI, `index.json`/`status.json`. A script beside the package, not inside it. | `patchground-registry` |
+| `ai` | Optional AI coaching. Deferred from launch after a bounded local evaluation (`docs/evaluations/ai-debrief-smoke.md`); not in the package. | — |
+| `generate` | Challenge generation experiment. Deferred from launch; not implemented. | — |
 
 Edges not drawn above are forbidden. In particular: nothing below `cli` imports `cli`; nothing in the
 core imports `ai` or `generate`; only `sandbox` imports the Docker SDK; only `sessions` runs git on
@@ -111,8 +112,14 @@ through WSL2 + Docker Desktop; `pgnd doctor` points Windows users there.
 `patchground.dev` is a public documentation and challenge-catalog surface, not a hosted runner.
 Challenge execution, session state and verified outcomes stay local. Published catalog data is an
 allowlist of public challenge metadata and tickets, never session data, hidden checks, reference
-solutions or credentials. Site framework and hosting choices are separate delivery decisions;
-DNS, production deployment, package publication and releases require approval at publication.
+solutions or credentials. The standalone `web/` module (`patchground-web`) owns the product-first
+static homepage, with CLI installation, real-world practice, public guides and challenge tickets. It has no dependency on the CLI; its catalog is
+generated from an allowlist of public `challenge.yaml` fields plus the community index in
+`registry/index.json` (see `patchground-web`, `patchground-registry`), and its build copies an
+explicit allowlist of public assets. Community packs reach the site by *publish and appear*: the
+author tags their repository, CI re-validates it, no pull request (`patchground-registry`). Hosting remains a
+separate delivery decision. DNS, production deployment, package publication and releases require
+approval at publication.
 
 ## Repositories
 

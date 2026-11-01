@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c0d10">
+  <meta name="robots" content="noindex">
+  <title>Registry status — Patchground</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="status-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><div class="container header-inner"><a class="brand" href="./"><span class="brand-mark" aria-hidden="true">&gt;_</span>patchground</a><nav class="main-nav" aria-label="Main navigation"><a href="./#challenges">Challenges</a><a href="./#publish">Publish</a><a href="https://github.com/franndeli/patchground">GitHub <span aria-hidden="true">↗</span></a></nav></div></header>
+  <main id="main" tabindex="-1" class="container section">
+    <p class="eyebrow">Registry status</p>
+    <h1 class="status-title">Every pack the registry has seen</h1>
+    <p class="status-intro">The registry looks for public repositories tagged <code>patchground-pack</code> (and the URLs in <code>registry/sources.yaml</code>), clones each one and runs <code>pgnd validate</code> on every challenge in Patchground's CI. Verified packs are listed in the catalog; everything else is listed here with the step that failed, using the same step names the CLI prints. Last run: <strong>never (no registry run yet)</strong>. Verified packs: <strong>0</strong>.</p>
+    <table class="status-table">
+      <thead><tr><th>Source</th><th>Result</th><th>Failed step</th><th>Detail</th><th>Checked</th></tr></thead>
+      <tbody>
+        <tr><td colspan="5" class="muted">Nothing seen yet. Tag your repository with <code>patchground-pack</code> and check back after the next run.</td></tr>
+      </tbody>
+    </table>
+    <p class="status-foot">Results: <strong>verified</strong> passed everything · <strong>failed</strong> did not pass a policy or validation step · <strong>error</strong> the registry could not finish (clone or infrastructure; the last verified version, if any, stays listed) · <strong>skipped</strong> unchanged since its last verification or deferred to the next run.</p>
+  </main>
+  <footer class="site-footer container"><div class="footer-bottom"><span>Local-first engineering practice. No accounts. No tracking.</span><a href="./">Home <span aria-hidden="true">↑</span></a></div></footer>
+</body>
+</html>

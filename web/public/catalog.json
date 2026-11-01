@@ -1,0 +1,148 @@
+{
+  "schema": "patchground-web-catalog/1",
+  "generated_from": [
+    "examples/*/challenge.yaml (public fields only)",
+    "registry/index.json"
+  ],
+  "fields": [
+    "id",
+    "title",
+    "summary",
+    "type",
+    "languages",
+    "tags",
+    "difficulty",
+    "timebox_minutes",
+    "provenance"
+  ],
+  "packs": [
+    {
+      "name": "patchground-examples",
+      "kind": "built-in",
+      "description": "Curated examples shipped with the CLI; validated in this repository's CI on every push.",
+      "source": "https://github.com/franndeli/patchground",
+      "homepage": "https://github.com/franndeli/patchground/tree/main/examples",
+      "stars": null,
+      "forks": null,
+      "verified_at": null,
+      "first_seen": null,
+      "challenge_count": 6
+    }
+  ],
+  "challenges": [
+    {
+      "id": "pagination-last-page",
+      "title": "Last page of search results returns \"page out of range\"",
+      "type": "debug",
+      "summary": "The catalog API rejects the last page of results whenever the result count is not a multiple of the page size. Find the root cause and fix it.",
+      "languages": [
+        "python"
+      ],
+      "tags": [
+        "pagination",
+        "off-by-one"
+      ],
+      "difficulty": "beginner",
+      "timebox_minutes": 20,
+      "provenance": "handmade",
+      "pack": "patchground-examples",
+      "ticket": "https://github.com/franndeli/patchground/blob/main/examples/pagination-last-page/TICKET.md"
+    },
+    {
+      "id": "cache-expiry",
+      "title": "Cached profiles never expire while they are being read",
+      "type": "debug",
+      "summary": "A TTL cache keeps entries alive when they are read, expires them one tick late and accepts nonpositive TTLs. Find the causes and fix them without changing write behavior.",
+      "languages": [
+        "python"
+      ],
+      "tags": [
+        "caching",
+        "ttl",
+        "time"
+      ],
+      "difficulty": "intermediate",
+      "timebox_minutes": 30,
+      "provenance": "generated",
+      "pack": "patchground-examples",
+      "ticket": "https://github.com/franndeli/patchground/blob/main/examples/cache-expiry/TICKET.md"
+    },
+    {
+      "id": "csv-import-row-errors",
+      "title": "Report bad rows from the stock importer instead of stopping at the first",
+      "type": "feature",
+      "summary": "A strict CSV stock importer aborts at the first bad row. Add a non-strict mode that returns the valid items and one precise error per rejected row, keeping strict behavior unchanged.",
+      "languages": [
+        "python"
+      ],
+      "tags": [
+        "csv",
+        "validation",
+        "parsing",
+        "error-handling"
+      ],
+      "difficulty": "intermediate",
+      "timebox_minutes": 45,
+      "provenance": "generated",
+      "pack": "patchground-examples",
+      "ticket": "https://github.com/franndeli/patchground/blob/main/examples/csv-import-row-errors/TICKET.md"
+    },
+    {
+      "id": "duplicate-charges-on-retry",
+      "title": "Duplicate charges after a payment retry",
+      "type": "debug",
+      "summary": "A successful charge followed by a timeout causes a retry to charge twice.",
+      "languages": [
+        "python"
+      ],
+      "tags": [
+        "idempotency",
+        "retries",
+        "payments"
+      ],
+      "difficulty": "intermediate",
+      "timebox_minutes": 45,
+      "provenance": "generated",
+      "pack": "patchground-examples",
+      "ticket": "https://github.com/franndeli/patchground/blob/main/examples/duplicate-charges-on-retry/TICKET.md"
+    },
+    {
+      "id": "event-bus-subscriptions",
+      "title": "Add unsubscribe and once to the in-process event bus",
+      "type": "feature",
+      "summary": "A synchronous exact-topic event bus cannot take a subscription back or listen once. Add unsubscribe and once with precise snapshot, re-entrancy and error-collection behavior.",
+      "languages": [
+        "typescript"
+      ],
+      "tags": [
+        "events",
+        "reentrancy",
+        "error-handling"
+      ],
+      "difficulty": "intermediate",
+      "timebox_minutes": 45,
+      "provenance": "generated",
+      "pack": "patchground-examples",
+      "ticket": "https://github.com/franndeli/patchground/blob/main/examples/event-bus-subscriptions/TICKET.md"
+    },
+    {
+      "id": "release-version-ordering",
+      "title": "Release picker orders version labels incorrectly",
+      "type": "debug",
+      "summary": "A release-tool library chooses the wrong latest version and misorders prereleases.",
+      "languages": [
+        "typescript"
+      ],
+      "tags": [
+        "semver",
+        "ordering",
+        "releases"
+      ],
+      "difficulty": "intermediate",
+      "timebox_minutes": 45,
+      "provenance": "generated",
+      "pack": "patchground-examples",
+      "ticket": "https://github.com/franndeli/patchground/blob/main/examples/release-version-ordering/TICKET.md"
+    }
+  ]
+}

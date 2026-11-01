@@ -24,6 +24,7 @@ untrusted challenges in a containerized dev environment.
 | A local challenge path the user authored | The user's own code | No prompt |
 | Third-party pack | Untrusted, labelled "unofficial" | Show the Dockerfile, services and test command; require a yes per pack version |
 | Generated challenge | Same as the source repo | Same as the source repo |
+| Community pack in the public registry | Unofficial; *verified* means it passed `pgnd validate` in Patchground CI at one commit (`patchground-registry`) | CI crawler consents for itself in an isolated read-only job; users still get the per-version prompt on install |
 
 Consent happens before the **build** phase, because building an untrusted Dockerfile is itself
 sensitive. Container isolation defaults live in `patchground-contract-execution`.

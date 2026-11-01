@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c0d10">
+  <meta name="description" content="Practice real software engineering, not algorithm puzzles. Patchground is an open-source, local-first CLI: fix real codebases in your own editor, with your own AI, and get test-verified outcomes.">
+  <meta property="og:title" content="Patchground — Real code. Real problems. Your tools.">
+  <meta property="og:description" content="Step into a broken repository. Understand the problem. Make a fix that holds up. Open-source, local-first engineering practice.">
+  <meta property="og:type" content="website">
+  <title>Patchground — Real code. Real problems. Your tools.</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Patchground home"><span class="brand-mark" aria-hidden="true">&gt;_</span>patchground</a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#why">Why</a>
+        <a href="#challenges">Challenges</a>
+        <a href="#packs">Packs</a>
+        <a href="#install">Install</a>
+        <a href="#publish">Publish</a>
+      </nav>
+      <a class="button button-small github-link" href="https://github.com/franndeli/patchground"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.86c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.64-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.03A9.6 9.6 0 0 1 12 6.83c.85 0 1.71.11 2.51.34 1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.76c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>GitHub <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="hero container" aria-labelledby="hero-heading">
+      <div class="hero-copy">
+        <p class="eyebrow hero-eyebrow"><span class="status-dot" aria-hidden="true"></span>Open-source engineering practice</p>
+        <h1 id="hero-heading">Real code.<br>Real problems.<br><span>Practice beyond<br>the puzzle.</span></h1>
+        <p class="hero-description">Interviews and real jobs are not about inverting binary trees. They are about stepping into code you did not write, understanding what is broken and fixing it so it stays fixed. Patchground gives you that practice: a real repository, a real ticket, your own editor and your own AI, and checks that run in Docker.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#install">Get Patchground <span aria-hidden="true">↓</span></a>
+          <a class="button" href="#challenges">Browse challenges <span aria-hidden="true">↓</span></a>
+        </div>
+        <ul class="hero-facts" aria-label="Key facts"><li>Local-first, no account</li><li>Bring your own editor and AI</li><li>Verified by tests, not scored</li><li>Apache-2.0</li></ul>
+      </div>
+
+      <div class="terminal-demo" aria-label="Illustration of one Patchground practice session">
+        <div class="window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>one practice session</span><span class="window-tag">illustration</span></div>
+        <ol class="terminal-lines">
+          <li class="cmd"><span class="prompt" aria-hidden="true">$</span> pgnd start duplicate-charges-on-retry</li>
+          <li class="out">Building image… workspace ready at <em>~/patchground/sessions/…/workspace</em></li>
+          <li class="out dim">Ticket: <em>Duplicate charges after a payment retry</em> · timebox 45 min</li>
+          <li class="gap" aria-hidden="true"></li>
+          <li class="cmd"><span class="prompt" aria-hidden="true">$</span> code . <span class="comment"># or your editor and agent of choice</span></li>
+          <li class="gap" aria-hidden="true"></li>
+          <li class="cmd"><span class="prompt" aria-hidden="true">$</span> pgnd check</li>
+          <li class="out"><span class="fail">✗</span> 12 passed, <span class="fail">2 failed</span> — hidden checks still red</li>
+          <li class="gap" aria-hidden="true"></li>
+          <li class="cmd"><span class="prompt" aria-hidden="true">$</span> pgnd check</li>
+          <li class="out"><span class="pass">✓</span> 14 passed, 0 failed</li>
+          <li class="gap" aria-hidden="true"></li>
+          <li class="cmd"><span class="prompt" aria-hidden="true">$</span> pgnd submit</li>
+          <li class="report">
+            <span class="report-title">Verified outcomes</span>
+            <dl>
+              <div><dt>Checks</dt><dd><span class="pass">14 / 14</span></dd></div>
+              <div><dt>Regression test</dt><dd>fails before · passes after</dd></div>
+              <div><dt>Diff scope</dt><dd>inside <code>src/payments/</code></dd></div>
+              <div><dt>Time</dt><dd>38 of 45 min</dd></div>
+            </dl>
+            <span class="report-foot">No overall score. Facts your tests can back.</span>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="container section why-section" id="why" aria-labelledby="why-heading">
+      <div class="section-heading"><div><p class="eyebrow">Why it exists</p><h2 id="why-heading">The interview changed.<br>The practice did not.</h2></div><p>Live debugging, feature work in an unfamiliar repo, PR review, directing an AI tool under scrutiny. There was no free, structured way to rehearse any of it.</p></div>
+      <div class="contrast" role="table" aria-label="Puzzle practice compared with Patchground">
+        <div class="contrast-head" role="row"><span role="columnheader">Puzzle platforms</span><span role="columnheader" class="accent">Patchground</span></div>
+        <div class="contrast-row" role="row"><span role="cell">A function signature and an input/output table.</span><span role="cell">A codebase, a ticket from support, and a failing customer.</span></div>
+        <div class="contrast-row" role="row"><span role="cell">Solve it in a browser box, without your tools.</span><span role="cell">Your editor, your terminal, your AI agent—or none.</span></div>
+        <div class="contrast-row" role="row"><span role="cell">Graded on output. A number tells you how you did.</span><span role="cell">Verified by tests: what passed, whether your regression test really catches the bug, where your diff landed.</span></div>
+        <div class="contrast-row" role="row"><span role="cell">Hosted sandboxes and platform AI behind a subscription.</span><span role="cell">Runs on your machine in Docker. Patchground itself sends nothing anywhere.</span></div>
+        <div class="contrast-row" role="row"><span role="cell">Closed problem bank.</span><span role="cell">An open challenge format. Anyone can author one and prove it is sound.</span></div>
+      </div>
+      <div class="pillars">
+        <article><h3>Local-first</h3><p>No account, server or subscription. Image builds may use the network; checks run on an internal Docker network with resource limits.</p></article>
+        <article><h3>AI optional, never required</h3><p>Use Claude Code, Codex, a local model, or nothing—in your own editor. Patchground needs no API key and has no built-in AI; what your assistant sees is up to you.</p></article>
+        <article><h3>Verified or it does not ship</h3><p>Every published challenge must prove, in its container, that the broken state fails and a reference fix passes—deterministically.</p></article>
+      </div>
+    </section>
+
+    <section class="catalog-section" id="challenges" aria-labelledby="challenges-heading">
+      <div class="container section">
+        <div class="section-heading"><div><p class="eyebrow">Challenges</p><h2 id="challenges-heading">Small collection. Real bugs.</h2></div><p>Each one is a complete repository with a ticket, visible tests you can extend, hidden checks, and a reference fix—validated in Docker before it is published. A handful of excellent challenges beat fifty generated ones.</p></div>
+        <!-- catalog:start (generated by scripts/catalog.mjs; do not edit by hand) -->
+        <div class="catalog-toolbar"><div class="filters" role="group" aria-label="Filter challenges" hidden><button type="button" class="filter" data-filter="all" aria-pressed="true">All <span>06</span></button><button type="button" class="filter" data-filter="beginner" aria-pressed="false">Beginner <span>01</span></button><button type="button" class="filter" data-filter="intermediate" aria-pressed="false">Intermediate <span>05</span></button><button type="button" class="filter" data-filter="debug" aria-pressed="false">Debug <span>04</span></button><button type="button" class="filter" data-filter="feature" aria-pressed="false">Feature <span>02</span></button><button type="button" class="filter" data-filter="python" aria-pressed="false">Python <span>04</span></button><button type="button" class="filter" data-filter="typescript" aria-pressed="false">Typescript <span>02</span></button></div><label class="search" hidden><span class="sr-only">Search challenges by title, tag or pack</span><input type="search" id="catalog-search" placeholder="Search title, tag, pack…" autocomplete="off"></label><p class="catalog-count" role="status" aria-live="polite" aria-atomic="true" id="catalog-count" data-summary="6 challenges in 1 pack · Python, Typescript · Debug, Feature">6 challenges in 1 pack · Python, Typescript · Debug, Feature</p></div>
+        <div class="challenge-list">
+          <article class="challenge-card" data-facets="beginner debug python built-in" data-tags="pagination off-by-one" data-search="last page of search results returns &quot;page out of range&quot; the catalog api rejects the last page of results whenever the result count is not a multiple of the page size. find the root cause and fix it. pagination off-by-one patchground-examples" data-challenge="pagination-last-page" data-pack="patchground-examples">
+            <span class="challenge-number" aria-hidden="true">01</span>
+            <div class="challenge-summary">
+              <h3><a href="https://github.com/franndeli/patchground/blob/main/examples/pagination-last-page/TICKET.md">Last page of search results returns &quot;page out of range&quot;<span class="sr-only"> — read the ticket</span></a></h3>
+              <p>The catalog API rejects the last page of results whenever the result count is not a multiple of the page size. Find the root cause and fix it.</p>
+              <p class="challenge-pack"><span class="pack-chip">patchground-examples</span><span class="badge badge-builtin">built-in</span></p>
+            </div>
+            <div class="challenge-topic"><span>Python / Debug · pagination, off-by-one</span><span class="difficulty">Beginner</span></div>
+            <span class="timebox">20 MIN</span>
+            <span class="row-arrow" aria-hidden="true">↗</span>
+          </article>
+          <article class="challenge-card" data-facets="intermediate debug python built-in" data-tags="caching ttl time" data-search="cached profiles never expire while they are being read a ttl cache keeps entries alive when they are read, expires them one tick late and accepts nonpositive ttls. find the causes and fix them without changing write behavior. caching ttl time patchground-examples" data-challenge="cache-expiry" data-pack="patchground-examples">
+            <span class="challenge-number" aria-hidden="true">02</span>
+            <div class="challenge-summary">
+              <h3><a href="https://github.com/franndeli/patchground/blob/main/examples/cache-expiry/TICKET.md">Cached profiles never expire while they are being read<span class="sr-only"> — read the ticket</span></a></h3>
+              <p>A TTL cache keeps entries alive when they are read, expires them one tick late and accepts nonpositive TTLs. Find the causes and fix them without changing write behavior.</p>
+              <p class="challenge-pack"><span class="pack-chip">patchground-examples</span><span class="badge badge-builtin">built-in</span></p>
+            </div>
+            <div class="challenge-topic"><span>Python / Debug · caching, ttl, time</span><span class="difficulty">Intermediate · AI-generated</span></div>
+            <span class="timebox">30 MIN</span>
+            <span class="row-arrow" aria-hidden="true">↗</span>
+          </article>
+          <article class="challenge-card" data-facets="intermediate feature python built-in" data-tags="csv validation parsing error-handling" data-search="report bad rows from the stock importer instead of stopping at the first a strict csv stock importer aborts at the first bad row. add a non-strict mode that returns the valid items and one precise error per rejected row, keeping strict behavior unchanged. csv validation parsing error-handling patchground-examples" data-challenge="csv-import-row-errors" data-pack="patchground-examples">
+            <span class="challenge-number" aria-hidden="true">03</span>
+            <div class="challenge-summary">
+              <h3><a href="https://github.com/franndeli/patchground/blob/main/examples/csv-import-row-errors/TICKET.md">Report bad rows from the stock importer instead of stopping at the first<span class="sr-only"> — read the ticket</span></a></h3>
+              <p>A strict CSV stock importer aborts at the first bad row. Add a non-strict mode that returns the valid items and one precise error per rejected row, keeping strict behavior unchanged.</p>
+              <p class="challenge-pack"><span class="pack-chip">patchground-examples</span><span class="badge badge-builtin">built-in</span></p>
+            </div>
+            <div class="challenge-topic"><span>Python / Feature · csv, validation, parsing, error-handling</span><span class="difficulty">Intermediate · AI-generated</span></div>
+            <span class="timebox">45 MIN</span>
+            <span class="row-arrow" aria-hidden="true">↗</span>
+          </article>
+          <article class="challenge-card" data-facets="intermediate debug python built-in" data-tags="idempotency retries payments" data-search="duplicate charges after a payment retry a successful charge followed by a timeout causes a retry to charge twice. idempotency retries payments patchground-examples" data-challenge="duplicate-charges-on-retry" data-pack="patchground-examples">
+            <span class="challenge-number" aria-hidden="true">04</span>
+            <div class="challenge-summary">
+              <h3><a href="https://github.com/franndeli/patchground/blob/main/examples/duplicate-charges-on-retry/TICKET.md">Duplicate charges after a payment retry<span class="sr-only"> — read the ticket</span></a></h3>
+              <p>A successful charge followed by a timeout causes a retry to charge twice.</p>
+              <p class="challenge-pack"><span class="pack-chip">patchground-examples</span><span class="badge badge-builtin">built-in</span></p>
+            </div>
+            <div class="challenge-topic"><span>Python / Debug · idempotency, retries, payments</span><span class="difficulty">Intermediate · AI-generated</span></div>
+            <span class="timebox">45 MIN</span>
+            <span class="row-arrow" aria-hidden="true">↗</span>
+          </article>
+          <article class="challenge-card" data-facets="intermediate feature typescript built-in" data-tags="events reentrancy error-handling" data-search="add unsubscribe and once to the in-process event bus a synchronous exact-topic event bus cannot take a subscription back or listen once. add unsubscribe and once with precise snapshot, re-entrancy and error-collection behavior. events reentrancy error-handling patchground-examples" data-challenge="event-bus-subscriptions" data-pack="patchground-examples">
+            <span class="challenge-number" aria-hidden="true">05</span>
+            <div class="challenge-summary">
+              <h3><a href="https://github.com/franndeli/patchground/blob/main/examples/event-bus-subscriptions/TICKET.md">Add unsubscribe and once to the in-process event bus<span class="sr-only"> — read the ticket</span></a></h3>
+              <p>A synchronous exact-topic event bus cannot take a subscription back or listen once. Add unsubscribe and once with precise snapshot, re-entrancy and error-collection behavior.</p>
+              <p class="challenge-pack"><span class="pack-chip">patchground-examples</span><span class="badge badge-builtin">built-in</span></p>
+            </div>
+            <div class="challenge-topic"><span>Typescript / Feature · events, reentrancy, error-handling</span><span class="difficulty">Intermediate · AI-generated</span></div>
+            <span class="timebox">45 MIN</span>
+            <span class="row-arrow" aria-hidden="true">↗</span>
+          </article>
+          <article class="challenge-card" data-facets="intermediate debug typescript built-in" data-tags="semver ordering releases" data-search="release picker orders version labels incorrectly a release-tool library chooses the wrong latest version and misorders prereleases. semver ordering releases patchground-examples" data-challenge="release-version-ordering" data-pack="patchground-examples">
+            <span class="challenge-number" aria-hidden="true">06</span>
+            <div class="challenge-summary">
+              <h3><a href="https://github.com/franndeli/patchground/blob/main/examples/release-version-ordering/TICKET.md">Release picker orders version labels incorrectly<span class="sr-only"> — read the ticket</span></a></h3>
+              <p>A release-tool library chooses the wrong latest version and misorders prereleases.</p>
+              <p class="challenge-pack"><span class="pack-chip">patchground-examples</span><span class="badge badge-builtin">built-in</span></p>
+            </div>
+            <div class="challenge-topic"><span>Typescript / Debug · semver, ordering, releases</span><span class="difficulty">Intermediate · AI-generated</span></div>
+            <span class="timebox">45 MIN</span>
+            <span class="row-arrow" aria-hidden="true">↗</span>
+          </article>
+          <p class="catalog-empty" id="catalog-empty" hidden>No challenge matches. Clear the search or pick another filter.</p>
+        </div>
+        <!-- catalog:end -->
+        <p class="catalog-note">Difficulty and realism are not yet human-rated. Challenges marked AI-generated were drafted with a coding agent and validated like any other. <strong>built-in</strong> means shipped with the CLI and validated in this repository's CI; <strong>verified</strong> means a community pack whose every challenge passed <code>pgnd validate</code> in Patchground's CI on the date shown. Installing packs by name from the CLI is planned; today the CLI runs challenges from a local path or a pack URL. <a href="https://github.com/franndeli/patchground/blob/main/docs/first-session.md">How to run one <span aria-hidden="true">↗</span></a> · <a href="./status.html">Registry status</a></p>
+      </div>
+    </section>
+
+    <section class="container section packs-section" id="packs" aria-labelledby="packs-heading">
+      <div class="section-heading"><div><p class="eyebrow">Packs</p><h2 id="packs-heading">Collections, kept by their authors.</h2></div><p>A pack is a git repository with a <code>pack.yaml</code> and one folder per challenge. It stays in its author's repo; Patchground only indexes it after re-validating every challenge in its own CI. Stars and forks come from the host.</p></div>
+        <!-- packs:start (generated by scripts/catalog.mjs; do not edit by hand) -->
+        <div class="packs-toolbar"><p class="catalog-count">1 pack · 0 community</p><label class="sort" hidden><span>Sort by</span><select id="pack-sort"><option value="stars">Most starred</option><option value="verified">Recently verified</option><option value="newest">Newest</option><option value="count">Most challenges</option></select></label></div>
+        <div class="pack-grid" id="pack-grid">
+          <article class="pack-card" data-kind="built-in" data-stars="-1" data-verified="" data-first-seen="" data-count="6">
+            <div class="pack-head"><h3><a href="https://github.com/franndeli/patchground/tree/main/examples">patchground-examples<span aria-hidden="true"> ↗</span></a></h3><span class="badge badge-builtin">built-in</span></div>
+            <p>Curated examples shipped with the CLI; validated in this repository's CI on every push.</p>
+            <p class="pack-meta"><span>6 challenges</span><span>Debug, Feature</span><span>validated in CI on every push</span></p>
+          </article>
+          <p class="packs-empty">No community pack has been verified yet. Publish yours and it will appear here after the next registry run.</p>
+        </div>
+        <!-- packs:end -->
+    </section>
+
+    <section class="container section install-section" id="install" aria-labelledby="install-heading">
+      <div class="install-copy"><p class="eyebrow">Install</p><h2 id="install-heading">From checkout<br>to first ticket.</h2><p>Patchground is an early, working prototype. Install it from a repository checkout today; a published package will follow.</p><ul class="requirements"><li><span aria-hidden="true">↳</span> Python 3.12+ and uv</li><li><span aria-hidden="true">↳</span> Git and a running Docker engine (or Podman)</li><li><span aria-hidden="true">↳</span> macOS or Linux; Windows through WSL2</li></ul><div class="install-links"><a class="text-link" href="https://github.com/franndeli/patchground/blob/main/docs/first-session.md">First-session guide <span aria-hidden="true">↗</span></a><a class="text-link" href="https://github.com/franndeli/patchground/blob/main/README.md">README <span aria-hidden="true">↗</span></a></div></div>
+      <div class="setup-terminal"><div class="window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>get started</span><button type="button" class="copy-button" id="copy-command" aria-label="Copy the setup commands" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg>Copy</button></div><pre class="setup-code"><code id="install-command">git clone https://github.com/franndeli/patchground.git
+cd patchground
+uv tool install .
+pgnd doctor
+pgnd start examples/pagination-last-page</code></pre><p class="copy-status" id="copy-status" role="status" aria-live="polite" aria-atomic="true"></p><div class="setup-footer">Then open the printed workspace in your editor and run <code>pgnd check</code> as you go. Finish with <code>pgnd submit</code>.</div></div>
+    </section>
+
+    <section class="container section publish-section" id="publish" aria-labelledby="publish-heading">
+      <div class="section-heading"><div><p class="eyebrow">Publish your pack</p><h2 id="publish-heading">Know a bug worth learning from?<br>Publish it. No pull request.</h2></div><p>Your challenges live in your own repository. Patchground discovers it, re-runs its validator on every challenge, and lists what passes. The validator is the gate: nothing else is reviewed by hand, and nothing that fails is listed.</p></div>
+      <ol class="publish-steps">
+        <li><span class="step-number">01</span><h3>Author and validate locally</h3><p><code>pgnd new my-bug</code> scaffolds a runnable challenge; <code>pgnd validate my-bug</code> proves the broken state fails, the reference passes, and the result is stable. Fix every step until it reads <em>valid</em>.</p></li>
+        <li><span class="step-number">02</span><h3>Make it a pack</h3><p>Put each challenge folder at the root of a public repository next to a <code>pack.yaml</code> that names it. Declare a <code>content_license</code> and <code>provenance</code> in every <code>challenge.yaml</code>; keep <code>services: []</code>.</p><pre><code>spec_version: "0.1"
+name: my-pack            # lowercase, hyphens; first publisher keeps the name
+version: 0.1.0
+description: Bugs from a payments team
+challenges: [my-bug]</code></pre></li>
+        <li><span class="step-number">03</span><h3>Tag the repository</h3><p>Add the GitHub topic <code>patchground-pack</code> to the repository. On other hosts, add your <code>https://</code> clone URL to <a href="https://github.com/franndeli/patchground/blob/main/registry/sources.yaml">registry/sources.yaml</a>. That is the whole submission.</p></li>
+        <li><span class="step-number">04</span><h3>Appear</h3><p>Every few hours the registry clones tagged repositories, runs the policy checks and <code>pgnd validate</code> on each challenge in Patchground's CI, and publishes the result. Passing packs show up in the catalog with a <strong>verified</strong> badge; anything else is explained on the <a href="./status.html">status page</a> with the failing step.</p></li>
+      </ol>
+      <p class="publish-note">Planned: <code>pgnd pack publish</code> to validate and tag in one command, and <code>pgnd pack add &lt;name&gt;</code> to install by name from this index. Until then the steps above are the whole process. The registry never lists hidden checks, hints or reference solutions; only the public metadata you see in the catalog. <a class="text-link" href="https://github.com/franndeli/patchground/blob/main/docs/authoring.md">Authoring guide <span aria-hidden="true">↗</span></a></p>
+    </section>
+
+    <section class="container community-section" id="community" aria-labelledby="community-heading"><div><p class="eyebrow">Built in the open</p><h2 id="community-heading">Improve the engine itself.</h2><p>Patchground is Apache-2.0. Sharpen a ticket, extend the validator, add a language adapter, or report what confused you on your first session.</p></div><div class="contribution-links"><a class="text-link" href="https://github.com/franndeli/patchground">Contribute on GitHub <span aria-hidden="true">↗</span></a><a href="https://github.com/franndeli/patchground/issues">Open an issue <span aria-hidden="true">↗</span></a></div></section>
+  </main>
+
+  <footer class="site-footer container"><div class="footer-top"><a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">&gt;_</span>patchground</a><p>Real code. Real problems. Your tools.</p><nav aria-label="Footer navigation"><a href="https://github.com/franndeli/patchground">GitHub ↗</a><a href="https://github.com/franndeli/patchground/blob/main/docs/first-session.md">Docs ↗</a><a href="https://github.com/franndeli/patchground/blob/main/docs/authoring.md">Authoring ↗</a><a href="https://github.com/franndeli/patchground/blob/main/LICENSE">Apache-2.0 ↗</a></nav></div><div class="footer-bottom"><span>Local-first engineering practice. No accounts. No tracking.</span><a href="#top">Back to top <span aria-hidden="true">↑</span></a></div></footer>
+</body>
+</html>

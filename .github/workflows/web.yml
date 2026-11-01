@@ -1,0 +1,26 @@
+name: web
+
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", "examples/*/challenge.yaml", "registry/*.json", ".github/workflows/web.yml"]
+  pull_request:
+    paths: ["web/**", "examples/*/challenge.yaml", "registry/*.json", ".github/workflows/web.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  static-site:
+    name: public site checks and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm --prefix web run check
+      - name: catalog is generated from examples/*/challenge.yaml and up to date
+        run: node web/scripts/catalog.mjs --check
+      - run: npm --prefix web test
+      - run: npm --prefix web run build

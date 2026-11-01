@@ -1,0 +1,6 @@
+# Public git repositories to index that cannot carry the `patchground-pack` GitHub topic
+# (GitLab, Codeberg, self-hosted…). One https URL per line. GitHub repos should use the topic
+# instead — they are discovered automatically. Only `https://` sources; no credentials.
+#
+# - https://gitlab.com/someone/their-pack.git
+sources: []

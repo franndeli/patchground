@@ -118,9 +118,10 @@ The table below also describes planned commands and options; it is not a claim t
 | `validate <path> [--no-write]` | Run `patchground-contract-verification`; CI-friendly. Progress goes to stderr; `--no-write` leaves `verification.json` untouched. |
 | `doctor` | Check Docker (or Podman), git, disk; print exact fixes (WSL2 on Windows). |
 | `pack add <source> [--ref REV]`, `pack list\|update\|remove` | Public HTTPS/local committed packs, pinned by identity with explicit consent. |
+| `pack publish`, `pack add <name>` | **Planned.** Validate a pack and mark its repository discoverable; resolve a bare name through the public registry index (`patchground-registry`). Not implemented. |
 | `config set <key> <value>` | Defaults: provider, model, editor command. |
-| `debrief --ai [--provider] [--yes]` | Experimental AI coaching on a submitted session. |
-| `generate ...` | Experimental; exists only once the generator experiment succeeds. |
+| `debrief --ai [--provider] [--yes]` | **Deferred from launch.** Experimental AI coaching on a submitted session; not shipped. |
+| `generate ...` | **Deferred from launch.** Exists only once a generator experiment succeeds. |
 
 `cli` contains no business logic: each command parses arguments, calls one module entry point, and
 renders its result.

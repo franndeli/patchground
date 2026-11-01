@@ -1,0 +1,96 @@
+name: registry
+
+# Discovers community packs (GitHub topic `patchground-pack` + registry/sources.yaml), re-validates
+# every challenge with Patchground's own validator in Docker, and publishes registry/index.json and
+# registry/status.json. See registry/SPEC.md.
+#
+# Two jobs on purpose: `validate` builds and runs untrusted Dockerfiles, so it gets a read-only
+# token and no secrets; `publish` has write access but only commits files produced by `validate`.
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Process exactly one public https git URL (skips discovery)"
+        required: false
+        default: ""
+
+concurrency:
+  group: registry
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: discover and validate packs (untrusted content, read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      PATCHGROUND_REQUIRE_DOCKER: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false   # untrusted packs build here; leave no token in .git/config
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked
+      - name: install gitleaks for the pack secret scan
+        run: |
+          curl -sSfL -o gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tar.gz" | sha256sum -c -
+          tar xzf gitleaks.tar.gz gitleaks
+          sudo mv gitleaks /usr/local/bin/gitleaks
+          rm gitleaks.tar.gz
+      - name: crawl
+        env:
+          GITHUB_TOKEN: ${{ github.token }}   # read-only; search rate limit only; never passed to pack tools
+          SOURCE: ${{ inputs.source }}        # via env, never interpolated into the script
+        run: |
+          if [ -n "$SOURCE" ]; then
+            case "$SOURCE" in https://*) ;; *) echo "source must be an https URL"; exit 2;; esac
+            uv run python registry/crawl.py --source "$SOURCE"
+          else
+            uv run python registry/crawl.py
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: registry
+          path: |
+            registry/index.json
+            registry/status.json
+          retention-days: 7
+
+  publish:
+    name: commit index and status if changed
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: registry
+          path: registry
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: regenerate the site catalog from the new index
+        run: npm --prefix web run catalog && npm --prefix web test
+      - name: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add registry/index.json registry/status.json web/public
+          if git diff --cached --quiet; then
+            echo "registry unchanged"
+            exit 0
+          fi
+          packs="$(python3 -c "import json;print(len(json.load(open('registry/index.json'))['packs']))")"
+          git commit -m "Update community pack registry (${packs} verified packs)"
+          git push

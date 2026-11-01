@@ -167,6 +167,7 @@ custom discovery/plugin bypasses or local cheating.
 The product homepage lives in [`web/`](web/README.md). Preview it locally with
 `npm --prefix web run dev`, then open `http://127.0.0.1:4173`. It introduces the CLI, local practice
 workflow and real challenges, with contribution as a secondary path. It does not host execution.
+The challenge catalog is generated from `examples/*/challenge.yaml` (`npm --prefix web run catalog`).
 See the web README for checks, the static build, and the separate deployment approval gate.
 
 ## Develop

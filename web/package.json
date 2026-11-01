@@ -1,0 +1,14 @@
+{
+  "name": "patchground-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "exec python3 -m http.server 4173 --bind 127.0.0.1 --directory public",
+    "catalog": "node scripts/catalog.mjs",
+    "build": "node scripts/catalog.mjs --check && node scripts/build.mjs",
+    "check": "node --check public/main.js && node --check scripts/build.mjs && node --check scripts/catalog.mjs && node --check scripts/site.test.mjs",
+    "test": "node --test scripts/*.test.mjs"
+  }
+}
