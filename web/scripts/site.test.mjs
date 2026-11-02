@@ -78,6 +78,14 @@ test("all internal anchors exist, IDs are unique, one h1, skip link present", ()
   }
 });
 
+test("back-to-top links target the top of the document, not the sticky header", () => {
+  // A sticky element always counts as in view, so linking to it scrolls almost nowhere.
+  for (const page of [html, statusHtml]) {
+    assert.ok(/<body[^>]* id="top"/.test(page), "id=top belongs on <body>");
+    assert.ok(!/<header[^>]* id="top"/.test(page), "the sticky header must not be the #top target");
+  }
+});
+
 test("the CLI and real-world practice lead; contribution comes last", () => {
   const hero = html.match(/<section class="hero[\s\S]*?<\/section>/)[0];
   assert.ok(/href="#install">Get Patchground/.test(hero), String(/href="#install">Get Patchground/));

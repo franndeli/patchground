@@ -27,9 +27,9 @@ const { title, description, noindex = false, home, nav } = Astro.props;
   <title>{title}</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 </head>
-<body>
+<body id="top">
   <a class="skip-link fixed top-[-100px] left-5 z-50 rounded-md bg-patch px-5 py-3 font-medium text-ink focus:top-3" href="#main">Skip to content</a>
-  <header class="site-header sticky top-0 z-40 border-b border-line/70 bg-ink/70 backdrop-blur-xl" id="top">
+  <header class="site-header sticky top-0 z-40 border-b border-line/70 bg-ink/70 backdrop-blur-xl">
     <div class="mx-auto flex min-h-16 w-[min(1200px,calc(100%-40px))] items-center justify-between gap-6">
       <Brand href={home} />
       <nav class="main-nav hidden items-center gap-1 md:flex" aria-label="Main navigation">
