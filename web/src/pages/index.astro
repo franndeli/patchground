@@ -6,7 +6,7 @@ import Stats from "../components/Stats.astro";
 import HowItWorks from "../components/HowItWorks.astro";
 import Practice from "../components/Practice.astro";
 import Outcomes from "../components/Outcomes.astro";
-import Why from "../components/Why.astro";
+import Compare from "../components/Compare.astro";
 import Catalog from "../components/Catalog.astro";
 import Install from "../components/Install.astro";
 import OpenSource from "../components/OpenSource.astro";
@@ -16,6 +16,7 @@ const view = catalogView(await loadCatalog());
 const nav = [
   { href: "#how", label: "How it works" },
   { href: "#practice", label: "Practice" },
+  { href: "#compare", label: "Compare" },
   { href: "#challenges", label: "Challenges" },
   { href: "#install", label: "Install" },
   { href: "#publish", label: "Publish" },
@@ -32,7 +33,7 @@ const nav = [
   <HowItWorks />
   <Practice />
   <Outcomes />
-  <Why />
+  <Compare />
   <Catalog view={view} />
   <Install />
   <OpenSource />

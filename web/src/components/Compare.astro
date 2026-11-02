@@ -1,49 +1,80 @@
 ---
 import SectionHeading from "./SectionHeading.astro";
+import { CHECKED_ON, PLATFORMS, QUOTES, ROWS } from "../lib/compare.mjs";
 
-const contrast = [
-  ["A function signature and an input/output table.", "A codebase, a ticket from support, and a failing customer."],
-  ["Solve it in a browser box, without your tools.", "Your editor, your terminal, your AI agent—or none."],
-  ["Graded on output. A number tells you how you did.", "Verified by tests: what passed, whether your regression test really catches the bug, where your diff landed."],
-  ["Hosted sandboxes and platform AI behind a subscription.", "Runs on your machine in Docker. Patchground itself sends nothing anywhere."],
-  ["Closed problem bank.", "An open challenge format. Anyone can author one and prove it is sound."],
-];
 const pillars = [
   { title: "Local-first", text: "No account, server or subscription. Image builds may use the network; checks run on an internal Docker network with resource limits." },
   { title: "AI optional, never required", text: "Use Claude Code, Codex, a local model, or nothing—in your own editor. Patchground needs no API key and has no built-in AI; what your assistant sees is up to you." },
   { title: "Verified or it does not ship", text: "Every published challenge must prove, in its container, that the broken state fails and a reference fix passes—deterministically." },
 ];
 ---
-<section class="why-section relative overflow-hidden border-y border-line bg-panel/30 py-20 lg:py-28" id="why" aria-labelledby="why-heading">
+<section class="compare-section relative overflow-hidden border-y border-line bg-panel/30 py-20 lg:py-28" id="compare" aria-labelledby="compare-heading">
   <div class="dot-backdrop pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,#000,transparent_70%)]" aria-hidden="true"></div>
   <div class="relative mx-auto w-[min(1200px,calc(100%-40px))]">
-    <SectionHeading eyebrow="Why it exists" id="why-heading">
+    <SectionHeading eyebrow="Why it exists" id="compare-heading">
       <Fragment slot="title">The interview changed.<br>The practice did not.</Fragment>
-      Live debugging, feature work in an unfamiliar repo, PR review, directing an AI tool under scrutiny. There was no free, structured way to rehearse any of it.
+      The people who build the tools and run the hiring have been saying it for a decade: puzzles don't predict the job. Companies are now rebuilding their interviews around real codebases and real tools. The practice platforms mostly haven't.
     </SectionHeading>
 
-    <div class="contrast rise grid gap-4 md:grid-cols-2" role="table" aria-label="Puzzle practice compared with Patchground">
-      <div class="contents" role="rowgroup">
-        <div class="sr-only" role="row"><span role="columnheader">Puzzle platforms</span><span role="columnheader">Patchground</span></div>
+    <figure class="quotes">
+      <figcaption class="mb-4 font-mono text-2xs tracking-[0.14em] text-subtle uppercase">In their own words · public statements, linked to the source · not endorsements of Patchground</figcaption>
+      <ul class="columns-1 gap-4 md:columns-2 lg:columns-3">
+        {QUOTES.map((q) => (
+          <li class="quote rise mb-4 break-inside-avoid rounded-[20px] border border-white/5 bg-gradient-to-b from-panel-2 to-ink p-1">
+            <div class="rounded-[17px] border border-black/60">
+              <blockquote class="surface spotlight rounded-2xl p-6" cite={q.source} data-spotlight>
+                <span class="block font-serif text-4xl leading-none text-patch/70" aria-hidden="true">“</span>
+                <p class="mt-1 text-[15px] leading-relaxed text-fg">{q.text}</p>
+                <footer class="mt-5 flex items-end justify-between gap-4 border-t border-line pt-4">
+                  <span>
+                    <span class="block text-sm font-semibold tracking-tight">{q.who}</span>
+                    <span class="block text-xs leading-snug text-subtle">{q.role} · <span class="quote-date">{q.date}</span></span>
+                  </span>
+                  <a class="quote-source shrink-0 font-mono text-2xs text-patch-soft hover:underline" href={q.source}>{q.via} <span aria-hidden="true">↗</span></a>
+                </footer>
+              </blockquote>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </figure>
+
+    <div class="comparison rise mt-16">
+      <div class="mb-6 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+        <h3 class="text-2xl font-semibold tracking-tight">How Patchground compares</h3>
+        <p class="font-mono text-2xs text-subtle">From each platform’s public pages · checked {CHECKED_ON}<span class="sm:hidden" aria-hidden="true"> · swipe the table →</span></p>
       </div>
-      <div class="rounded-2xl border border-line bg-ink/40 p-6" aria-hidden="true">
-        <p class="font-mono text-2xs tracking-[0.18em] text-subtle uppercase">Puzzle platforms</p>
-        <ul class="mt-4 grid gap-3">
-          {contrast.map(([left]) => <li class="flex gap-3 text-sm leading-relaxed text-subtle"><span aria-hidden="true">–</span>{left}</li>)}
-        </ul>
+      <div class="surface overflow-x-auto">
+        <table class="compare-table w-full min-w-[980px] border-collapse text-left text-sm">
+          <caption class="sr-only">Patchground compared with LeetCode, HackerRank, CodeSignal, Exercism and CodeCrafters</caption>
+          <thead>
+            <tr class="border-b border-line">
+              <th scope="col" class="sticky left-0 z-10 w-28 bg-panel px-4 shadow-[1px_0_0_var(--color-line)] sm:w-40 sm:px-5 py-4 font-mono text-2xs font-normal tracking-wider text-subtle uppercase"><span class="sr-only">Aspect</span></th>
+              {PLATFORMS.map((p) => (
+                <th scope="col" class:list={["px-5 py-4 align-bottom font-semibold tracking-tight", p.ours ? "bg-patch/[0.07] text-patch-soft" : "text-fg"]}>{p.name}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-line">
+            {ROWS.map((row, r) => (
+              <tr>
+                <th scope="row" class="sticky left-0 z-10 bg-panel px-4 py-4 shadow-[1px_0_0_var(--color-line)] sm:px-5 align-top font-mono text-2xs font-normal tracking-wide text-subtle uppercase">{row}</th>
+                {PLATFORMS.map((p) => (
+                  <td class:list={["px-5 py-4 align-top leading-relaxed", p.ours ? "bg-patch/[0.07] text-fg" : "text-muted"]}>{p.cells[r]}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div class="surface beam rounded-2xl p-6" aria-hidden="true">
-        <p class="font-mono text-2xs tracking-[0.18em] text-patch-soft uppercase">Patchground</p>
-        <ul class="mt-4 grid gap-3">
-          {contrast.map(([, right]) => <li class="flex gap-3 text-sm leading-relaxed text-fg"><span class="text-patch" aria-hidden="true">✓</span>{right}</li>)}
-        </ul>
-      </div>
-      <div class="sr-only" role="rowgroup">
-        {contrast.map(([left, right]) => <div role="row"><span role="cell">{left}</span><span role="cell">{right}</span></div>)}
-      </div>
+      <p class="compare-sources mt-4 text-xs leading-relaxed text-subtle">
+        Sources: {PLATFORMS.filter((p) => p.sources.length).map((p, i) => (
+          <>{i > 0 && " · "}<span class="text-muted">{p.name}</span> {p.sources.map((s, k) => <>{k > 0 && ", "}<a class="link" href={s.url}>{s.label}</a></>)}</>
+        ))}. Products change; if a cell is out of date, <a class="link" href="https://github.com/franndeli/patchground/issues">open an issue</a>. Exercism and CodeCrafters are excellent—use them too. Patchground is narrower: unfamiliar codebases, your own tools, and outcomes your tests can back.
+      </p>
     </div>
 
-    <div class="pillars mt-4 grid gap-4 md:grid-cols-3">
+    <div class="pillars mt-16 grid gap-4 md:grid-cols-3">
       {pillars.map((pillar, i) => (
         <article class="surface spotlight rise p-6" data-spotlight>
           <span class="font-mono text-2xs text-patch-soft">0{i + 1}</span>

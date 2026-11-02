@@ -13,8 +13,9 @@ The public homepage presents the CLI as the product: open-source, local-first pr
 codebases, as the alternative to algorithm-puzzle platforms for practical interviews and day-to-day
 engineering. Its order is fixed: what it is and the verified-outcomes moment (hero, then a stats
 strip); how it helps you practise (how a session works; the skills you practise as a bento grid
-that also says who it is for; the annotated verified-outcomes report); why it exists (puzzles vs.
-real work, the three principles); the challenge catalog with its packs; installation; and last the
+that also says who it is for; the annotated verified-outcomes report); why it exists, as the
+Compare section (public statements from industry, a comparison with named practice platforms, the
+three principles); the challenge catalog with its packs; installation; and last the
 invitation to publish a pack or contribute. Authoring and community support the
 product; they never lead. The annotated report mirrors the sections of `patchground-report` and
 states facts, never judgements such as "weakened".
@@ -42,6 +43,13 @@ illustrations; examples
 drafted with an agent are marked AI-generated; the CLI has no built-in AI in this release, so the
 page never promises one; difficulty is "not yet human-rated". No fabricated
 users, metrics, testimonials or results.
+
+Quotes in the Compare section are public statements, never testimonials: verbatim, with an
+ellipsis marking every cut, attributed with the role the person held at the time, dated, linked to
+the source, and labelled as not endorsing Patchground. The platform comparison states only facts
+taken from each vendor's public pages, lists those pages, and carries the date they were checked;
+it names alternatives worth using rather than disparaging them. Quotes, rows and sources live in
+`src/lib/compare.mjs` so they are reviewed as data, and the tests require a source and date for each.
 
 ## Boundary
 

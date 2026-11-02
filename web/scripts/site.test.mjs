@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 import test, { after } from "node:test";
 import { httpsUrl, loadCatalog, readPublicMetadata } from "../src/lib/catalog.mjs";
+import { CHECKED_ON, PLATFORMS, QUOTES, ROWS } from "../src/lib/compare.mjs";
 
 const root = new URL("../../", import.meta.url);
 const web = new URL("../", import.meta.url);
@@ -92,7 +93,7 @@ test("the CLI and real-world practice lead; contribution comes last", () => {
   assert.ok(/pgnd start[\s\S]*pgnd check[\s\S]*pgnd submit/.test(hero), String(/pgnd start[\s\S]*pgnd check[\s\S]*pgnd submit/));
   assert.ok(/Verified outcomes/.test(hero), String(/Verified outcomes/));
   assert.ok(!/pgnd new|Create a challenge/.test(hero), String(/pgnd new|Create a challenge/));
-  const order = ["top", "how", "practice", "who", "outcomes", "why", "challenges", "packs", "install", "publish", "community"];
+  const order = ["top", "how", "practice", "who", "outcomes", "compare", "challenges", "packs", "install", "publish", "community"];
   for (let i = 1; i < order.length; i++) assert.ok(section(order[i - 1]) < section(order[i]), `${order[i - 1]} before ${order[i]}`);
 });
 
@@ -157,6 +158,31 @@ test("no-JavaScript page shows every challenge; enhancement controls start hidde
   assert.ok(/<label class="search[^"]*" hidden/.test(html), String(/<label class="search[^"]*" hidden/));
   assert.ok(/id="copy-command"[^>]+ hidden/.test(html), String(/id="copy-command"[^>]+ hidden/));
   for (const [card] of matches(html, /<article class="challenge-card[^>]+>/g)) assert.ok(!/\bhidden\b/.test(card), String(/\bhidden\b/));
+});
+
+test("quotes are attributed, dated, sourced and never presented as endorsements", () => {
+  assert.ok(QUOTES.length >= 5);
+  for (const q of QUOTES) {
+    assert.ok(httpsUrl(q.source), q.who);
+    assert.ok(q.who && q.role && /\d{4}/.test(q.date), q.who);
+    assert.ok(html.includes(`cite="${q.source}"`), q.who);
+  }
+  assert.ok(/not endorsements of Patchground/.test(text(html)));
+  // Cuts are marked: a quote that ends early or skips text uses an ellipsis.
+  assert.ok(QUOTES.find((q) => q.who === "Max Howell").text.endsWith("…"));
+});
+
+test("the comparison is complete, dated and sourced for every other platform", () => {
+  assert.equal(PLATFORMS.filter((p) => p.ours).length, 1);
+  for (const p of PLATFORMS) {
+    assert.equal(p.cells.length, ROWS.length, p.name);
+    if (!p.ours) {
+      assert.ok(p.sources.length > 0 && p.sources.every((s) => s.label && httpsUrl(s.url)), p.name);
+      for (const s of p.sources) assert.ok(html.includes(`href="${s.url}"`), s.url);
+    }
+  }
+  assert.ok(text(html).includes(`checked ${CHECKED_ON}`));
+  assert.ok(/<a [^>]*href="#compare"/.test(html), "Compare is in the navigation");
 });
 
 // --- Catalog data ----------------------------------------------------------------------------

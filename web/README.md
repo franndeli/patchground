@@ -24,9 +24,10 @@ npm --prefix web run preview    # serves the last `build` from web/dist/
 src/pages/index.astro      the homepage; composes the section components in order
 src/pages/status.astro     status.html, every source the registry has seen
 src/pages/catalog.json.ts  catalog.json, the stable machine-readable catalog
-src/components/            one component per section (Hero, HowItWorks, Practice, Outcomes, Why,
-                           Catalog, Install, OpenSource) plus small shared pieces
+src/components/            one component per section (Hero, HowItWorks, Practice, Outcomes,
+                           Compare, Catalog, Install, OpenSource) plus small shared pieces
 src/lib/catalog.mjs        reads challenge manifests and the registry at build time
+src/lib/compare.mjs        sourced public quotes and the dated platform comparison
 src/scripts/enhance.js     filters, search, pack sort, copy, pointer spotlight
 src/styles/global.css      theme tokens, shared surfaces and motion
 ```
@@ -56,7 +57,7 @@ To preview with other data, point the build at another repository root:
 
 ```sh
 npm --prefix web run check      # syntax check of the plain JS modules
-npm --prefix web test           # astro build, then 19 tests on dist/ and two fixture builds
+npm --prefix web test           # astro build, then 22 tests on dist/ and two fixture builds
 npm --prefix web run build      # web/dist/: index.html, status.html, catalog.json, favicon.svg, _astro/*
 ```
 
@@ -72,6 +73,9 @@ URLs; hashed assets live under `/_astro/`, so the site is served from a domain r
   `pgnd pack publish` / `pack add <name>` appear only as *planned*; the hero terminal and the
   annotated report are labelled *illustration*; AI-generated examples say so; *verified* means
   "passed `pgnd validate` in our CI". No fabricated users, metrics or testimonials.
+- Quotes are verbatim public statements with role, date and a source link, marked as not
+  endorsements; comparison cells come from the vendors' public pages and carry the check date.
+  Re-check `src/lib/compare.mjs` and bump `CHECKED_ON` when you touch it.
 - Nothing is loaded from another origin: fonts are bundled, no analytics, no storage. Everything
   works without JavaScript; JS only adds filtering, sorting, copy-to-clipboard and the spotlight.
 - Nothing renders below 11px (`text-2xs`). Motion is finite unless the pointer is on it, and off
