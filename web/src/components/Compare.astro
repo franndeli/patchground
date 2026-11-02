@@ -18,14 +18,14 @@ const pillars = [
 
     <figure class="quotes">
       <figcaption class="mb-4 font-mono text-2xs tracking-[0.14em] text-subtle uppercase">In their own words · public statements, linked to the source · not endorsements of Patchground</figcaption>
-      <ul class="columns-1 gap-4 md:columns-2 lg:columns-3">
+      <ul class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {QUOTES.map((q) => (
-          <li class="quote rise mb-4 break-inside-avoid rounded-[20px] border border-white/5 bg-gradient-to-b from-panel-2 to-ink p-1">
-            <div class="rounded-[17px] border border-black/60">
-              <blockquote class="surface spotlight rounded-2xl p-6" cite={q.source} data-spotlight>
+          <li class="quote rise flex rounded-[20px] border border-white/5 bg-gradient-to-b from-panel-2 to-ink p-1">
+            <div class="flex w-full rounded-[17px] border border-black/60">
+              <blockquote class="surface spotlight flex w-full flex-col rounded-2xl p-6" cite={q.source} data-spotlight>
                 <span class="block font-serif text-4xl leading-none text-patch/70" aria-hidden="true">“</span>
-                <p class="mt-1 text-[15px] leading-relaxed text-fg">{q.text}</p>
-                <footer class="mt-5 flex items-end justify-between gap-4 border-t border-line pt-4">
+                <p class="mt-1 mb-5 text-[15px] leading-relaxed text-fg">{q.text}</p>
+                <footer class="mt-auto flex items-end justify-between gap-4 border-t border-line pt-4">
                   <span>
                     <span class="block text-sm font-semibold tracking-tight">{q.who}</span>
                     <span class="block text-xs leading-snug text-subtle">{q.role} · <span class="quote-date">{q.date}</span></span>

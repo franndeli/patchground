@@ -172,6 +172,12 @@ test("quotes are attributed, dated, sourced and never presented as endorsements"
   assert.ok(QUOTES.find((q) => q.who === "Max Howell").text.endsWith("…"));
 });
 
+test("quote cards use a grid, not CSS multi-column", () => {
+  // Chrome repaints multi-column fragments black when a hover effect in another column composites.
+  const quotes = html.match(/<figure class="quotes[\s\S]*?<\/figure>/)[0];
+  assert.ok(!/\bcolumns-\d|break-inside/.test(quotes), "quotes are laid out with CSS columns");
+});
+
 test("the comparison is complete, dated and sourced for every other platform", () => {
   assert.equal(PLATFORMS.filter((p) => p.ours).length, 1);
   for (const p of PLATFORMS) {
