@@ -59,3 +59,7 @@ site/
 examples/**/verification.json
 tests/fixtures/**/verification.json
 .wrangler/
+
+# Website (Astro)
+node_modules/
+.astro/

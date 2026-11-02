@@ -1,0 +1,70 @@
+---
+import SectionHeading from "./SectionHeading.astro";
+
+// Rows mirror the sections of patchground-report and state facts, never judgements.
+const rows = [
+  { dt: "Checks", dd: '<span class="text-pass">14 / 14 passed</span>', q: "Does it work?", a: "Visible and hidden checks run fresh in Docker on your final code." },
+  { dt: "Regression test", dd: '<span class="text-fail">fails before</span> · <span class="text-pass">passes after</span>', q: "Did you prove it?", a: "Your new test is run on the original code and on yours. It only counts if it catches the bug." },
+  { dt: "Test structure", dd: "0 tests removed · 0 assertions dropped", q: "Did you cut corners?", a: "It flags deleted test files or functions and fewer assertions, so a fix can't pass by weakening tests." },
+  { dt: "Diff scope", dd: '2 files inside <code class="text-patch-soft">src/payments/</code>', q: "Did you stay focused?", a: "It lists every file you changed and whether each one is in the area the ticket expects." },
+  { dt: "Time & effort", dd: "38 of 45 min · 6 checks · 1 hint", q: "How did it go?", a: "Elapsed time against the timebox, plus how many practice checks and hints you used." },
+];
+---
+<section class="outcomes-section relative mx-auto w-[min(1200px,calc(100%-40px))] py-20 lg:py-28" id="outcomes" aria-labelledby="outcomes-heading">
+  <SectionHeading eyebrow="What you walk away with" id="outcomes-heading">
+    <Fragment slot="title">Facts about your work,<br>not a score.</Fragment>
+    When you submit, Patchground freezes your workspace and computes a report from test runs alone. When it cannot prove something, it says so instead of guessing.
+  </SectionHeading>
+
+  <div class="outcomes grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+    <!-- Cult UI texture card: nested hairline borders around the report. -->
+    <div class="rise rounded-[22px] border border-white/5 bg-gradient-to-b from-panel-2 to-ink p-1 lg:sticky lg:top-24">
+      <div class="rounded-[19px] border border-black/60">
+        <div class="report-sheet rounded-[18px] border border-white/[0.06] bg-panel/90 p-6" aria-label="Example verified-outcomes report (illustration)">
+          <header class="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-4">
+            <strong class="text-lg tracking-tight">Verified outcomes</strong>
+            <span class="font-mono text-2xs text-subtle">duplicate-charges-on-retry · illustration</span>
+          </header>
+          <dl class="mt-2 grid font-mono text-xs">
+            {rows.map((row, i) => (
+              <div class="report-row grid grid-cols-[28px_130px_1fr] items-center gap-3 rounded-lg px-2 py-3.5 transition-colors" data-m={i + 1}>
+                <span class="marker grid size-6 place-items-center rounded-full border border-line-strong text-2xs text-muted transition-colors" aria-hidden="true">{i + 1}</span>
+                <dt class="text-subtle">{row.dt}</dt>
+                <dd class="text-right text-fg" set:html={row.dd} />
+              </div>
+            ))}
+          </dl>
+          <footer class="mt-3 border-t border-line pt-4 text-xs text-subtle">No overall score. Missing evidence is reported as "not established".</footer>
+        </div>
+      </div>
+    </div>
+
+    <ol class="callouts grid gap-2">
+      {rows.map((row, i) => (
+        <li class="callout rise group flex gap-4 rounded-xl border border-transparent p-4 transition hover:border-line hover:bg-panel/60" data-m={i + 1}>
+          <span class="marker grid size-7 shrink-0 place-items-center rounded-full border border-line-strong font-mono text-xs text-muted transition group-hover:border-patch group-hover:text-patch" aria-hidden="true">{i + 1}</span>
+          <div><h3 class="font-semibold tracking-tight">{row.q}</h3><p class="mt-1 text-sm leading-relaxed text-muted">{row.a}</p></div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  /* Hovering a callout lights up its row in the report (CSS only). */
+  .outcomes:has(.callout[data-m="1"]:hover) .report-row[data-m="1"],
+  .outcomes:has(.callout[data-m="2"]:hover) .report-row[data-m="2"],
+  .outcomes:has(.callout[data-m="3"]:hover) .report-row[data-m="3"],
+  .outcomes:has(.callout[data-m="4"]:hover) .report-row[data-m="4"],
+  .outcomes:has(.callout[data-m="5"]:hover) .report-row[data-m="5"] {
+    background: rgb(255 120 76 / 0.07);
+  }
+  .outcomes:has(.callout[data-m="1"]:hover) .report-row[data-m="1"] .marker,
+  .outcomes:has(.callout[data-m="2"]:hover) .report-row[data-m="2"] .marker,
+  .outcomes:has(.callout[data-m="3"]:hover) .report-row[data-m="3"] .marker,
+  .outcomes:has(.callout[data-m="4"]:hover) .report-row[data-m="4"] .marker,
+  .outcomes:has(.callout[data-m="5"]:hover) .report-row[data-m="5"] .marker {
+    border-color: var(--color-patch);
+    color: var(--color-patch);
+  }
+</style>

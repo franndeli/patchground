@@ -1,0 +1,56 @@
+---
+import SectionHeading from "./SectionHeading.astro";
+
+const contrast = [
+  ["A function signature and an input/output table.", "A codebase, a ticket from support, and a failing customer."],
+  ["Solve it in a browser box, without your tools.", "Your editor, your terminal, your AI agent—or none."],
+  ["Graded on output. A number tells you how you did.", "Verified by tests: what passed, whether your regression test really catches the bug, where your diff landed."],
+  ["Hosted sandboxes and platform AI behind a subscription.", "Runs on your machine in Docker. Patchground itself sends nothing anywhere."],
+  ["Closed problem bank.", "An open challenge format. Anyone can author one and prove it is sound."],
+];
+const pillars = [
+  { title: "Local-first", text: "No account, server or subscription. Image builds may use the network; checks run on an internal Docker network with resource limits." },
+  { title: "AI optional, never required", text: "Use Claude Code, Codex, a local model, or nothing—in your own editor. Patchground needs no API key and has no built-in AI; what your assistant sees is up to you." },
+  { title: "Verified or it does not ship", text: "Every published challenge must prove, in its container, that the broken state fails and a reference fix passes—deterministically." },
+];
+---
+<section class="why-section relative overflow-hidden border-y border-line bg-panel/30 py-20 lg:py-28" id="why" aria-labelledby="why-heading">
+  <div class="dot-backdrop pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,#000,transparent_70%)]" aria-hidden="true"></div>
+  <div class="relative mx-auto w-[min(1200px,calc(100%-40px))]">
+    <SectionHeading eyebrow="Why it exists" id="why-heading">
+      <Fragment slot="title">The interview changed.<br>The practice did not.</Fragment>
+      Live debugging, feature work in an unfamiliar repo, PR review, directing an AI tool under scrutiny. There was no free, structured way to rehearse any of it.
+    </SectionHeading>
+
+    <div class="contrast rise grid gap-4 md:grid-cols-2" role="table" aria-label="Puzzle practice compared with Patchground">
+      <div class="contents" role="rowgroup">
+        <div class="sr-only" role="row"><span role="columnheader">Puzzle platforms</span><span role="columnheader">Patchground</span></div>
+      </div>
+      <div class="rounded-2xl border border-line bg-ink/40 p-6" aria-hidden="true">
+        <p class="font-mono text-2xs tracking-[0.18em] text-subtle uppercase">Puzzle platforms</p>
+        <ul class="mt-4 grid gap-3">
+          {contrast.map(([left]) => <li class="flex gap-3 text-sm leading-relaxed text-subtle"><span aria-hidden="true">–</span>{left}</li>)}
+        </ul>
+      </div>
+      <div class="surface beam rounded-2xl p-6" aria-hidden="true">
+        <p class="font-mono text-2xs tracking-[0.18em] text-patch-soft uppercase">Patchground</p>
+        <ul class="mt-4 grid gap-3">
+          {contrast.map(([, right]) => <li class="flex gap-3 text-sm leading-relaxed text-fg"><span class="text-patch" aria-hidden="true">✓</span>{right}</li>)}
+        </ul>
+      </div>
+      <div class="sr-only" role="rowgroup">
+        {contrast.map(([left, right]) => <div role="row"><span role="cell">{left}</span><span role="cell">{right}</span></div>)}
+      </div>
+    </div>
+
+    <div class="pillars mt-4 grid gap-4 md:grid-cols-3">
+      {pillars.map((pillar, i) => (
+        <article class="surface spotlight rise p-6" data-spotlight>
+          <span class="font-mono text-2xs text-patch-soft">0{i + 1}</span>
+          <h3 class="mt-3 text-lg font-semibold tracking-tight">{pillar.title}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted">{pillar.text}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

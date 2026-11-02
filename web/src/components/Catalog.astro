@@ -1,0 +1,93 @@
+---
+import SectionHeading from "./SectionHeading.astro";
+import { REPO, day, pad, title } from "../lib/catalog.mjs";
+
+interface Props { view: ReturnType<typeof import("../lib/catalog.mjs").catalogView> }
+const { view } = Astro.props;
+const tile: Record<string, string> = { debug: "from-fail/25 text-fail", feature: "from-pass/25 text-pass", refactor: "from-sky-400/25 text-sky-300" };
+---
+<section class="catalog-section mx-auto w-[min(1200px,calc(100%-40px))] py-20 lg:py-28" id="challenges" aria-labelledby="challenges-heading">
+  <SectionHeading eyebrow="Challenges" id="challenges-heading">
+    <Fragment slot="title">Small collection.<br>Real bugs.</Fragment>
+    Each one is a complete repository with a ticket, visible tests you can extend, hidden checks, and a reference fix—validated in Docker before it is published. A handful of excellent challenges beat fifty generated ones.
+  </SectionHeading>
+
+  <div class="catalog-toolbar mb-4 flex flex-wrap items-center gap-3">
+    <div class="filters flex flex-wrap gap-1.5 rounded-xl border border-line bg-panel/60 p-1" role="group" aria-label="Filter challenges" hidden>
+      {view.filters.map((f, i) => (
+        <button type="button" class="filter rounded-lg px-3 py-1.5 text-xs text-muted transition hover:text-fg aria-pressed:bg-panel-2 aria-pressed:text-fg aria-pressed:shadow-[inset_0_0_0_1px_var(--color-line-strong)]" data-filter={f.id} aria-pressed={i === 0 ? "true" : "false"}>{f.label} <span class="ml-1 font-mono text-2xs text-subtle">{pad(f.count)}</span></button>
+      ))}
+    </div>
+    <label class="search relative min-w-56 flex-1 sm:max-w-72" hidden>
+      <span class="sr-only">Search challenges by title, tag or pack</span>
+      <svg class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-subtle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="catalog-search" placeholder="Search title, tag, pack…" autocomplete="off" class="h-10 w-full rounded-xl border border-line bg-panel/60 pr-3 pl-9 text-sm text-fg placeholder:text-subtle focus:border-line-strong focus:outline-none">
+    </label>
+    <p class="catalog-count ml-auto font-mono text-xs text-subtle" role="status" aria-live="polite" aria-atomic="true" id="catalog-count" data-summary={view.summary}>{view.summary}</p>
+  </div>
+
+  <div class="challenge-list surface divide-y divide-line">
+    {view.challenges.map((e) => (
+      <article class="challenge-card group relative grid gap-4 p-5 transition-colors hover:bg-panel-2/70 sm:grid-cols-[64px_1fr_auto] sm:items-center sm:gap-6" data-facets={e.facets} data-tags={e.tags.join(" ")} data-search={e.search} data-challenge={e.id} data-pack={e.pack}>
+        <span class:list={["challenge-tile grid size-16 place-content-center rounded-xl border border-line bg-gradient-to-br to-transparent text-center", tile[e.type] ?? "from-patch/25 text-patch-soft"]} aria-hidden="true">
+          <span class="font-mono text-sm font-semibold">{e.langTag}</span>
+          <span class="text-2xs text-muted">{title(e.type)}</span>
+        </span>
+        <div class="challenge-summary min-w-0">
+          <h3 class="font-semibold tracking-tight"><a class="after:absolute after:inset-0 hover:text-patch-soft" href={e.ticket}>{e.title}<span class="sr-only"> — read the ticket</span></a></h3>
+          <p class="mt-1 text-sm leading-relaxed text-muted">{e.summary}</p>
+          <p class="challenge-topic mt-3 flex flex-wrap items-center gap-2 text-xs text-subtle">
+            <span class="pack-chip rounded-md border border-line px-2 py-0.5 font-mono text-2xs">{e.pack}</span>
+            {e.packInfo.kind === "built-in"
+              ? <span class="badge-builtin">built-in</span>
+              : <span class="badge-verified" title="Passed pgnd validate in Patchground CI">verified · {day(e.packInfo.verified_at)}</span>}
+            <span>{e.topic}</span>
+          </p>
+        </div>
+        <div class="flex items-center gap-5 sm:flex-col sm:items-end sm:gap-2">
+          <span class="difficulty flex items-center gap-2 text-xs text-muted">
+            <span class="difficulty-bar flex gap-0.5" aria-hidden="true">{[0, 1, 2].map((k) => <i class:list={["block h-3 w-1.5 rounded-sm", k <= e.level ? "bg-patch" : "bg-line-strong"]}></i>)}</span>
+            {title(e.difficulty)}{e.provenance === "generated" && " · AI-generated"}
+          </span>
+          <span class="timebox font-mono text-xs text-subtle">{e.timebox_minutes} MIN <span class="ml-1 inline-block transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true">↗</span></span>
+        </div>
+      </article>
+    ))}
+    <p class="catalog-empty p-8 text-center text-sm text-muted" id="catalog-empty" hidden>No challenge matches. Clear the search or pick another filter.</p>
+  </div>
+
+  <p class="catalog-note mt-5 max-w-4xl text-xs leading-relaxed text-subtle">Difficulty and realism are not yet human-rated. Challenges marked AI-generated were drafted with a coding agent and validated like any other. <strong class="text-muted">built-in</strong> means shipped with the CLI and validated in this repository's CI; <strong class="text-muted">verified</strong> means a community pack whose every challenge passed <code class="code-chip">pgnd validate</code> in Patchground's CI on the date shown. Installing packs by name from the CLI is planned; today the CLI runs challenges from a local path or a pack URL. <a class="link text-xs" href={`${REPO}/blob/main/docs/first-session.md`}>How to run one <span aria-hidden="true">↗</span></a> · <a class="link text-xs" href="./status.html">Registry status</a></p>
+
+  <div class="packs-section mt-20" id="packs" aria-labelledby="packs-heading">
+    <div class="mb-6 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+      <div>
+        <h3 id="packs-heading" class="text-2xl font-semibold tracking-tight">Packs: collections, kept by their authors.</h3>
+        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted">A pack is a git repository with a <code class="code-chip">pack.yaml</code> and one folder per challenge. It stays in its author's repo; Patchground only indexes it after re-validating every challenge in its own CI. Stars and forks come from the host.</p>
+      </div>
+      <div class="packs-toolbar flex items-center gap-4">
+        <p class="catalog-count font-mono text-xs text-subtle">{view.packSummary}</p>
+        <label class="sort flex items-center gap-2 text-xs text-subtle" hidden><span>Sort by</span><select id="pack-sort" class="rounded-lg border border-line bg-panel px-2 py-1.5 text-xs text-fg"><option value="stars">Most starred</option><option value="verified">Recently verified</option><option value="newest">Newest</option><option value="count">Most challenges</option></select></label>
+      </div>
+    </div>
+    <div class="pack-grid grid gap-4 md:grid-cols-2" id="pack-grid">
+      {view.packs.map((p) => (
+        <article class="pack-card surface spotlight p-5" data-spotlight data-kind={p.kind} data-stars={p.stars ?? -1} data-verified={p.verified_at || ""} data-first-seen={p.first_seen || ""} data-count={p.challenges.length}>
+          <div class="pack-head flex items-center justify-between gap-3">
+            <h4 class="font-mono text-sm font-semibold"><a class="hover:text-patch-soft" href={p.homepage}>{p.name}<span aria-hidden="true"> ↗</span></a></h4>
+            {p.kind === "built-in"
+              ? <span class="badge-builtin">built-in</span>
+              : <span class="badge-verified" title="Passed pgnd validate in Patchground CI">verified · {day(p.verified_at)}</span>}
+          </div>
+          <p class="mt-2 text-sm leading-relaxed text-muted">{p.description}</p>
+          <p class="pack-meta mt-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-2xs text-subtle">
+            <span>{p.countLabel}</span><span>{p.types}</span>
+            {p.kind === "community" ? <><span>★ {p.stars}</span><span>⑂ {p.forks}</span><span>verified {day(p.verified_at)}</span></> : <span>validated in CI on every push</span>}
+          </p>
+        </article>
+      ))}
+      {!view.hasCommunity && (
+        <p class="packs-empty grid place-items-center rounded-2xl border border-dashed border-line-strong p-6 text-center text-sm text-subtle">No community pack has been verified yet. Publish yours and it will appear here after the next registry run.</p>
+      )}
+    </div>
+  </div>
+</section>

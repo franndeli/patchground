@@ -1,0 +1,77 @@
+---
+// The hero is a layered scene: the fix in an editor behind the session terminal, two floating
+// facts, over a grid, a glow and guide lines with a few falling lights. All CSS/inline SVG.
+const guides = [12, 31, 50, 69, 88];
+const t = (s: number) => `--d:${s}s`;
+---
+<section class="hero relative isolate overflow-hidden" aria-labelledby="hero-heading">
+  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+    <div class="grid-backdrop absolute inset-0"></div>
+    <div class="absolute top-[-280px] left-1/2 h-[620px] w-[1100px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(255_120_76/0.20),transparent)]"></div>
+    {guides.map((left, i) => (
+      <div class="absolute top-0 bottom-0 hidden w-px overflow-hidden bg-gradient-to-b from-line/0 via-line/60 to-line/0 lg:block" style={`left:${left}%`}>
+        <span class="guide-light absolute top-0 left-0 block h-40 w-px bg-gradient-to-b from-transparent via-patch to-transparent opacity-0" style={`--d:${1.2 + i * 1.7}s`}></span>
+      </div>
+    ))}
+  </div>
+
+  <div class="mx-auto grid w-[min(1200px,calc(100%-40px))] items-center gap-14 pt-16 pb-20 lg:grid-cols-[1fr_1fr] lg:pt-24">
+    <div class="hero-copy">
+      <p class="eyebrow hero-rise" style={t(0)}><span class="relative flex size-2"><span class="absolute inline-flex size-full rounded-full bg-patch opacity-60 motion-safe:animate-ping-3"></span><span class="relative inline-flex size-2 rounded-full bg-patch"></span></span>Open-source engineering practice</p>
+      <h1 id="hero-heading" class="hero-rise mt-7 text-[clamp(42px,5.4vw,72px)] leading-[1] font-semibold tracking-[-0.05em]" style={t(0.08)}>
+        Real code.<br>Real problems.<br><span class="bg-gradient-to-r from-[#ffb49b] via-patch to-[#ff5a2a] bg-clip-text text-transparent">Practice beyond<br>the puzzle.</span>
+      </h1>
+      <p class="hero-description hero-rise mt-7 max-w-[560px] text-[17px] leading-relaxed text-muted" style={t(0.16)}>
+        Interviews and real jobs are not about inverting binary trees. They are about stepping into code you did not write, understanding what is broken and fixing it so it stays fixed. Patchground gives you a real repository, a real ticket, your own editor and AI, and checks that run in Docker.
+      </p>
+      <div class="hero-actions hero-rise mt-9 flex flex-wrap items-center gap-3" style={t(0.24)}>
+        <a class="btn-primary beam rounded-lg" href="#install">Get Patchground <span aria-hidden="true">↓</span></a>
+        <a class="btn-ghost" href="#challenges">Browse challenges <span aria-hidden="true">→</span></a>
+      </div>
+      <ul class="hero-facts hero-rise mt-9 flex flex-wrap gap-2" aria-label="Key facts" style={t(0.32)}>
+        {["Local-first, no account", "Bring your own editor and AI", "Verified by tests, not scored", "Apache-2.0"].map((fact) => (
+          <li class="flex items-center gap-1.5 rounded-full border border-line bg-panel/60 px-3 py-1 text-xs text-muted"><span class="text-patch" aria-hidden="true">✓</span>{fact}</li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="hero-scene hero-rise relative min-w-0 lg:pl-6" style={t(0.2)}>
+      <div class="editor-demo surface absolute -top-10 -left-4 hidden w-[78%] -rotate-[1.5deg] opacity-80 sm:block" aria-hidden="true">
+        <div class="window-bar"><span class="window-dots"><i></i><i></i><i></i></span><span>src/payments/charge.py</span><span class="window-tag">your editor</span></div>
+        <ol class="diff-lines overflow-hidden py-3 font-mono whitespace-pre text-xs leading-6 text-muted">
+          <li class="flex gap-4 px-4"><span class="w-6 text-right text-subtle/70">41</span>def charge(order, provider):</li>
+          <li class="flex gap-4 px-4"><span class="w-6 text-right text-subtle/70">42</span>    attempt = provider.new_attempt()</li>
+          <li class="flex gap-4 bg-fail/10 px-4 text-fail"><span class="w-6 text-right opacity-60">43</span>-   key = attempt.id</li>
+          <li class="flex gap-4 bg-pass/10 px-4 text-pass"><span class="w-6 text-right opacity-60">43</span>+   key = order.payment_id</li>
+          <li class="flex gap-4 px-4"><span class="w-6 text-right text-subtle/70">44</span>    return provider.charge(key, …)</li>
+        </ol>
+      </div>
+
+      <div class="terminal-demo surface relative mt-0 sm:mt-40 sm:ml-[16%]" aria-label="Illustration of one Patchground practice session">
+        <div class="window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>one practice session</span><span class="window-tag">illustration</span></div>
+        <ol class="terminal-lines grid gap-1 p-5 font-mono text-xs leading-relaxed text-muted">
+          <li class="cmd text-fg" style={t(0.5)}><span class="prompt mr-2 text-patch" aria-hidden="true">$</span>pgnd start duplicate-charges-on-retry</li>
+          <li class="out pl-4" style={t(1.1)}>workspace ready · ticket: <span class="text-fg">Duplicate charges after a payment retry</span> · 45 min</li>
+          <li class="cmd mt-2 text-fg" style={t(1.8)}><span class="prompt mr-2 text-patch" aria-hidden="true">$</span>pgnd check</li>
+          <li class="out pl-4" style={t(2.3)}><span class="text-fail">✗</span> 12 passed, <span class="text-fail">2 failed</span> — hidden checks still red</li>
+          <li class="cmd mt-2 text-fg" style={t(3.1)}><span class="prompt mr-2 text-patch" aria-hidden="true">$</span>pgnd check</li>
+          <li class="out pl-4" style={t(3.6)}><span class="text-pass">✓</span> 14 passed, 0 failed</li>
+          <li class="cmd mt-2 text-fg" style={t(4.3)}><span class="prompt mr-2 text-patch" aria-hidden="true">$</span>pgnd submit</li>
+          <li class="report mt-2 rounded-xl border border-patch/30 bg-patch/[0.04] p-4" style={t(5)}>
+            <span class="report-title text-2xs tracking-[0.18em] text-patch-soft uppercase">Verified outcomes</span>
+            <dl class="mt-3 grid gap-2">
+              <div class="flex justify-between gap-4 border-t border-line pt-2"><dt>Checks</dt><dd class="text-pass">14 / 14</dd></div>
+              <div class="flex justify-between gap-4 border-t border-line pt-2"><dt>Regression test</dt><dd class="text-fg">fails before · passes after</dd></div>
+              <div class="flex justify-between gap-4 border-t border-line pt-2"><dt>Diff scope</dt><dd class="text-fg">inside <span class="text-patch-soft">src/payments/</span></dd></div>
+              <div class="flex justify-between gap-4 border-t border-line pt-2"><dt>Time</dt><dd class="text-fg">38 of 45 min</dd></div>
+            </dl>
+            <span class="report-foot mt-3 block text-subtle">No overall score. Facts your tests can back.</span>
+          </li>
+        </ol>
+      </div>
+
+      <div class="scene-chip absolute top-14 -right-2 hidden items-center gap-2 rounded-full border border-line-strong bg-panel/90 px-3 py-1.5 font-mono text-2xs text-muted shadow-xl backdrop-blur sm:flex" aria-hidden="true"><span class="size-1.5 rounded-full bg-pass"></span>checks run in Docker</div>
+      <div class="scene-chip absolute -bottom-4 left-0 hidden items-center gap-2 rounded-full border border-line-strong bg-panel/90 px-3 py-1.5 font-mono text-2xs text-muted shadow-xl backdrop-blur sm:flex" aria-hidden="true"><span class="size-1.5 rounded-full bg-patch"></span>your Git state untouched</div>
+    </div>
+  </div>
+</section>

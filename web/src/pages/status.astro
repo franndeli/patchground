@@ -1,0 +1,44 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { REPO, day, httpsUrl, loadCatalog, loadStatus } from "../lib/catalog.mjs";
+
+const { packs } = await loadCatalog();
+const { seen, generated } = await loadStatus();
+const verified = packs.filter((p) => p.kind === "community").length;
+const tone: Record<string, string> = { verified: "text-pass", failed: "text-fail", error: "text-patch-soft", skipped: "text-subtle" };
+---
+<Layout
+  title="Registry status — Patchground"
+  noindex
+  home="./"
+  nav={[{ href: "./#challenges", label: "Challenges" }, { href: "./#publish", label: "Publish" }, { href: REPO, label: "GitHub ↗" }]}
+>
+  <div class="status-page mx-auto w-[min(1200px,calc(100%-40px))] py-20">
+    <p class="eyebrow">Registry status</p>
+    <h1 class="status-title mt-6 text-[clamp(32px,4.2vw,52px)] leading-[1.05] font-semibold tracking-[-0.035em]">Every pack the registry has seen</h1>
+    <p class="status-intro mt-6 max-w-3xl text-[15px] leading-relaxed text-muted">The registry looks for public repositories tagged <code class="code-chip">patchground-pack</code> (and the URLs in <code class="code-chip">registry/sources.yaml</code>), clones each one and runs <code class="code-chip">pgnd validate</code> on every challenge in Patchground's CI. Verified packs are listed in the catalog; everything else is listed here with the step that failed, using the same step names the CLI prints. Last run: <strong class="text-fg">{generated}</strong>. Verified packs: <strong class="text-fg">{verified}</strong>.</p>
+
+    <div class="surface mt-10 overflow-x-auto">
+      <table class="status-table w-full min-w-[720px] text-left text-sm">
+        <thead class="border-b border-line font-mono text-2xs tracking-wider text-subtle uppercase">
+          <tr><th class="px-5 py-3 font-normal">Source</th><th class="px-5 py-3 font-normal">Result</th><th class="px-5 py-3 font-normal">Failed step</th><th class="px-5 py-3 font-normal">Detail</th><th class="px-5 py-3 font-normal">Checked</th></tr>
+        </thead>
+        <tbody class="divide-y divide-line text-muted">
+          {seen.length === 0 && (
+            <tr><td colspan="5" class="px-5 py-6 text-subtle">Nothing seen yet. Tag your repository with <code class="code-chip">patchground-pack</code> and check back after the next run.</td></tr>
+          )}
+          {seen.map((s) => (
+            <tr class={`status-${s.result}`}>
+              <td class="px-5 py-4">{httpsUrl(s.source) ? <a class="link" href={s.source}>{s.source.replace(/^https:\/\//, "")}</a> : String(s.source)}{s.name && <><br><span class="text-xs text-subtle">{s.name}</span></>}</td>
+              <td class:list={["px-5 py-4 font-mono text-xs", tone[s.result] ?? "text-muted"]}>{s.result}</td>
+              <td class="px-5 py-4">{s.failed_step ? <code class="code-chip">{s.failed_step}</code> : "—"}{s.failing_challenge && <><br><span class="text-xs text-subtle">{s.failing_challenge}</span></>}</td>
+              <td class="px-5 py-4">{s.detail || ""}</td>
+              <td class="px-5 py-4 font-mono text-xs">{day(s.checked_at)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="status-foot mt-6 max-w-3xl text-xs leading-relaxed text-subtle">Results: <strong class="text-muted">verified</strong> passed everything · <strong class="text-muted">failed</strong> did not pass a policy or validation step · <strong class="text-muted">error</strong> the registry could not finish (clone or infrastructure; the last verified version, if any, stays listed) · <strong class="text-muted">skipped</strong> unchanged since its last verification or deferred to the next run.</p>
+  </div>
+</Layout>

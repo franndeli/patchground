@@ -45,7 +45,7 @@ MAX_BYTES = 100 * 1024 * 1024
 MAX_FILES = 10_000
 MAX_PACKS_PER_HOST_PAGE = 100
 
-# The only challenge fields that ever leave the pack. Mirrors web/scripts/catalog.mjs.
+# The only challenge fields that ever leave the pack. Mirrors web/src/lib/catalog.mjs.
 PUBLIC_CHALLENGE_FIELDS = (
     "id",
     "title",

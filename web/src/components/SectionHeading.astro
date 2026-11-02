@@ -1,0 +1,11 @@
+---
+interface Props { eyebrow: string; id: string; center?: boolean }
+const { eyebrow, id, center = false } = Astro.props;
+---
+<div class:list={["section-heading rise mb-12 grid gap-6", center ? "justify-items-center text-center" : "md:grid-cols-[1.15fr_0.85fr] md:items-end"]}>
+  <div class:list={["grid gap-5", center && "justify-items-center"]}>
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 id={id} class="max-w-3xl text-[clamp(32px,4.2vw,52px)] leading-[1.05] font-semibold tracking-[-0.035em] text-balance"><slot name="title" /></h2>
+  </div>
+  <div class:list={["max-w-md text-[15px] leading-relaxed text-muted", center && "mx-auto"]}><slot /></div>
+</div>

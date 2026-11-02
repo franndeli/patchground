@@ -1,0 +1,59 @@
+---
+import SectionHeading from "./SectionHeading.astro";
+import GitHubIcon from "./GitHubIcon.astro";
+import { REPO } from "../lib/catalog.mjs";
+
+const packYaml = `spec_version: "0.1"
+name: my-pack            # lowercase, hyphens; first publisher keeps the name
+version: 0.1.0
+description: Bugs from a payments team
+challenges: [my-bug]`;
+---
+<section class="publish-section mx-auto w-[min(1200px,calc(100%-40px))] py-20 lg:py-28" id="publish" aria-labelledby="publish-heading">
+  <SectionHeading eyebrow="Publish your pack" id="publish-heading">
+    <Fragment slot="title">Know a bug worth learning from? Publish it. No pull request.</Fragment>
+    Your challenges live in your own repository. Patchground discovers it, re-runs its validator on every challenge, and lists what passes. The validator is the gate: nothing else is reviewed by hand, and nothing that fails is listed.
+  </SectionHeading>
+
+  <ol class="publish-steps relative grid gap-4 md:grid-cols-2">
+    <li class="surface spotlight rise p-6" data-spotlight>
+      <span class="step-number font-mono text-2xs text-patch-soft">01</span>
+      <h3 class="mt-3 text-lg font-semibold tracking-tight">Author and validate locally</h3>
+      <p class="mt-2 text-sm leading-relaxed text-muted"><code class="code-chip">pgnd new my-bug</code> scaffolds a runnable challenge; <code class="code-chip">pgnd validate my-bug</code> proves the broken state fails, the reference passes, and the result is stable. Fix every step until it reads <em>valid</em>.</p>
+    </li>
+    <li class="surface spotlight rise p-6 md:row-span-2" data-spotlight>
+      <span class="step-number font-mono text-2xs text-patch-soft">02</span>
+      <h3 class="mt-3 text-lg font-semibold tracking-tight">Make it a pack</h3>
+      <p class="mt-2 text-sm leading-relaxed text-muted">Put each challenge folder at the root of a public repository next to a <code class="code-chip">pack.yaml</code> that names it. Declare a <code class="code-chip">content_license</code> and <code class="code-chip">provenance</code> in every <code class="code-chip">challenge.yaml</code>; keep <code class="code-chip">services: []</code>.</p>
+      <pre class="mt-5 overflow-x-auto rounded-xl border border-line bg-ink/70 p-4 font-mono text-xs leading-6 text-muted"><code>{packYaml}</code></pre>
+    </li>
+    <li class="surface spotlight rise p-6" data-spotlight>
+      <span class="step-number font-mono text-2xs text-patch-soft">03</span>
+      <h3 class="mt-3 text-lg font-semibold tracking-tight">Tag the repository</h3>
+      <p class="mt-2 text-sm leading-relaxed text-muted">Add the GitHub topic <code class="code-chip">patchground-pack</code> to the repository. On other hosts, add your <code class="code-chip">https://</code> clone URL to <a class="link text-sm" href={`${REPO}/blob/main/registry/sources.yaml`}>registry/sources.yaml</a>. That is the whole submission.</p>
+    </li>
+    <li class="surface spotlight rise p-6 md:col-span-2" data-spotlight>
+      <span class="step-number font-mono text-2xs text-patch-soft">04</span>
+      <h3 class="mt-3 text-lg font-semibold tracking-tight">Appear</h3>
+      <p class="mt-2 max-w-3xl text-sm leading-relaxed text-muted">Every few hours the registry clones tagged repositories, runs the policy checks and <code class="code-chip">pgnd validate</code> on each challenge in Patchground's CI, and publishes the result. Passing packs show up in the catalog with a <strong class="text-fg">verified</strong> badge; anything else is explained on the <a class="link text-sm" href="./status.html">status page</a> with the failing step.</p>
+    </li>
+  </ol>
+  <p class="publish-note mt-5 max-w-4xl text-xs leading-relaxed text-subtle">Planned: <code class="code-chip">pgnd pack publish</code> to validate and tag in one command, and <code class="code-chip">pgnd pack add &lt;name&gt;</code> to install by name from this index. Until then the steps above are the whole process. The registry never lists hidden checks, hints or reference solutions; only the public metadata you see in the catalog. <a class="link text-xs" href={`${REPO}/blob/main/docs/authoring.md`}>Authoring guide <span aria-hidden="true">↗</span></a></p>
+</section>
+
+<section class="community-section mx-auto w-[min(1200px,calc(100%-40px))]" id="community" aria-labelledby="community-heading">
+  <div class="surface beam rise relative overflow-hidden rounded-3xl p-10 md:p-14">
+    <div class="grid-backdrop pointer-events-none absolute inset-0 opacity-70 [mask-image:radial-gradient(ellipse_at_right,#000,transparent_70%)]" aria-hidden="true"></div>
+    <div class="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+      <div>
+        <p class="eyebrow">Built in the open</p>
+        <h2 id="community-heading" class="mt-5 text-[clamp(28px,3.4vw,42px)] leading-tight font-semibold tracking-[-0.03em]">Improve the engine itself.</h2>
+        <p class="mt-3 max-w-xl text-[15px] leading-relaxed text-muted">Patchground is Apache-2.0. Sharpen a ticket, extend the validator, add a language adapter, or report what confused you on your first session.</p>
+      </div>
+      <div class="contribution-links flex flex-wrap gap-3">
+        <a class="btn-primary" href={REPO}><GitHubIcon />Contribute on GitHub</a>
+        <a class="btn-ghost" href={`${REPO}/issues`}>Open an issue <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </div>
+</section>

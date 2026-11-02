@@ -1,0 +1,14 @@
+---
+interface Props { stats: { value: string; label: string }[] }
+const { stats } = Astro.props;
+---
+<section class="stats-strip mx-auto w-[min(1200px,calc(100%-40px))]" aria-label="At a glance">
+  <ul class="surface grid grid-cols-2 divide-line sm:grid-cols-3 lg:grid-cols-5 lg:divide-x">
+    {stats.map((stat) => (
+      <li class="grid gap-1 px-6 py-6">
+        <strong class="bg-gradient-to-b from-fg to-muted bg-clip-text font-mono text-3xl font-semibold tracking-tight text-transparent tabular-nums">{stat.value}</strong>
+        <span class="text-xs leading-snug text-subtle">{stat.label}</span>
+      </li>
+    ))}
+  </ul>
+</section>

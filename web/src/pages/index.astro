@@ -1,0 +1,55 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Brand from "../components/Brand.astro";
+import Hero from "../components/Hero.astro";
+import Stats from "../components/Stats.astro";
+import HowItWorks from "../components/HowItWorks.astro";
+import Practice from "../components/Practice.astro";
+import Outcomes from "../components/Outcomes.astro";
+import Why from "../components/Why.astro";
+import Catalog from "../components/Catalog.astro";
+import Install from "../components/Install.astro";
+import OpenSource from "../components/OpenSource.astro";
+import { REPO, catalogView, loadCatalog } from "../lib/catalog.mjs";
+
+const view = catalogView(await loadCatalog());
+const nav = [
+  { href: "#how", label: "How it works" },
+  { href: "#practice", label: "Practice" },
+  { href: "#challenges", label: "Challenges" },
+  { href: "#install", label: "Install" },
+  { href: "#publish", label: "Publish" },
+];
+---
+<Layout
+  title="Patchground — Real code. Real problems. Your tools."
+  description="Practice real software engineering, not algorithm puzzles. Patchground is an open-source, local-first CLI: fix real codebases in your own editor, with your own AI, and get test-verified outcomes."
+  home="#top"
+  nav={nav}
+>
+  <Hero />
+  <Stats stats={view.stats} />
+  <HowItWorks />
+  <Practice />
+  <Outcomes />
+  <Why />
+  <Catalog view={view} />
+  <Install />
+  <OpenSource />
+
+  <div slot="footer" class="footer-top grid gap-8 md:grid-cols-[1fr_auto] md:items-start">
+    <div>
+      <Brand href="#top" />
+      <p class="mt-3 text-sm text-muted">Real code. Real problems. Your tools.</p>
+    </div>
+    <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted" aria-label="Footer navigation">
+      <a class="hover:text-fg" href={REPO}>GitHub ↗</a>
+      <a class="hover:text-fg" href={`${REPO}/blob/main/docs/first-session.md`}>Docs ↗</a>
+      <a class="hover:text-fg" href={`${REPO}/blob/main/docs/authoring.md`}>Authoring ↗</a>
+      <a class="hover:text-fg" href="./status.html">Registry status</a>
+      <a class="hover:text-fg" href={`${REPO}/blob/main/LICENSE`}>Apache-2.0 ↗</a>
+    </nav>
+  </div>
+</Layout>
+
+<script src="../scripts/enhance.js"></script>

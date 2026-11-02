@@ -1,0 +1,58 @@
+---
+import SectionHeading from "./SectionHeading.astro";
+
+const steps = [
+  { n: "01", cmd: "pgnd start", title: "Pick up a ticket", text: "A real repository with a bug report or feature request, in a fresh workspace. The tests that decide the outcome stay hidden." },
+  { n: "02", cmd: "your editor", title: "Find it and fix it", text: "Read code you did not write, reproduce the problem and change it. Use your own editor and AI agent, or work without one." },
+  { n: "03", cmd: "pgnd check", title: "Check as you go", text: "Run the checks in Docker as often as you need. Red turns green only when the behaviour is actually right." },
+  { n: "04", cmd: "pgnd submit", title: "Get verified outcomes", text: "Your work is frozen into a report: what passed, whether your test proves the fix and where your diff landed." },
+];
+---
+<section class="how-section mx-auto w-[min(1200px,calc(100%-40px))] py-20 lg:py-28" id="how" aria-labelledby="how-heading">
+  <SectionHeading eyebrow="How it works" id="how-heading">
+    <Fragment slot="title">One ticket.<br>Four commands.</Fragment>
+    A session goes the way real work does: pick up a ticket, dig into a codebase you have never seen, prove the fix holds and get a record of what you actually did.
+  </SectionHeading>
+
+  <ol class="flow relative grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <span class="pointer-events-none absolute top-[118px] right-[12%] left-[12%] hidden h-px bg-gradient-to-r from-transparent via-line-strong to-transparent lg:block" aria-hidden="true"></span>
+    {steps.map((step, i) => (
+      <li class="surface spotlight group rise flex flex-col p-5" data-spotlight>
+        <div class="art-frame dot-backdrop relative grid h-40 place-items-center overflow-hidden rounded-xl border border-line bg-ink/60" aria-hidden="true">
+          {i === 0 && (
+            <div class="w-[78%] rounded-lg border border-line-strong bg-panel p-3 shadow-lg transition duration-500 group-hover:-translate-y-1">
+              <div class="flex items-center gap-2"><span class="size-2 rounded-full bg-patch"></span><span class="h-1.5 w-24 rounded bg-fg/70"></span></div>
+              <div class="mt-3 grid gap-1.5"><span class="h-1.5 w-full rounded bg-line-strong"></span><span class="h-1.5 w-4/5 rounded bg-line-strong"></span><span class="h-1.5 w-3/5 rounded bg-line-strong"></span></div>
+              <div class="mt-3 flex gap-1.5"><span class="rounded border border-line-strong px-1.5 font-mono text-2xs text-subtle">bug</span><span class="rounded border border-line-strong px-1.5 font-mono text-2xs text-subtle">45 min</span></div>
+            </div>
+          )}
+          {i === 1 && (
+            <div class="w-[82%] font-mono text-2xs leading-5">
+              <div class="rounded-t-md bg-fail/10 px-2 text-fail transition-opacity duration-500 group-hover:opacity-40">- key = attempt.id</div>
+              <div class="rounded-b-md bg-pass/10 px-2 text-pass">+ key = order.payment_id</div>
+              <div class="mt-2 flex items-center gap-2 text-subtle"><span class="h-px flex-1 bg-line-strong"></span>2 files changed</div>
+            </div>
+          )}
+          {i === 2 && (
+            <div class="grid grid-cols-7 gap-1.5">
+              {Array.from({ length: 14 }, (_, k) => (
+                <span class:list={["size-4 rounded-[4px] transition-colors duration-300", k % 7 >= 5 ? "bg-fail/70 group-hover:bg-pass/80" : "bg-pass/60"]} style={`transition-delay:${(k % 7) * 60}ms`}></span>
+              ))}
+            </div>
+          )}
+          {i === 3 && (
+            <div class="w-[74%] rounded-lg border border-patch/30 bg-patch/[0.05] p-3 transition duration-500 group-hover:scale-[1.03]">
+              <span class="font-mono text-2xs tracking-widest text-patch-soft uppercase">Verified outcomes</span>
+              {["14 / 14", "fails → passes", "src/payments/"].map((v) => (
+                <div class="mt-1.5 flex justify-between border-t border-line pt-1.5 font-mono text-2xs"><span class="h-1.5 w-10 self-center rounded bg-line-strong"></span><span class="text-pass">{v}</span></div>
+              ))}
+            </div>
+          )}
+        </div>
+        <span class="flow-step mt-5 font-mono text-2xs tracking-wider text-subtle">{step.n} · <code class="text-patch-soft">{step.cmd}</code></span>
+        <h3 class="mt-2 text-lg font-semibold tracking-tight">{step.title}</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">{step.text}</p>
+      </li>
+    ))}
+  </ol>
+</section>

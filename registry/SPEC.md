@@ -63,7 +63,9 @@ their content changes, so a run that finds nothing new does not commit a new tim
 The crawler runs untrusted Dockerfiles. It therefore runs in a dedicated job with a read-only token
 and no secrets, on an ephemeral runner, with per-pack clone and validation timeouts and an isolated
 git environment (no configured helpers, hooks or filters; `https` only outside tests). A separate
-job with write access commits the two JSON files and the regenerated site catalog. The checkout keeps no
+read-only job installs the website's npm dependencies and checks the site builds with the new
+index; only then does a job with write access, which installs nothing, commit the two JSON files.
+The website renders them at build time, so no generated site files are committed. The checkout keeps no
 credentials, and the read-only token (used only for discovery) is stripped from the environment of
 every tool that touches a pack. The gitleaks binary is checksum-pinned, and in CI a pack that could
 not be scanned is never listed. The crawler is

@@ -1,0 +1,5 @@
+---
+interface Props { href: string; class?: string }
+const { href, class: className } = Astro.props;
+---
+<a class:list={["brand inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight whitespace-nowrap", className]} href={href}><svg class="brand-logo size-6 shrink-0" viewBox="0 0 64 64" aria-hidden="true"><path fill="#ff784c" d="M8 8h26v20h22v28H8z"/><rect fill="#f4f4f6" x="38" y="8" width="18" height="16"/></svg>patchground</a>

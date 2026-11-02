@@ -13,10 +13,12 @@ at the time it happens; this document describes the steps, it does not authorize
    environment `pypi`. No API token is created or stored.
 3. **Cloudflare (Workers static assets).** Workers & Pages → Create → import the GitHub repository:
    - Worker name `patchground` (must equal `name` in `wrangler.jsonc`); production branch `main`;
-   - build command `npm --prefix web run build`; deploy command `npx wrangler deploy` (default);
+   - build command `npm --prefix web ci && npm --prefix web run build`; deploy command
+     `npx wrangler deploy` (default);
    - build variable `NODE_VERSION=24`.
-   `wrangler.jsonc` serves `web/dist` as static assets with no Worker script. The build has no
-   dependencies to install and refuses to publish a stale catalog. Then add the custom domain
+   `wrangler.jsonc` serves `web/dist` as static assets with no Worker script. The build installs
+   the site's locked build-time dependencies (Astro, Tailwind, Geist fonts) and renders the catalog
+   from `examples/` and `registry/` at build time, so it cannot publish a stale catalog. Then add the custom domain
    `patchground.dev` under the Worker's *Settings → Domains & Routes*; Cloudflare creates the DNS
    record in the existing zone. Non-production branch builds can be disabled in the build settings.
 
@@ -29,8 +31,8 @@ at the time it happens; this document describes the steps, it does not authorize
 4. The `release` workflow builds and verifies the wheel and sdist, then waits. Approve the
    `release` environment to create the GitHub release with checksums, then approve `pypi` to upload.
 5. After PyPI shows the version: update install instructions (README, `docs/first-session.md`,
-   `web/public/index.html` and the website's "install from a checkout" test) to
-   `uv tool install patchground`, regenerate and test the site, and push. Cloudflare Pages deploys
+   `web/src/components/Install.astro` and the website's install test in `web/scripts/site.test.mjs`)
+   to `uv tool install patchground`, run `npm --prefix web test`, and push. Cloudflare Pages deploys
    `main` automatically.
 
 ## If something goes wrong

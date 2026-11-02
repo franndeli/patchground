@@ -100,3 +100,13 @@ if (copyButton && command && copyStatus && navigator.clipboard?.writeText) {
     }
   });
 }
+
+// --- Pointer spotlight on cards ---------------------------------------------------------------
+
+for (const card of document.querySelectorAll("[data-spotlight]")) {
+  card.addEventListener("pointermove", (event) => {
+    const box = card.getBoundingClientRect();
+    card.style.setProperty("--x", `${event.clientX - box.left}px`);
+    card.style.setProperty("--y", `${event.clientY - box.top}px`);
+  });
+}

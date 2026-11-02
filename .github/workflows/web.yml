@@ -19,8 +19,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm --prefix web ci
       - run: npm --prefix web run check
-      - name: catalog is generated from examples/*/challenge.yaml and up to date
-        run: node web/scripts/catalog.mjs --check
-      - run: npm --prefix web test
-      - run: npm --prefix web run build
+      - name: build from examples/*/challenge.yaml + registry, then test the output
+        run: npm --prefix web test

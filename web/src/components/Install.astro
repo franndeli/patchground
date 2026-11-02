@@ -1,0 +1,39 @@
+---
+import { REPO } from "../lib/catalog.mjs";
+
+const commands = [
+  `uv tool install git+${REPO}`,
+  "pgnd doctor",
+  "pgnd list --builtin",
+  "pgnd start pagination-last-page",
+];
+---
+<section class="install-section relative isolate overflow-hidden py-20 lg:py-28" id="install" aria-labelledby="install-heading">
+  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+    <div class="absolute bottom-[-240px] left-1/2 h-[480px] w-[900px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(255_120_76/0.14),transparent)]"></div>
+  </div>
+  <div class="mx-auto grid w-[min(1200px,calc(100%-40px))] items-center gap-14 lg:grid-cols-[0.9fr_1.1fr]">
+    <div class="install-copy rise">
+      <p class="eyebrow">Install</p>
+      <h2 id="install-heading" class="mt-5 text-[clamp(32px,4.2vw,52px)] leading-[1.05] font-semibold tracking-[-0.035em]">From install<br>to first ticket.</h2>
+      <p class="mt-5 max-w-md text-[15px] leading-relaxed text-muted">Patchground is an early, working release. Install it straight from GitHub: the curated challenges ship with the CLI, so there is nothing else to download. A PyPI package will follow.</p>
+      <ul class="requirements mt-6 grid gap-2 text-sm text-muted">
+        {["Python 3.12+ and uv", "Git and a running Docker engine (or Podman)", "macOS or Linux; Windows through WSL2"].map((r) => <li class="flex gap-2"><span class="text-patch" aria-hidden="true">↳</span>{r}</li>)}
+      </ul>
+      <div class="install-links mt-6 flex flex-wrap gap-5">
+        <a class="link text-sm" href={`${REPO}/blob/main/docs/first-session.md`}>First-session guide <span aria-hidden="true">↗</span></a>
+        <a class="link text-sm" href={`${REPO}/blob/main/README.md`}>README <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+
+    <div class="setup-terminal surface beam rise rounded-2xl">
+      <div class="window-bar">
+        <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>get started</span>
+        <button type="button" class="copy-button flex items-center gap-1.5 rounded-md border border-line-strong px-2 py-1 text-2xs text-muted transition hover:border-subtle hover:text-fg disabled:opacity-60" id="copy-command" aria-label="Copy the setup commands" hidden><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg>Copy</button>
+      </div>
+      <pre class="setup-code overflow-x-auto p-5 font-mono text-[13px] leading-7 text-fg"><code id="install-command">{commands.join("\n")}</code></pre>
+      <p class="copy-status min-h-5 px-5 text-xs text-pass" id="copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
+      <div class="setup-footer border-t border-line px-5 py-4 text-xs leading-relaxed text-subtle">Then open the printed workspace in your editor and run <code class="code-chip">pgnd check</code> as you go. Finish with <code class="code-chip">pgnd submit</code>.</div>
+    </div>
+  </div>
+</section>

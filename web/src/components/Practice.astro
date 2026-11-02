@@ -1,0 +1,91 @@
+---
+import SectionHeading from "./SectionHeading.astro";
+
+const audiences = [
+  { title: "Preparing for a practical interview", text: "Live debugging rounds and take-home feature tasks, rehearsed on real repositories against the clock." },
+  { title: "Joining a new codebase", text: "Read before changing, find the right place for a fix, leave the tests stronger than you found them." },
+  { title: "Learning to lead an AI agent", text: "Direct your agent on a realistic task, then check its work with tests, regression evidence and diff scope." },
+];
+const card = "surface spotlight group rise flex flex-col justify-between gap-6 p-6";
+const h3 = "text-lg font-semibold tracking-tight";
+const p = "mt-2 text-sm leading-relaxed text-muted";
+---
+<section class="skills-section mx-auto w-[min(1200px,calc(100%-40px))] py-20 lg:py-28" id="practice" aria-labelledby="practice-heading">
+  <SectionHeading eyebrow="What you practise" id="practice-heading">
+    <Fragment slot="title">The skills the job<br>actually asks for.</Fragment>
+    Puzzles train you to recall algorithms. Patchground trains the habits that matter on a team and in a practical interview, and gives you evidence to show for them.
+  </SectionHeading>
+
+  <div class="bento grid gap-4 md:grid-cols-3">
+    <article class:list={[card, "md:col-span-2"]} data-spotlight>
+      <div class="dot-backdrop grid min-h-44 grid-cols-[180px_1fr] overflow-hidden rounded-xl border border-line bg-ink/60 font-mono text-2xs" aria-hidden="true">
+        <ul class="grid content-start gap-1 border-r border-line p-3 text-subtle">
+          <li>▾ src/</li><li class="pl-3">▸ api/</li><li class="pl-3">▾ catalog/</li>
+          <li class="rounded bg-patch/15 pl-6 text-patch-soft transition group-hover:bg-patch/25">paginate.py</li>
+          <li class="pl-6">search.py</li><li class="pl-3">▸ db/</li><li>▸ tests/</li>
+        </ul>
+        <div class="grid content-start gap-1 p-3 leading-5 whitespace-pre text-muted">
+          <span><span class="text-subtle">12</span>  pages = total // size</span>
+          <span class="-mx-3 bg-fail/10 px-3 text-fail transition group-hover:bg-fail/20"><span class="opacity-60">13</span>  if page &gt; pages:</span>
+          <span><span class="text-subtle">14</span>      raise OutOfRange(page)</span>
+          <span class="mt-2 text-subtle"># ticket: "last page returns out of range"</span>
+        </div>
+      </div>
+      <div><h3 class={h3}>Debugging unfamiliar code</h3><p class={p}>Trace a symptom from a support ticket to its root cause in a codebase you have never opened.</p></div>
+    </article>
+
+    <article class={card} data-spotlight>
+      <div class="grid grid-cols-2 gap-2 font-mono text-2xs" aria-hidden="true">
+        <div class="rounded-xl border border-fail/30 bg-fail/[0.06] p-3"><span class="text-subtle">original code</span><p class="mt-6 text-sm text-fail">✗ fails</p></div>
+        <div class="rounded-xl border border-pass/30 bg-pass/[0.06] p-3"><span class="text-subtle">your fix</span><p class="mt-6 text-sm text-pass">✓ passes</p></div>
+      </div>
+      <div><h3 class={h3}>Proving the fix</h3><p class={p}>Write a regression test that fails before your change and passes after. Patchground runs it on both versions to check.</p></div>
+    </article>
+
+    <article class={card} data-spotlight>
+      <div class="flex flex-wrap gap-2 font-mono text-2xs" aria-hidden="true">
+        {["Claude Code", "Codex", "local model", "no AI at all"].map((tool, i) => (
+          <span class:list={["rounded-full border px-2.5 py-1 transition", i === 3 ? "border-patch/40 text-patch-soft" : "border-line-strong text-muted group-hover:border-subtle"]}>{tool}</span>
+        ))}
+      </div>
+      <div><h3 class={h3}>Working with your AI</h3><p class={p}>Direct Claude Code, Codex, a local model or no tool at all. Then use the outcomes to check what it really changed.</p></div>
+    </article>
+
+    <article class={card} data-spotlight>
+      <div class="flex items-end gap-1.5" aria-hidden="true">
+        {[40, 55, 48, 62, 70, 66].map((h) => <span class="w-full rounded-t bg-line-strong transition-all duration-500" style={`height:${h}px`}></span>)}
+        <span class="h-[84px] w-full rounded-t bg-patch/80 transition-all duration-500 group-hover:h-[96px]"></span>
+      </div>
+      <div><h3 class={h3}>Shipping a feature</h3><p class={p}>Extend existing behaviour without breaking what already works, so the old tests stay green.</p></div>
+    </article>
+
+    <article class={card} data-spotlight>
+      <div class="grid gap-1.5 font-mono text-2xs" aria-hidden="true">
+        <span class="flex justify-between rounded-md border border-line px-2.5 py-1.5 text-muted">src/payments/charge.py<span class="text-pass">in scope</span></span>
+        <span class="flex justify-between rounded-md border border-line px-2.5 py-1.5 text-muted">tests/test_charge.py<span class="text-pass">in scope</span></span>
+        <span class="flex justify-between rounded-md border border-dashed border-line-strong px-2.5 py-1.5 text-subtle">README.md<span>outside</span></span>
+      </div>
+      <div><h3 class={h3}>Keeping the change in scope</h3><p class={p}>Fix the problem in the right place. The report shows exactly which files your diff touched.</p></div>
+    </article>
+
+    <article class={card} data-spotlight>
+      <div class="flex items-center gap-4" aria-hidden="true">
+        <svg class="size-16 -rotate-90" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--color-line-strong)" stroke-width="3"/><circle cx="18" cy="18" r="15" fill="none" stroke="var(--color-patch)" stroke-width="3" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="15" class="transition-[stroke-dashoffset] duration-700 group-hover:[stroke-dashoffset:24]"/></svg>
+        <span class="font-mono text-sm text-muted"><span class="text-2xl text-fg">38</span> / 45 min<br><span class="text-2xs text-subtle">6 checks · 1 hint</span></span>
+      </div>
+      <div><h3 class={h3}>Working to a timebox</h3><p class={p}>Every challenge has a realistic timebox. See how long you really took and how many hints you used.</p></div>
+    </article>
+
+    <article class:list={[card, "audience md:col-span-2"]} id="who" aria-labelledby="who-heading" data-spotlight>
+      <h3 id="who-heading" class="font-mono text-2xs tracking-[0.18em] text-patch-soft uppercase">Who it's for</h3>
+      <div class="grid gap-6 sm:grid-cols-3">
+        {audiences.map((a) => (
+          <div class="border-l border-line-strong pl-4">
+            <h4 class="font-semibold tracking-tight">{a.title}</h4>
+            <p class="mt-2 text-sm leading-relaxed text-muted">{a.text}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</section>

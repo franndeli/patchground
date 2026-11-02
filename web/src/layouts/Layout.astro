@@ -1,0 +1,57 @@
+---
+import "../styles/global.css";
+import Brand from "../components/Brand.astro";
+import GitHubIcon from "../components/GitHubIcon.astro";
+import { REPO } from "../lib/catalog.mjs";
+
+interface Props {
+  title: string;
+  description?: string;
+  noindex?: boolean;
+  home: string;
+  nav: { href: string; label: string }[];
+}
+const { title, description, noindex = false, home, nav } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#09090b">
+  {description && <meta name="description" content={description}>}
+  {noindex && <meta name="robots" content="noindex">}
+  <meta property="og:title" content={title}>
+  {description && <meta property="og:description" content={description}>}
+  <meta property="og:type" content="website">
+  <title>{title}</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <a class="skip-link fixed top-[-100px] left-5 z-50 rounded-md bg-patch px-5 py-3 font-medium text-ink focus:top-3" href="#main">Skip to content</a>
+  <header class="site-header sticky top-0 z-40 border-b border-line/70 bg-ink/70 backdrop-blur-xl" id="top">
+    <div class="mx-auto flex min-h-16 w-[min(1200px,calc(100%-40px))] items-center justify-between gap-6">
+      <Brand href={home} />
+      <nav class="main-nav hidden items-center gap-1 md:flex" aria-label="Main navigation">
+        {nav.map((item) => <a class="rounded-md px-3 py-2 text-sm text-muted transition hover:bg-panel-2 hover:text-fg" href={item.href}>{item.label}</a>)}
+      </nav>
+      <a class="github-link btn-ghost min-h-9 px-3 text-xs" href={REPO}><GitHubIcon />Star on GitHub <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1" class="outline-none">
+    <slot />
+  </main>
+
+  <footer class="site-footer relative mt-20 overflow-hidden border-t border-line">
+    <div class="mx-auto w-[min(1200px,calc(100%-40px))] py-12">
+      <slot name="footer" />
+      <div class="footer-bottom mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 text-xs text-subtle">
+        <span>Local-first engineering practice. No accounts. No tracking. Apache-2.0.</span>
+        <a class="hover:text-fg" href="#top">Back to top <span aria-hidden="true">↑</span></a>
+      </div>
+    </div>
+    <p class="pointer-events-none select-none text-center font-semibold leading-none tracking-tighter text-transparent [-webkit-text-stroke:1px_var(--color-line-strong)] text-[clamp(64px,17vw,240px)] -mb-[0.22em]" aria-hidden="true">patchground</p>
+  </footer>
+</body>
+</html>

@@ -4,8 +4,10 @@ name: registry
 # every challenge with Patchground's own validator in Docker, and publishes registry/index.json and
 # registry/status.json. See registry/SPEC.md.
 #
-# Two jobs on purpose: `validate` builds and runs untrusted Dockerfiles, so it gets a read-only
-# token and no secrets; `publish` has write access but only commits files produced by `validate`.
+# Three jobs on purpose: `validate` builds and runs untrusted Dockerfiles, so it gets a read-only
+# token and no secrets; `site` installs the website's npm dependencies and checks the site still
+# builds with the new index, also read-only; `publish` has write access, installs nothing and only
+# commits files produced by `validate`. The website renders the index at build time.
 
 on:
   schedule:
@@ -65,9 +67,26 @@ jobs:
             registry/status.json
           retention-days: 7
 
+  site:
+    name: the website builds and passes its tests with the new index (read-only)
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: registry
+          path: registry
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm --prefix web ci && npm --prefix web test
+
   publish:
     name: commit index and status if changed
-    needs: validate
+    needs: [validate, site]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -77,16 +96,11 @@ jobs:
         with:
           name: registry
           path: registry
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-      - name: regenerate the site catalog from the new index
-        run: npm --prefix web run catalog && npm --prefix web test
       - name: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add registry/index.json registry/status.json web/public
+          git add registry/index.json registry/status.json
           if git diff --cached --quiet; then
             echo "registry unchanged"
             exit 0

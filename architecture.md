@@ -115,10 +115,10 @@ through WSL2 + Docker Desktop; `pgnd doctor` points Windows users there.
 Challenge execution, session state and verified outcomes stay local. Published catalog data is an
 allowlist of public challenge metadata and tickets, never session data, hidden checks, reference
 solutions or credentials. The standalone `web/` module (`patchground-web`) owns the product-first
-static homepage, with CLI installation, real-world practice, public guides and challenge tickets. It has no dependency on the CLI; its catalog is
-generated from an allowlist of public `challenge.yaml` fields plus the community index in
-`registry/index.json` (see `patchground-web`, `patchground-registry`), and its build copies an
-explicit allowlist of public assets. Community packs reach the site by *publish and appear*: the
+static homepage (an Astro build with no runtime dependencies), with CLI installation, real-world practice, public guides and challenge tickets. It has no dependency on the CLI; its catalog is
+rendered at build time from an allowlist of public `challenge.yaml` fields plus the community index in
+`registry/index.json` (see `patchground-web`, `patchground-registry`), and its build emits only
+the public pages, `catalog.json` and hashed assets. Community packs reach the site by *publish and appear*: the
 author tags their repository, CI re-validates it, no pull request (`patchground-registry`). Hosting remains a
 separate delivery decision. DNS, production deployment, package publication and releases require
 approval at publication.
