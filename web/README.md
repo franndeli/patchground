@@ -69,7 +69,7 @@ URLs; hashed assets live under `/_astro/`, so the site is served from a domain r
 ## Editorial rules (tests enforce the ones they can)
 
 - The CLI and practising on real code lead; authoring/community comes last.
-- No claim beyond what the CLI does today: install is from GitHub until a package is published;
+- No claim beyond what the CLI does today: install is from PyPI (`uv tool install patchground`);
   `pgnd pack publish` / `pack add <name>` appear only as *planned*; the hero terminal and the
   annotated report are labelled *illustration*; AI-generated examples say so; *verified* means
   "passed `pgnd validate` in our CI". No fabricated users, metrics or testimonials.

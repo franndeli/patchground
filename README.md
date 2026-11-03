@@ -34,12 +34,15 @@ You need Python 3.12+, [uv](https://docs.astral.sh/uv/), Git and a running Docke
 Desktop on macOS, Docker Engine on Linux, WSL2 on Windows).
 
 ```sh
-uv tool install git+https://github.com/franndeli/patchground   # or: pipx install git+https://...
+uv tool install patchground       # or: pipx install patchground
 pgnd doctor                       # checks Docker, Git and disk space, and prints exact fixes
 pgnd list --builtin               # the curated challenges bundled with the CLI
 pgnd show pagination-last-page    # read the ticket first
 pgnd start pagination-last-page   # builds the image and creates your session workspace
 ```
+
+To try unreleased changes from `main`, install with
+`uv tool install git+https://github.com/franndeli/patchground` instead.
 
 Open the printed workspace in your editor. From that workspace:
 

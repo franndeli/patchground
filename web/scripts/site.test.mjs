@@ -99,9 +99,9 @@ test("the CLI and real-world practice lead; contribution comes last", () => {
 
 test("claims stay within what the CLI does today", () => {
   const page = text(html);
-  assert.ok(!/uv tool install patchground|pip install patchground/.test(page), String(/uv tool install patchground|pip install patchground/));
   for (const m of page.matchAll(/pgnd pack (publish|add)/g)) assert.match(page.slice(Math.max(0, m.index - 200), m.index), /Planned/, m[0]);
-  assert.ok(/uv tool install git\+https:\/\/github\.com\/franndeli\/patchground/.test(html), String(/uv tool install git\+https:\/\/github\.com\/franndeli\/patchground/));
+  assert.ok(/uv tool install patchground\b/.test(html), String(/uv tool install patchground\b/));
+  assert.ok(!/A PyPI package will follow/.test(page), "the package is published");
   assert.ok(/Installing packs by name from the CLI is planned/.test(page), String(/Installing packs by name from the CLI is planned/));
   assert.ok(/No pull request/.test(page), String(/No pull request/));
   assert.ok(/not yet human-rated/.test(page), String(/not yet human-rated/));

@@ -1,6 +1,6 @@
 # Author a first challenge
 
-Install the CLI from this checkout with `uv tool install .`. Python 3.12+, Git and a running
+Install the CLI with `uv tool install patchground` (or `uv tool install .` from a checkout). Python 3.12+, Git and a running
 Docker engine are needed for validation and practice; `pgnd new` itself does not need Docker.
 
 ## Start from a working contract

@@ -37,8 +37,8 @@ The brand is a geometric mark: a square with its missing corner set back in ("th
 inline SVG in every page header and footer, and the same shape is the favicon. Illustrations are
 decorative inline SVG (`aria-hidden`) in the same flat style, with colours from the CSS palette.
 
-The page states only what the CLI does today. Install is from the GitHub repository
-(`uv tool install git+https://...`, curated challenges bundled) until a package is published; packs are described as planned; the hero terminal and the annotated report are labelled
+The page states only what the CLI does today. Install is from PyPI
+(`uv tool install patchground`, curated challenges bundled); packs are described as planned; the hero terminal and the annotated report are labelled
 illustrations; examples
 drafted with an agent are marked AI-generated; the CLI has no built-in AI in this release, so the
 page never promises one; difficulty is "not yet human-rated". No fabricated

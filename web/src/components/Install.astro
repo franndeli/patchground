@@ -2,7 +2,7 @@
 import { REPO } from "../lib/catalog.mjs";
 
 const commands = [
-  `uv tool install git+${REPO}`,
+  "uv tool install patchground",
   "pgnd doctor",
   "pgnd list --builtin",
   "pgnd start pagination-last-page",
@@ -16,7 +16,7 @@ const commands = [
     <div class="install-copy rise">
       <p class="eyebrow">Install</p>
       <h2 id="install-heading" class="mt-5 text-[clamp(32px,4.2vw,52px)] leading-[1.05] font-semibold tracking-[-0.035em]">From install<br>to first ticket.</h2>
-      <p class="mt-5 max-w-md text-[15px] leading-relaxed text-muted">Patchground is an early, working release. Install it straight from GitHub: the curated challenges ship with the CLI, so there is nothing else to download. A PyPI package will follow.</p>
+      <p class="mt-5 max-w-md text-[15px] leading-relaxed text-muted">Patchground is an early, working release on PyPI. The curated challenges ship with the CLI, so there is nothing else to download.</p>
       <ul class="requirements mt-6 grid gap-2 text-sm text-muted">
         {["Python 3.12+ and uv", "Git and a running Docker engine (or Podman)", "macOS or Linux; Windows through WSL2"].map((r) => <li class="flex gap-2"><span class="text-patch" aria-hidden="true">↳</span>{r}</li>)}
       </ul>

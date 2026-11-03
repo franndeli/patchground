@@ -10,15 +10,16 @@ Start Docker. On Windows use WSL2 with Docker Desktop, and run these commands in
 Then:
 
 ```sh
-uv tool install git+https://github.com/franndeli/patchground
+uv tool install patchground
 pgnd doctor
 pgnd list --builtin --lang python
 pgnd show pagination-last-page
 pgnd start pagination-last-page
 ```
 
-The curated challenges ship inside the package, so a plain install is enough. From a checkout of
-the repository, `uv tool install .` works too, and the same challenges are in `examples/`.
+The curated challenges ship inside the package, so a plain install is enough. For unreleased
+changes, `uv tool install git+https://github.com/franndeli/patchground` installs from `main`. From a
+checkout of the repository, `uv tool install .` works too, and the same challenges are in `examples/`.
 Sessions are created under `~/patchground/sessions/`. To keep them elsewhere, export
 `PATCHGROUND_SESSIONS_DIR` as an absolute path before running `start`, and keep it set for later
 commands.
