@@ -98,7 +98,7 @@ must use `environment.services: []`.
 
 ## Use your AI assistant as a guide
 
-The optional [Patchground skill](skills/patchground/SKILL.md) helps your assistant explain commands,
+The optional [Patchground skill](https://github.com/franndeli/patchground/blob/main/skills/patchground/SKILL.md) helps your assistant explain commands,
 find your next step, and interpret results. It guides you without solving the challenge unless you ask.
 It does not install the CLI or require a Patchground account or API key.
 
@@ -108,11 +108,12 @@ the shared Agent Skills location, run this from the repository root:
 
 ```sh
 mkdir -p ~/.agents/skills
-# Only if ~/.agents/skills/patchground does not already exist:
-cp -R skills/patchground ~/.agents/skills/
+mkdir ~/.agents/skills/patchground && cp -R skills/patchground/. ~/.agents/skills/patchground/
 ```
 
-If your assistant uses another skill directory, use that location instead. Restart it or reload its
+The second command refuses an existing destination, including a symlink, rather than overwriting
+an installed skill. Review and manage an existing installation separately. If your assistant uses
+another skill directory, use that location instead. Restart it or reload its
 skills, then ask "Help me get started with Patchground" or "What should I do next in this session?"
 The skill works outside this repository and consults installed CLI help and public documentation.
 Your assistant's usual permissions and data-sharing settings still apply.
@@ -179,7 +180,7 @@ pgnd validate my-challenge
 
 `new` defaults to `--type debug --lang python` and creates a runnable teaching starter in the
 current directory. It refuses any existing destination and never builds or runs automatically.
-Only that template combination is currently supported. The starter includes an intentional defect,
+Choose `--type debug|feature` and `--lang python|typescript` for any of the four starters. The starter includes an intentional defect,
 checks and a reference patch; replace them together rather than changing only the ticket.
 See [the authoring guide](https://github.com/franndeli/patchground/blob/main/docs/authoring.md) for the full workflow and safety limits.
 

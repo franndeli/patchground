@@ -4,6 +4,18 @@ This is a delivery ledger, not a claim that planned capabilities exist. Durable 
 live in `goal-and-requirements.md`, `architecture.md` and owning contracts/SPECs. Approved programme
 boundaries and earlier verified commits live in [the launch brief](launch-brief.md).
 
+## Resume checkpoint after publication
+
+For the current health snapshot and prioritized draft work, start with [next steps](next-steps.md).
+Version 0.1.0 and the website are public, and the optional guide skill is shipped. Independent-human
+learner and author acceptance remains pending, as confirmed by the owner. The milestone records
+below retain their historical evidence; their old publication-next instructions are superseded by
+this checkpoint, not proof that the human gate passed.
+
+The subsequent [guidance/onboarding evaluation](evaluations/agent-guide-smoke.md) records corrected
+documentation, synthetic learner/author/guide trials, and real browser clipboard verification.
+Those results do not close human acceptance; follow-up changes require their own publication approval.
+
 ## Completion definition
 
 Prepare a coherent local-first product: installable CLI, documented authoring/distribution, curated

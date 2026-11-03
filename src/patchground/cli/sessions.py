@@ -134,7 +134,8 @@ def _invoke(call: Callable[[], Result], json_mode: bool) -> None:
 
 def start(
     path: Annotated[
-        str, typer.Argument(help="Local folder, installed ID or pack-name:challenge-id.")
+        str,
+        typer.Argument(help="Local folder, built-in ID, installed ID or pack-name:challenge-id."),
     ],
     yes: Annotated[
         bool, typer.Option("--yes", help="Approve the exact selected pack revision.")

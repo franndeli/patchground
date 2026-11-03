@@ -55,9 +55,16 @@ sensitive. Container isolation defaults live in `patchground-contract-execution`
   sanitized output tail may be displayed explicitly, but command arguments/output are not written
   to session events. Raw verification logs remain private. Host environment secrets are not
   forwarded to containers.
-- Before the first AI call in a session, show provider, model, estimated tokens and exactly which files
+- Anti-cheating is out of scope: hidden tests are on the user's disk; the CLI simply never prints them.
+
+## Requirements for deferred AI features
+
+The CLI makes no AI calls and stores no AI payloads in this release. These requirements constrain
+any future coaching/generation design; they do not describe the external assistant used with the
+guide skill. That assistant has its own permissions and data-sharing policy.
+
+- Before the first built-in AI call in a session, show provider, model, estimated tokens and exactly which files
   will be sent, and require confirmation (`--yes` skips). Send the minimum context: ticket, diffs,
   selected files, test output — never the whole repository.
 - Every AI call's full payload is saved in `.session/` for audit.
 - Generating from a private repo warns that code goes to the configured provider and offers Ollama.
-- Anti-cheating is out of scope: hidden tests are on the user's disk; the CLI simply never prints them.

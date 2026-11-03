@@ -10,6 +10,8 @@ runs verification in Docker and reports verified outcomes.
 - Contracts you implement against: `docs/contracts/*.md`.
 - Each module's responsibility and boundary: `src/patchground/<module>/SPEC.md`.
 - Background and roadmap: `docs/spec.md` (not authoritative).
+- Current health snapshot and next-session draft specs: `docs/next-steps.md` and `docs/work/*.md`.
+  Recheck their baseline against live state; draft tasks do not override owning contracts.
 
 Read the SPEC of the module you are changing and the contracts it implements. If a spec and the
 code disagree, or a spec is ambiguous, stop and ask. A change that alters a boundary or contract
@@ -19,13 +21,14 @@ updates the owning spec in the same change.
 
 The owner approved expanding beyond M1 toward the roadmap and a public documentation/catalog site
 at patchground.dev. Delivery boundaries and resume context live in `docs/launch-brief.md` and
-`docs/delivery-plan.md`; the shared TODO list tracks active work. Four Python/TypeScript debugging/feature starters, six curated challenges
+`docs/delivery-plan.md`; the shared TODO list tracks active work. Four Python/TypeScript debugging/feature starters, seven curated challenges
 and immutable verified-outcomes reports are implemented, together with hints, disposable diagnostic
 commands, session browsing, private checkpoint history and consent-gated pinned packs. Consent-gated contribution automation and bounded TypeScript runner evidence are implemented.
-The ten-attempt synthetic learner cohort is complete; it does not establish human usability.
-The owner deferred AI coaching and generation from launch. Remaining gates cover the separately owned
-public site, independent-human acceptance and approval-gated publication. Each subsystem still requires
-an accepted design and owning-spec updates.
+The ten-attempt synthetic learner cohort and later guide/onboarding trials are complete; neither
+establishes human usability. Latest evidence: `docs/evaluations/agent-guide-smoke.md`.
+The owner deferred AI coaching and generation from launch. Remaining gates cover independent-human
+acceptance and approval-gated future publication. Version 0.1.0 and the public site are already
+published. Each subsystem still requires an accepted design and owning-spec updates.
 
 Use existing configured model subscriptions/local models only; do not buy credits or paid services.
 Git pushes are authorized, but DNS changes, production deployments, package publication and release

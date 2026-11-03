@@ -38,7 +38,8 @@ inline SVG in every page header and footer, and the same shape is the favicon. I
 decorative inline SVG (`aria-hidden`) in the same flat style, with colours from the CSS palette.
 
 The page states only what the CLI does today. Install is from PyPI
-(`uv tool install patchground`, curated challenges bundled); packs are described as planned; the hero terminal and the annotated report are labelled
+(`uv tool install patchground`, curated challenges bundled). Pinned pack installation by source is
+implemented; registry-name installation and the publish helper are planned. The hero terminal and the annotated report are labelled
 illustrations; examples
 drafted with an agent are marked AI-generated; the CLI has no built-in AI in this release, so the
 page never promises one; difficulty is "not yet human-rated". No fabricated
@@ -100,3 +101,7 @@ rejection, and hides itself when the clipboard is unavailable. A type scale with
 visible focus, a skip link, live regions and reduced-motion styling apply throughout; the hero
 terminal reveal is finite and shows all lines at once under `prefers-reduced-motion`, which also
 switches off every other animation. Layouts hold from 320px up with no horizontal scrolling.
+Report illustration values stack beneath their labels on narrow screens rather than forcing fixed
+columns wider than the viewport. A test-only Playwright smoke checks the real clipboard round trip,
+keyboard navigation, responsive widths, and the no-JavaScript/manual-copy paths; it ships no browser
+runtime dependency to visitors.

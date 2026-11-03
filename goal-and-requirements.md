@@ -136,8 +136,8 @@ Code, docs and CLI output use exactly these terms.
 - **Git-distributed packs** from public HTTPS or committed local repositories, pinned by commit
   and content identity, with explicit execution consent, reviewed updates and unambiguous discovery.
   Removing a pack never removes existing sessions (`patchground-contract-security`).
-- **Optional AI layer (BYOK):** an interviewer-style debrief and challenge generation from a supported
-  repo, both experimental and kept only if they prove useful (see `patchground-architecture`).
+- **Optional agent guide:** an installable skill helps the user's own assistant explain commands,
+  select next steps, and interpret results. It is external guidance, not built-in coaching or inference.
 
 ## Non-Goals
 
@@ -164,9 +164,9 @@ Code, docs and CLI output use exactly these terms.
 | Containers | Docker SDK for Python (Podman via its Docker-compatible socket) | Isolation without writing a sandbox |
 | Git | `git` subprocess behind a thin wrapper | Fewer surprises than a library; git is required anyway |
 | Test results | JUnit XML via `junitparser` | One results contract for every language |
-| AI | `anthropic`, `openai` SDKs as the optional `patchground[ai]` extra | Core installs without AI deps |
+| AI | User's own assistant, optional guide skill; no bundled AI SDKs | Core requires no AI access |
 | Quality | pytest (`@pytest.mark.docker` for integration), ruff, mypy strict on `spec`, `verify`, `report` | |
-| Docs | MkDocs Material, the format as centerpiece | |
+| Docs | Repository Markdown guides and a static Astro homepage/catalog | No hosted execution or remote runtime dependencies |
 | License | Apache-2.0 for the CLI; each challenge declares `content_license` (default CC-BY-4.0) | Low adoption friction |
 
 ## Alternatives Considered

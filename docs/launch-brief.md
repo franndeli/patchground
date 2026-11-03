@@ -9,6 +9,13 @@ where useful. Maintain durable records so context resets do not lose direction o
 Use a cohort of ten synthetic learners spanning available model capability levels to exercise the
 product. These are agent evaluations, not ten human interviews or proof of human usability.
 
+## Current disposition
+
+Version 0.1.0 is published on PyPI and GitHub; the Astro site is live on Cloudflare Workers static
+assets. The guide skill is shipped. Independent-human trials remain pending. Start with
+[the next-session index](next-steps.md) for current work. Inventory and starting-point observations
+below are historical, not prerequisites still waiting to be established.
+
 ## Verified starting point
 
 - `583ad23`: local discovery, safe reset, environment diagnostics and onboarding.
@@ -44,7 +51,8 @@ product. These are agent evaluations, not ten human interviews or proof of human
   or exhausted access rather than substituting new spending.
 - **Approval at publication:** build and verify deployable artifacts, but ask before DNS changes,
   production deployment, package publication or release creation. Existing Git pushes remain
-  authorized. Hosting/provider selection and access are still open.
+  authorized. Hosting is Cloudflare Workers static assets; approval is still required for each
+  production change.
 
 ## Available execution and launch prerequisites
 
@@ -58,8 +66,9 @@ Codex/Sonnet/Haiku configurations subsequently passed those smoke trials and com
 or independently attest effective provider model identities.
 
 GitHub CLI, uv and Docker are installed. Existing Git pushes and CI workflows already operate.
-Hosting provider, DNS control, package-publisher identity and release permissions are not yet
-established. Inventory does not authorize any production, DNS, package or release operation.
+At that inventory, hosting, DNS control, publisher identity and release permissions were not yet
+established. Publication has since occurred as recorded above. Inventory never authorizes a new
+production, DNS, package or release operation.
 
 ## Roadmap to reconcile into milestones
 

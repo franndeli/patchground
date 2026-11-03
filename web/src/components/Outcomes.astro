@@ -18,7 +18,7 @@ const rows = [
 
   <div class="outcomes grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr]">
     <!-- Cult UI texture card: nested hairline borders around the report. -->
-    <div class="rise rounded-[22px] border border-white/5 bg-gradient-to-b from-panel-2 to-ink p-1 lg:sticky lg:top-24">
+    <div class="rise min-w-0 rounded-[22px] border border-white/5 bg-gradient-to-b from-panel-2 to-ink p-1 lg:sticky lg:top-24">
       <div class="rounded-[19px] border border-black/60">
         <div class="report-sheet rounded-[18px] border border-white/[0.06] bg-panel/90 p-6" aria-label="Example verified-outcomes report (illustration)">
           <header class="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-4">
@@ -27,10 +27,10 @@ const rows = [
           </header>
           <dl class="mt-2 grid font-mono text-xs">
             {rows.map((row, i) => (
-              <div class="report-row grid grid-cols-[28px_130px_1fr] items-center gap-3 rounded-lg px-2 py-3.5 transition-colors" data-m={i + 1}>
+              <div class="report-row grid grid-cols-[28px_minmax(0,1fr)] sm:grid-cols-[28px_130px_minmax(0,1fr)] items-center gap-3 rounded-lg px-2 py-3.5 transition-colors" data-m={i + 1}>
                 <span class="marker grid size-6 place-items-center rounded-full border border-line-strong text-2xs text-muted transition-colors" aria-hidden="true">{i + 1}</span>
                 <dt class="text-subtle">{row.dt}</dt>
-                <dd class="text-right text-fg" set:html={row.dd} />
+                <dd class="col-start-2 text-left text-fg sm:col-start-auto sm:text-right" set:html={row.dd} />
               </div>
             ))}
           </dl>

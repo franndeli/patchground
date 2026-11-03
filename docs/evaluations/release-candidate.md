@@ -1,4 +1,9 @@
-# CLI artifact review — not a published release
+# Historical CLI artifact review
+
+Version 0.1.0 has since been published. The candidate records below describe what was known at each
+checkpoint, not current release blockers. Current status lives in [next steps](../next-steps.md).
+For the later OOM diagnosis, see [CI portability](ci-portability.md#root-cause-of-the-oom-symptom).
+Independent-human acceptance remains pending.
 
 ## Prepared artifacts
 

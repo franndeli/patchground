@@ -9,7 +9,8 @@ parent: patchground-goal
 # Architecture
 
 Patchground is a single Python package (`src/patchground/`) exposed as one CLI. Docker does the
-isolation, git does the history, and the LLM is a pluggable leaf that the core loop never depends on.
+isolation and git does the history. The shipped package has no AI coaching or generation modules;
+the optional guide skill runs in the user's own assistant, outside the CLI.
 The user only ever touches the workspace; everything else runs with no network (after the image
 build) and no API key.
 
@@ -21,14 +22,11 @@ flowchart TD
   authoring --> spec & runner_assets
   verify --> runner_assets
   automation --> packs & verify & spec & safeio
-  cli -. lazy .-> ai & generate
   packs --> spec & safeio
   sessions --> spec & sandbox & packs & safeio
   verify --> spec & sandbox & packs & safeio
   report --> sessions & sandbox & verify
   sandbox --> spec
-  ai --> report & sessions
-  generate --> ai & sandbox & verify
   sandbox ==> docker[(Docker / Podman)]
   sessions ==> git[(git subprocess)]
 ```
@@ -72,11 +70,11 @@ still goes through `sandbox`, and sessions never imports report. `cli` reaches `
   Tree-sitter parsing supplies bounded tampering/regression evidence without importing authored
   code. Canonical `runner_assets` bytes are copied into portable authored environments; neither
   `authoring` nor `verify` executes those assets on the host.
-- **AI is a lazy leaf.** `ai` is imported only inside the AI commands, and its SDKs ship as the
-  optional `patchground[ai]` extra. A core install without the extra must import and run every
-  non-AI command. The `ai` module exposes one `Provider` protocol (`complete`, `estimate_tokens`);
-  Anthropic and Ollama come first, an OpenAI-compatible adapter after. Prompts are versioned files in
-  `patchground/ai/prompts/*.md`. Keys come from environment variables only.
+- **AI stays outside the shipped core.** The `[ai]` extra is empty. Coaching and generation are
+  deferred, and their historical experimental design is not an implemented boundary. Any revival
+  requires an accepted design and must preserve core independence and the security contract's
+  consent requirements. The repository guide skill uses the user's external assistant and its
+  permissions; it does not make model calls through Patchground.
 - **Git through a thin subprocess wrapper,** not a library: git is already required and the CLI's
   behavior is easier to predict.
 - **The user's git state is sacred.** Patchground never changes the workspace's HEAD, branches, index
@@ -90,13 +88,11 @@ still goes through `sandbox`, and sessions never imports report. `cli` reaches `
 
 ```
 ~/.patchground/
-├── config.toml           # defaults (provider, model, editor); never API keys
 ├── registry.json         # pinned versions, active revision and exact-version consent
-├── packs/<pack>@<sha>/    # installed packs, read-only
-└── cache/                # image digests, verification results
+└── packs/<pack>@<sha>/    # installed packs, read-only
 ~/patchground/sessions/<date>-<challenge>/
 ├── workspace/            # the user's git repo
-└── .session/             # session.json, events.jsonl, original/, submission/, AI payloads
+└── .session/             # session.json, events.jsonl, original/, submission/
 ```
 
 Sessions live under `~/patchground/sessions/` unless `PATCHGROUND_SESSIONS_DIR` names another
@@ -119,18 +115,19 @@ static homepage (an Astro build with no runtime dependencies), with CLI installa
 rendered at build time from an allowlist of public `challenge.yaml` fields plus the community index in
 `registry/index.json` (see `patchground-web`, `patchground-registry`), and its build emits only
 the public pages, `catalog.json` and hashed assets. Community packs reach the site by *publish and appear*: the
-author tags their repository, CI re-validates it, no pull request (`patchground-registry`). Hosting remains a
-separate delivery decision. DNS, production deployment, package publication and releases require
-approval at publication.
+author tags their repository, CI re-validates it, no pull request (`patchground-registry`). The public
+site is served by Cloudflare Workers static assets configured in `wrangler.jsonc`. DNS, production
+deployment, package publication and releases still require approval at publication.
 
 ## Repositories
 
-- `patchground/patchground` — this repo: the CLI, the format, schemas (`schema/`), scaffolds
+- `franndeli/patchground` — this repo: the CLI, the format, schemas (`schema/`), scaffolds
   (`src/patchground/authoring/templates/`), test challenges (`examples/`), docs, and the reusable
   validation Action (`action.yml`, `patchground-automation`). The Action uses the same verifier with
   explicit execution consent and disposable committed inputs, never mutating the checkout.
-- `patchground/patchground-core` — the official, curated pack.
-The validation Action is versioned here with the CLI, superseding the separate-repository plan.
+The curated catalog ships from `examples/` inside this repository and wheel; a separate official-pack
+repository is not required. The validation Action is versioned here with the CLI, superseding the
+separate-repository plan.
 
 ## Testing
 

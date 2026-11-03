@@ -103,7 +103,8 @@ latest-session selection. Start a new session to get a fresh timer.
 - **Session busy:** wait for its check/reset to finish; only one mutation runs at a time.
 - **No session selected:** change into the printed workspace or pass `--session` explicitly.
 - **No challenges listed:** point `list` at the parent directory of challenge folders. It scans
-  immediate children only, not recursively. `show` and `start` accept challenge paths, not IDs.
+  immediate children only, not recursively. Use `list --builtin` for bundled challenges or
+  `list --installed` for packs. `show` and `start` accept built-in IDs, installed references, and local paths.
 - **Unsupported services:** use a single-container challenge with `environment.services: []`.
 - **Invalid challenge:** diagnostics identify files and lines without echoing arbitrary manifest
   values. Authors should fix the manifest/layout and run `pgnd validate` before sharing it.

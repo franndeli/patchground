@@ -57,11 +57,19 @@ To preview with other data, point the build at another repository root:
 
 ```sh
 npm --prefix web run check      # syntax check of the plain JS modules
-npm --prefix web test           # astro build, then 22 tests on dist/ and two fixture builds
+npm --prefix web test           # astro build, then tests on dist/ and two fixture builds
+npm --prefix web exec -- playwright install chromium
+npm --prefix web run test:browser # real clipboard readback, keyboard, mobile, no-script paths
 npm --prefix web run build      # web/dist/: index.html, status.html, catalog.json, favicon.svg, _astro/*
 ```
 
-`.github/workflows/web.yml` runs `npm ci` and the tests on pushes/PRs touching `web/`, any
+The browser smoke uses test-only Playwright. It serves the built site on an ephemeral loopback port,
+launches an isolated headless Chromium, and closes both after the run. It grants clipboard permission
+only to that browser context and compares readback with the visible prompt. Set
+`PLAYWRIGHT_CHANNEL=chrome` to use an already installed Chrome instead of downloading Chromium.
+Clipboard rejection is simulated separately; the successful write/readback uses the real browser API.
+
+`.github/workflows/web.yml` runs `npm ci`, static tests, and the browser smoke on pushes/PRs touching `web/`, any
 `challenge.yaml` or the registry JSON. It does not deploy. Pages link to each other with relative
 URLs; hashed assets live under `/_astro/`, so the site is served from a domain root
 (`patchground.dev`). Hosting, DNS and production deployment are a separate, owner-approved step.

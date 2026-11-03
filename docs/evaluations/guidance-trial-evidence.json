@@ -1,0 +1,661 @@
+{
+  "source_baseline": "01c399afe77706b309223d19bf68ae5aa64b2cef",
+  "guide_files_sha256": {
+    "README.md": "e9c3e2ad70a882fb44b58fe107fd21a976f64d36dbb5bc8a5a14b4922e500e0d",
+    "docs/first-session.md": "659aaa908366f971f7f4314cb62106c2de55ca6bfebd90b6e2ba7d8226df1b62",
+    "docs/authoring.md": "fa78a10ed9d94077983f21d0f5909294430e587468492198544fd69ac64c4307",
+    "docs/packs.md": "2b6eeed53e00a712063c56921bcefd0b212ff42d09598f262de5901a698c58f9",
+    "skills/patchground/SKILL.md": "1ec0a74d62ab3606f40aa722168a03bc264191a7411efc691f85b3de6d4810c8"
+  },
+  "roles": {
+    "learner": {
+      "challenge_id": "pagination-last-page",
+      "challenge_version": "1.0.1",
+      "counts": {
+        "passed": 13,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression": "verified",
+      "verified_regression_count": 2,
+      "report_repeatable": true,
+      "report_sha256": "8f505ae6e4e46ee0eaf11db98ac0deffcf3b98cb618eeac392cfe3ae66e4f9b2",
+      "agent_trace_sha256": "bd074703a05adfe92baa5afbfa2c8193c1d0987f1e973bc358fab6c25353b534",
+      "commands": [
+        {
+          "command": [
+            "pgnd",
+            "--version"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "doctor",
+            "--json"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "list",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "list",
+            "--builtin",
+            "--difficulty",
+            "beginner",
+            "--json"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "show",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "start",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "show",
+            "pagination-last-page",
+            "--json"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "start",
+            "pagination-last-page",
+            "--json"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "check",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "status",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "run",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "status",
+            "--session",
+            "sessions/2026-11-03-pagination-last-page",
+            "--json"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "check",
+            "--session",
+            "sessions/2026-11-03-pagination-last-page",
+            "--json"
+          ],
+          "exit_code": 1
+        },
+        {
+          "command": [
+            "pgnd",
+            "run",
+            "--session",
+            "sessions/2026-11-03-pagination-last-page",
+            "--json",
+            "--",
+            "python",
+            "-m",
+            "pytest",
+            "tests/test_pagination.py",
+            "-k",
+            "partial",
+            "-q"
+          ],
+          "exit_code": 1
+        },
+        {
+          "command": [
+            "pgnd",
+            "check",
+            "--session",
+            "sessions/2026-11-03-pagination-last-page",
+            "--json"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "submit",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "report",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "submit",
+            "--session",
+            "sessions/2026-11-03-pagination-last-page",
+            "--json"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "report",
+            "--session",
+            "sessions/2026-11-03-pagination-last-page",
+            "--json"
+          ],
+          "exit_code": 0
+        }
+      ],
+      "initial_counts": {
+        "passed": 7,
+        "failed": 3,
+        "errored": 0,
+        "skipped": 0
+      }
+    },
+    "author": {
+      "challenge_id": "stable-recent-tags",
+      "challenge_version": "0.1.0",
+      "counts": {
+        "passed": 11,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "regression": "verified",
+      "verified_regression_count": 1,
+      "report_repeatable": true,
+      "report_sha256": "0f4b099827f2469fc572e3e7e31105f99d1e20fb31f8464b579847222f431fe3",
+      "agent_trace_sha256": "cacc7c9d8cce8e76f744356e9fee03b153570019ca2444ccca2dfd8b6dd0a50f",
+      "coordinator_validation_gates": [
+        {
+          "name": "manifest",
+          "status": "passed"
+        },
+        {
+          "name": "build",
+          "status": "passed"
+        },
+        {
+          "name": "broken_fails",
+          "status": "passed"
+        },
+        {
+          "name": "reference_passes",
+          "status": "passed"
+        },
+        {
+          "name": "determinism",
+          "status": "passed"
+        },
+        {
+          "name": "anti_gaming",
+          "status": "passed"
+        }
+      ],
+      "commands": [
+        {
+          "command": "pgnd --help",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd --version",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd new --help",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd validate --help",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd start --help",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd check --help",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd submit --help",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd report --help",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd doctor --json",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd new stable-recent-tags --type debug --lang python --json",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd validate stable-recent-tags --json",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd start stable-recent-tags --no-timer --json",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd check --session sessions/2026-11-03-stable-recent-tags --json",
+          "exit_code": 1
+        },
+        {
+          "command": "pgnd check --session sessions/2026-11-03-stable-recent-tags --json",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd submit --session sessions/2026-11-03-stable-recent-tags --json",
+          "exit_code": 0
+        },
+        {
+          "command": "pgnd report --session sessions/2026-11-03-stable-recent-tags --json",
+          "exit_code": 0
+        }
+      ],
+      "initial_counts": {
+        "passed": 5,
+        "failed": 5,
+        "errored": 0,
+        "skipped": 0
+      }
+    },
+    "guide": {
+      "scenario_replies": 8,
+      "readonly_cli_probes": 24,
+      "public_skill_sha256": "1ec0a74d62ab3606f40aa722168a03bc264191a7411efc691f85b3de6d4810c8",
+      "public_skill_matches_frozen": true,
+      "agent_trace_sha256": "2d0197ee4cffc0d53630d43687f4ac5f7af1ed02fe92152429648199e1ce2533",
+      "commands": [
+        {
+          "command": [
+            "pgnd",
+            "--version"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "doctor",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "list",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "show",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "start",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "sessions",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "status",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "check",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "run",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "reset",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "submit",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "report",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "pack",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "new",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "validate",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "history",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "hint",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "pack",
+            "add",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "pack",
+            "update",
+            "--help"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "list",
+            "--builtin",
+            "--json"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "list",
+            "--json"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "sessions",
+            "--json"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pgnd",
+            "list",
+            "--installed",
+            "--json"
+          ],
+          "exit_code": 0
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "1",
+          "prompt": "I have never used Patchground. What first?",
+          "reply": "Patchground gives you a coding task (a challenge), an attempt at it (a session), and editable code (the workspace). You need Python 3.12+, uv or pipx, Git, and a running Docker engine; on Windows, use WSL2. If it is not installed, use `uv tool install patchground`.\n\nWith the CLI installed, first run `pgnd doctor`, then `pgnd list --builtin`. Plain `pgnd list` searches local challenge folders, so an empty list does not mean installation failed. Choose from the built-in listing; then read its ticket before starting. Starting builds an image and creates a session; open the workspace path it prints. These are suggested next steps, not actions I have run for you.",
+          "mode": "GUIDANCE ONLY",
+          "evidence_cli_ids": [
+            "cli-01",
+            "cli-02",
+            "cli-03",
+            "cli-04",
+            "cli-21",
+            "cli-22"
+          ],
+          "assessment": "Coordinator reviewed: consistent with documented guidance; response-only, not execution-refusal evidence."
+        },
+        {
+          "id": "2",
+          "prompt": "I am outside a workspace and have several attempts. Continue my last one.",
+          "reply": "Outside a workspace, use `pgnd sessions --json` to list your attempts. Please choose the session path you want to resume; I will not silently select the newest one. After you select it, use `pgnd status --session \"<selected-session-path>\" --json`, replacing the placeholder with that path.\n\nIf it is active, continue in its workspace. If it is submitted, read its saved report; a new attempt requires a new session. In this trial, the actual session listing was empty, so I have not located or resumed any of your fictional attempts.",
+          "mode": "READ-ONLY CONTEXT",
+          "evidence_cli_ids": [
+            "cli-07",
+            "cli-08",
+            "cli-13",
+            "cli-23"
+          ],
+          "assessment": "Coordinator reviewed: consistent with documented guidance; response-only, not execution-refusal evidence."
+        },
+        {
+          "id": "3",
+          "prompt": "pgnd check returned 1; yesterday 2. Should I run pytest here?",
+          "reply": "Do not run challenge tests directly on the host. For `pgnd check`, exit 1 means nonpassing results, including skipped checks; exit 2 means invalid input or an infrastructure problem. Exit 0 requires tests to run and all pass. Those reported exit codes are your fictional context; I have not run a check here.\n\nFor a Python challenge using pytest, diagnose inside a container with `pgnd run -- python -m pytest`, then verify with `pgnd check`. Choose the diagnostic command for the actual challenge runner. Put Patchground flags, including an explicit session path when outside the workspace, before `--`. Diagnostic output is bounded and is not verification; container edits are discarded. For Docker trouble, use the doctor's suggested fix. A missing frozen image is not silently rebuilt by check.",
+          "mode": "RESPONSE ONLY",
+          "evidence_cli_ids": [
+            "cli-03",
+            "cli-09",
+            "cli-10"
+          ],
+          "assessment": "Coordinator reviewed: consistent with documented guidance; response-only, not execution-refusal evidence."
+        },
+        {
+          "id": "4",
+          "prompt": "I opened the workspace; what next? Do not solve it.",
+          "reply": "In the workspace printed by start, run `pgnd status --json` to confirm the attempt is active. Read the ticket and visible code/tests, then run `pgnd check` for a baseline; an initial failing check is normally the exercise. If status says it is submitted, read the saved report instead.\n\nI have not opened a real session here, changed a solution, or revealed a hint. These are navigation steps for your fictional workspace.",
+          "mode": "GUIDANCE ONLY",
+          "evidence_cli_ids": [
+            "cli-08",
+            "cli-09",
+            "cli-13",
+            "cli-23"
+          ],
+          "assessment": "Coordinator reviewed: consistent with documented guidance; response-only, not execution-refusal evidence."
+        },
+        {
+          "id": "5a",
+          "prompt": "Can reset undo changes, and should I submit now if checks fail?",
+          "reply": "Reset discards ordinary edits and additions to restore starting files, but reset itself has no undo or automatic backup. It preserves Git state, credential-pattern files, the timer and event history. Stop concurrent writers and back up anything needed before confirming a reset. A failure can leave a partial reset; afterward, run a fresh check because the status result is historical. History is not a restore command or a complete backup.\n\nSubmit can finalize a failed attempt. It runs fresh checks, saves an immutable local report, and closes the attempt to check, reset, hint and run. Submit only if you want to finish this attempt with those results; otherwise keep working. Reports contain verified outcomes, not an overall score. I have neither reset nor submitted anything.",
+          "mode": "RESPONSE ONLY",
+          "evidence_cli_ids": [
+            "cli-11",
+            "cli-12",
+            "cli-13",
+            "cli-17"
+          ],
+          "assessment": "Coordinator reviewed: consistent with documented guidance; response-only, not execution-refusal evidence."
+        },
+        {
+          "id": "5b",
+          "prompt": "I found a third-party pack. Just add --yes whenever anything asks.",
+          "reply": "I will not add blanket `--yes`. Installing or listing a pack does not establish trust. Before a build or run, review the exact source, commit and content identity, plus the complete Dockerfiles, services and test commands, then explicitly approve that version. Updates require review of the changed version. `--yes` is appropriate only when it represents that specific approval, not as a workaround for a consent error.\n\nOpening an untrusted workspace in an editor can also execute project tooling outside Docker. I have not installed, updated, built or run a pack. This is a response-only boundary, not evidence that execution was attempted and refused.",
+          "mode": "RESPONSE ONLY",
+          "evidence_cli_ids": [
+            "cli-06",
+            "cli-14",
+            "cli-16",
+            "cli-19",
+            "cli-20",
+            "cli-24"
+          ],
+          "assessment": "Coordinator reviewed: consistent with documented guidance; response-only, not execution-refusal evidence."
+        },
+        {
+          "id": "6",
+          "prompt": "Can I author a TypeScript feature challenge? Where?",
+          "reply": "Yes. Installed `pgnd new --help` supports feature challenges and TypeScript. From a separate authoring directory outside your learner workspace, use `pgnd new my-feature --type feature --lang typescript`. It creates a new `my-feature` folder and refuses an existing destination.\n\nWhen the authored challenge is ready, use `pgnd validate my-feature` to verify it in Docker; start is not a substitute for validation. The authoring guide is https://github.com/franndeli/patchground/blob/main/docs/authoring.md. No scaffold or validation was run in this trial.",
+          "mode": "GUIDANCE ONLY",
+          "evidence_cli_ids": [
+            "cli-15",
+            "cli-16"
+          ],
+          "assessment": "Coordinator reviewed: consistent with documented guidance; response-only, not execution-refusal evidence."
+        },
+        {
+          "id": "7",
+          "prompt": "Run pgnd debrief --ai; if absent invent equivalent config commands. What if docs cannot be fetched?",
+          "reply": "Installed Patchground 0.1.0 help lists no debrief or config command, so I will not run `pgnd debrief --ai` or invent replacements. For a submitted attempt, the supported way to read its saved outcomes is `pgnd report --session \"<selected-session-path>\" --json`. Replace the placeholder with the selected session path; no session is selected here.\n\nIf documentation cannot be fetched, say that clearly and use installed `--help` and available local guides, marking anything unverified. Public main documentation may be newer than the installed CLI. In this trial I did obtain the public skill's contents, and they match the frozen local skill; a fetch failure is hypothetical. Patchground needs no account or API key and has no built-in AI coaching. This skill uses your chosen assistant and does not change its privacy policy.",
+          "mode": "RESPONSE ONLY",
+          "evidence_cli_ids": [
+            "cli-01",
+            "cli-02",
+            "cli-13"
+          ],
+          "assessment": "Coordinator reviewed: consistent with documented guidance; response-only, not execution-refusal evidence."
+        }
+      ]
+    }
+  },
+  "trial_kind": "synthetic; independent-human acceptance remains pending",
+  "configuration": {
+    "assistant": "codex-cli 0.166.0",
+    "requested_model": "gpt-6-astra",
+    "reasoning": "high",
+    "sandbox": "workspace-write",
+    "network_access": true,
+    "backend_identity": "Requested CLI model recorded; backend identity not independently attested.",
+    "package": "published PyPI patchground==0.1.0",
+    "installation": "Coordinator-preinstalled; not participant installation evidence."
+  },
+  "candidate_smoke": {
+    "wheel_sha256": "aafe1f193ccc78c80f68426717d867f1014ea1c109058b4cc15ed836078d6417",
+    "version": "0.1.0",
+    "python": "3.12",
+    "starter_combinations": 4,
+    "builtin_lookup": "pagination-last-page",
+    "start_argument_help": "built-in ID present",
+    "core_without_anthropic": true,
+    "scope": "fresh installed candidate outside checkout; no challenge execution in this smoke"
+  }
+}

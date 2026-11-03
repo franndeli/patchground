@@ -14,6 +14,13 @@ from patchground.sessions import CheckResult, SessionError, StartedSession
 runner = CliRunner()
 
 
+def test_start_argument_help_includes_builtin_ids():
+    result = runner.invoke(app, ["start", "--help"], terminal_width=140)
+    assert result.exit_code == 0
+    arguments = result.stdout.split("Arguments", 1)[1].split("Options", 1)[0]
+    assert "built-in ID" in arguments
+
+
 @pytest.mark.parametrize("json_mode", [True, False])
 def test_start(monkeypatch, json_mode):
     calls = []

@@ -25,3 +25,8 @@ jobs:
       - run: npm --prefix web run check
       - name: build from examples/*/challenge.yaml + registry, then test the output
         run: npm --prefix web test
+      - name: install the browser for the guide smoke test
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+      - name: verify clipboard, keyboard, mobile and no-script behavior
+        run: npm --prefix web run test:browser

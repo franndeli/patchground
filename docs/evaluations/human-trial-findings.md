@@ -5,7 +5,14 @@ names, file paths and credentials. Use a participant label such as `H1`.
 
 ## Status
 
-No human session has been recorded yet. Publication remains blocked on this gate.
+No human session has been recorded yet. Version 0.1.0 and the website are now public, but
+independent-human acceptance remains unverified. The owner confirmed that learner and author trials
+remain pending; publication is not evidence that this gate passed. See the
+[human-acceptance task](../work/human-acceptance.md) for the next action.
+
+The later [guide/onboarding synthetic trials](agent-guide-smoke.md) completed learner and author
+workflows and found minor guidance issues. Those agents are not participants in this record; no
+human session or human acceptance is claimed.
 
 ## Template
 

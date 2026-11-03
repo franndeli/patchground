@@ -2,7 +2,8 @@
 
 Two short sessions with real people close the remaining launch gate. Synthetic learners have already
 exercised the mechanics ([cohort](learner-cohort.md)); these sessions test what agents cannot:
-whether a person unfamiliar with Patchground understands it and finds it worth doing.
+whether a person unfamiliar with Patchground understands it and finds it worth doing. The package
+and website are public; this remains an acceptance gate, not an unfulfilled deployment action.
 
 Run each session with someone who has not worked on Patchground and has not seen its specs, the
 reference solutions or this repository's discussions. One participant per session is enough to
@@ -23,7 +24,7 @@ close the gate; more is better. Record findings in [human-trial-findings.md](hum
 Participant brief (read it out as written):
 
 > Patchground is a tool for practising real software work. Using only the README and
-> `docs/first-session.md`, install it, pick a challenge from `examples/` that you have not seen,
+> `docs/first-session.md`, install it, pick an unfamiliar challenge from `pgnd list --builtin`,
 > and try to solve it in your own editor. You may use any AI assistant you normally use. Think
 > aloud. When you are done, or the timebox ends, run `pgnd submit` and read the report.
 
@@ -59,5 +60,5 @@ The gate passes when, for each session, at least one participant:
   without facilitator help, **or** with help that led to a fix in the product or docs; and
 - leaves no unresolved finding classified as a *blocker* in the findings file.
 
-Every *blocker* is fixed before publication. *Friction* items are fixed or explicitly deferred with
+Every *blocker* is fixed before declaring human acceptance passed. *Friction* items are fixed or explicitly deferred with
 a reason. Original observations are never rewritten; fixes are recorded beside them.

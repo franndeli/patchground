@@ -129,7 +129,7 @@ The table below also describes planned commands and options; it is not a claim t
 | `doctor` | Check Docker (or Podman), git, disk; print exact fixes (WSL2 on Windows). |
 | `pack add <source> [--ref REV]`, `pack list\|update\|remove` | Public HTTPS/local committed packs, pinned by identity with explicit consent. |
 | `pack publish`, `pack add <name>` | **Planned.** Validate a pack and mark its repository discoverable; resolve a bare name through the public registry index (`patchground-registry`). Not implemented. |
-| `config set <key> <value>` | Defaults: provider, model, editor command. |
+| `config set <key> <value>` | **Planned, not implemented.** Defaults: provider, model, editor command. |
 | `debrief --ai [--provider] [--yes]` | **Deferred from launch.** Experimental AI coaching on a submitted session; not shipped. |
 | `generate ...` | **Deferred from launch.** Exists only once a generator experiment succeeds. |
 

@@ -19,7 +19,7 @@ resolves inputs, calls one module entry point, and renders the result.
 - One file per command group; a shared renderer so every command's result has both a human and a
   `--json` form from the same data.
 - All interactive prompts: consent for untrusted packs (what to show comes from `packs`), reset
-  confirmation, the AI payload preview. `--yes` answers them; `--json` never prompts.
+  confirmation. `--yes` answers them; `--json` never prompts. AI payload previews are not shipped.
 - `doctor`: assembles checks from `sandbox` engine probing and the `sessions.diagnostics` Git and
   disk probes, and prints the exact fix for each failure (platform-specific; WSL2 on Windows). It
   reports every check (`{"healthy", "checks": [{name, status, detail, problem, fix}]}` under
@@ -48,5 +48,5 @@ resolves inputs, calls one module entry point, and renders the result.
 
 ## Boundary
 
-May import every core module. Imports `ai` (and later `generate`) only inside the AI commands, so a
-core install without `patchground[ai]` runs every other command. Never talks to Docker or git directly; touches `sandbox` only for `doctor`'s probe.
+May import every core module. There are no AI command imports in the shipped CLI; core works without
+AI SDKs. Never talks to Docker or git directly; touches `sandbox` only for `doctor`'s probe.

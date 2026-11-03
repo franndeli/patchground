@@ -9,9 +9,9 @@ depends-on: [patchground-contract-execution]
 
 # Feedback
 
-A report has two parts that are never mixed: facts Patchground can verify, then coaching it can only
-offer. There is no overall score. Git history cannot tell careful investigation from pasting an
-agent's answer, so the report never claims to.
+The shipped report contains facts Patchground can verify. AI coaching is deferred and absent from
+the CLI; the retained design below is not an available command. There is no overall score. Git history
+cannot tell careful investigation from pasting an agent's answer, so the report never claims to.
 
 ## Part 1: verified outcomes (deterministic, no AI)
 
@@ -54,11 +54,14 @@ strength of equivalent rewrites or prove all possible test weakening.
 `report` reads saved structured/Markdown evidence without Docker; active sessions have no final
 report. Core outcomes never depend on AI, attached transcripts or source-checkout availability.
 
-## Part 2: coaching (optional, AI, experimental)
+## Deferred coaching design (not implemented)
 
-`pgnd debrief --ai` reads the ticket, `questions.md`, the verified outcomes, the final diff and the
-check history, then interviews (3–6 adaptive questions, one at a time), observes each `focus` area,
-and suggests 2–3 improvements and next challenges.
+The earlier experiment is recorded in `docs/evaluations/ai-debrief-smoke.md`. The following is a
+proposal retained for a possible redesign, not a claim that `debrief` or transcript attachment ships.
+
+The proposed `pgnd debrief --ai` would read the ticket, `questions.md`, the verified outcomes,
+the final diff and the check history. It would ask 3–6 adaptive questions one at a time, observe each
+`focus` area, and suggest 2–3 improvements and next challenges.
 
 Guardrails:
 
@@ -72,7 +75,7 @@ Guardrails:
 The coaching part stays in the product only if users of real sessions find its questions realistic and
 instructive.
 
-## Example
+## Design illustration (includes deferred coaching)
 
 ```
 duplicate-charges-on-retry · 38 min of 45 · 4 checks · 1 hint
