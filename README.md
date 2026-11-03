@@ -96,6 +96,27 @@ Status works without Docker. A removed session image must be restored or a new s
 check does not silently rebuild or pull it. Multi-container services remain deferred; challenges
 must use `environment.services: []`.
 
+## Use your AI assistant as a guide
+
+The optional [Patchground skill](skills/patchground/SKILL.md) helps your assistant explain commands,
+find your next step, and interpret results. It guides you without solving the challenge unless you ask.
+It does not install the CLI or require a Patchground account or API key.
+
+To install it, download or clone this repository, review `skills/patchground/SKILL.md`, and copy the
+whole `skills/patchground` directory into your assistant's skill directory. For assistants that support
+the shared Agent Skills location, run this from the repository root:
+
+```sh
+mkdir -p ~/.agents/skills
+# Only if ~/.agents/skills/patchground does not already exist:
+cp -R skills/patchground ~/.agents/skills/
+```
+
+If your assistant uses another skill directory, use that location instead. Restart it or reload its
+skills, then ask "Help me get started with Patchground" or "What should I do next in this session?"
+The skill works outside this repository and consults installed CLI help and public documentation.
+Your assistant's usual permissions and data-sharing settings still apply.
+
 ## Practice tools
 
 ```sh

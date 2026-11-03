@@ -1,6 +1,9 @@
 ---
 import { REPO } from "../lib/catalog.mjs";
 
+const skillUrl = `${REPO}/blob/main/skills/patchground/SKILL.md`;
+const agentPrompt = `Read ${skillUrl} and use it to guide me through getting started with Patchground. Ask before installing anything or changing files. Do not solve the challenge unless I ask.`;
+
 const commands = [
   "uv tool install patchground",
   "pgnd doctor",
@@ -36,4 +39,18 @@ const commands = [
       <div class="setup-footer border-t border-line px-5 py-4 text-xs leading-relaxed text-subtle">Then open the printed workspace in your editor and run <code class="code-chip">pgnd check</code> as you go. Finish with <code class="code-chip">pgnd submit</code>.</div>
     </div>
   </div>
+
+  <aside class="surface rise mx-auto mt-10 w-[min(1200px,calc(100%-40px))] rounded-2xl border border-patch/30 p-6 sm:p-8" aria-labelledby="agent-guide-heading">
+    <p class="eyebrow">Bring your own agent</p>
+    <h3 id="agent-guide-heading" class="mt-3 text-2xl font-semibold tracking-tight">Rather ask your agent?</h3>
+    <p class="mt-3 max-w-2xl text-sm leading-relaxed text-muted">Give it the Patchground guide skill. It can help you get set up, pick a challenge, and understand what to do next. Paste this prompt into your own AI assistant:</p>
+    <p class="mt-5 rounded-lg border border-line bg-panel p-4 font-mono text-sm leading-relaxed break-words text-fg" id="agent-prompt">{agentPrompt}</p>
+    <div class="mt-5 flex flex-wrap items-center gap-5">
+      <button type="button" class="copy-button rounded-md border border-line-strong px-3 py-2 text-sm text-muted transition hover:border-subtle hover:text-fg disabled:opacity-60" id="copy-agent-prompt" aria-label="Copy the agent prompt" hidden>Copy prompt</button>
+      <a class="link text-sm" href={skillUrl}>View skill <span aria-hidden="true">↗</span></a>
+      <a class="link text-sm" href={`${REPO}/blob/main/README.md#use-your-ai-assistant-as-a-guide`}>Install instructions <span aria-hidden="true">↗</span></a>
+    </div>
+    <p class="min-h-5 mt-3 text-xs text-pass" id="agent-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
+    <p class="mt-2 text-xs leading-relaxed text-subtle">Optional, with no built-in AI or Patchground API key. Your assistant's permissions and data-sharing settings still apply. You stay in control of what it runs.</p>
+  </aside>
 </section>

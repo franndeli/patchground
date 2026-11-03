@@ -44,6 +44,12 @@ drafted with an agent are marked AI-generated; the CLI has no built-in AI in thi
 page never promises one; difficulty is "not yet human-rated". No fabricated
 users, metrics, testimonials or results.
 
+The installation section also offers an optional guide skill for the visitor's own AI assistant.
+A visible, copyable prompt links to the repository skill and asks the assistant to get permission
+before installing or changing files, and not solve the challenge unless asked. Skill and installation
+links remain usable without JavaScript. This path supplements the manual CLI setup, not built-in AI;
+the page states that the external assistant's permissions and data-sharing settings still apply.
+
 Quotes in the Compare section are public statements, never testimonials: verbatim, with an
 ellipsis marking every cut, attributed with the role the person held at the time, dated, linked to
 the source, and labelled as not endorsing Patchground. The platform comparison states only facts
@@ -89,7 +95,7 @@ status page or plain text) and host counts are coerced to non-negative integers.
 ## Interaction and accessibility
 
 Filters are native buttons with pressed state and an announced live count. Copy uses the visible
-command block, reports success only after the clipboard resolves, offers manual copying on
+command or agent-prompt block, reports success only after the clipboard resolves, offers manual copying on
 rejection, and hides itself when the clipboard is unavailable. A type scale with an 11px floor,
 visible focus, a skip link, live regions and reduced-motion styling apply throughout; the hero
 terminal reveal is finite and shows all lines at once under `prefers-reduced-motion`, which also

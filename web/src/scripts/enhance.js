@@ -79,24 +79,38 @@ if (packGrid && packSort) {
   packSort.addEventListener("change", sort);
 }
 
-// --- Copy install commands -------------------------------------------------------------------
+// --- Copy setup commands and agent prompt -----------------------------------------------------
 
-const copyButton = document.querySelector("#copy-command");
-const command = document.querySelector("#install-command");
-const copyStatus = document.querySelector("#copy-status");
+const copyTargets = [
+  {
+    button: "#copy-command", content: "#install-command", status: "#copy-status",
+    success: "Copied. Paste into your terminal when you’re ready.",
+    failure: "Couldn’t copy. Select the commands above and copy them manually.",
+  },
+  {
+    button: "#copy-agent-prompt", content: "#agent-prompt", status: "#agent-copy-status",
+    success: "Copied. Paste into your AI assistant when you’re ready.",
+    failure: "Couldn’t copy. Select the prompt above and copy it manually.",
+  },
+];
 
-if (copyButton && command && copyStatus && navigator.clipboard?.writeText) {
-  copyButton.hidden = false;
-  copyButton.addEventListener("click", async () => {
-    copyButton.disabled = true;
-    copyStatus.textContent = "";
+for (const target of copyTargets) {
+  const button = document.querySelector(target.button);
+  const content = document.querySelector(target.content);
+  const status = document.querySelector(target.status);
+  if (!button || !content || !status || !navigator.clipboard?.writeText) continue;
+
+  button.hidden = false;
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    status.textContent = "";
     try {
-      await navigator.clipboard.writeText(command.textContent.trim());
-      copyStatus.textContent = "Copied. Paste into your terminal when you’re ready.";
+      await navigator.clipboard.writeText(content.textContent.trim());
+      status.textContent = target.success;
     } catch {
-      copyStatus.textContent = "Couldn’t copy. Select the commands above and copy them manually.";
+      status.textContent = target.failure;
     } finally {
-      copyButton.disabled = false;
+      button.disabled = false;
     }
   });
 }

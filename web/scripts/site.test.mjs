@@ -113,6 +113,21 @@ test("claims stay within what the CLI does today", () => {
   assert.ok(!/\/Users\/|\/home\/|sk-[A-Za-z0-9]{20}|checks\/hidden|reference\.patch/.test(html + statusHtml + css + script), String(/\/Users\/|\/home\/|sk-[A-Za-z0-9]{20}|checks\/hidden|reference\.patch/));
 });
 
+test("the install section offers an optional agent guide with a visible, consent-aware prompt", () => {
+  const install = html.match(/<section[^>]*id="install"[\s\S]*?<\/section>/)[0];
+  const prompt = install.match(/<p[^>]*id="agent-prompt"[^>]*>([^<]+)<\/p>/)[1];
+  assert.ok(install.indexOf('id="install-command"') < install.indexOf('id="agent-prompt"'));
+  assert.match(prompt, /Read https:\/\/github\.com\/franndeli\/patchground\/blob\/main\/skills\/patchground\/SKILL\.md/);
+  assert.match(prompt, /Ask before installing anything or changing files/);
+  assert.match(prompt, /Do not solve the challenge unless I ask/);
+  assert.match(install, /href="[^"]*skills\/patchground\/SKILL\.md">View skill/);
+  assert.match(install, /href="[^"]*README\.md#use-your-ai-assistant-as-a-guide">Install instructions/);
+  assert.match(install, /id="copy-agent-prompt"[^>]* hidden/);
+  assert.match(install, /id="agent-copy-status"[^>]*role="status"[^>]*aria-live="polite"/);
+  assert.match(text(install), /no built-in AI or Patchground API key/);
+  assert.match(text(install), /permissions and data-sharing settings still apply/);
+});
+
 test("nothing is loaded from another origin and scripts use no network or storage", () => {
   for (const page of [html, statusHtml]) assert.ok(!/<(?:script|link|img|iframe|source)[^>]+(?:src|href)="(?:https?:)?\/\//i.test(page), String(/<(?:script|link|img|iframe|source)[^>]+(?:src|href)="(?:https?:)?\/\//i));
   assert.ok(!/url\(["']?(?:https?:)?\/\//i.test(css), "CSS loads a remote url()");
@@ -124,7 +139,7 @@ test("every local asset and repository link resolves to an existing file", async
     for (const [, path] of matches(page, /(?:href|src)="(?:\.\/|\/)((?:_astro\/)?[^"#/][^"#]*)"/g)) {
       assert.ok((await stat(new URL(path, dist))).isFile(), path);
     }
-    for (const [, path] of matches(page, /https:\/\/github\.com\/franndeli\/patchground\/blob\/main\/([^"#]+)/g)) {
+    for (const [, path] of matches(page, /href="https:\/\/github\.com\/franndeli\/patchground\/blob\/main\/([^"#]+)/g)) {
       assert.ok((await stat(new URL(path, root))).isFile(), path);
     }
   }
@@ -288,9 +303,10 @@ function browser(clipboard) {
   const elements = {
     ".filters": element(), "#catalog-count": element({ summary: "3 challenges in 2 packs" }, "3 challenges in 2 packs"),
     "#copy-command": element(), "#install-command": element({}, "git clone x\nuv tool install .\n"), "#copy-status": element(),
+    "#copy-agent-prompt": element(), "#agent-prompt": element({}, html.match(/<p[^>]*id="agent-prompt"[^>]*>([^<]+)<\/p>/)[1]), "#agent-copy-status": element(),
     "#catalog-search": searchBox, "#catalog-empty": element(), "#pack-grid": null, "#pack-sort": null,
   };
-  elements[".filters"].hidden = elements["#copy-command"].hidden = true;
+  elements[".filters"].hidden = elements["#copy-command"].hidden = elements["#copy-agent-prompt"].hidden = true;
   const all = { "[data-filter]": filters, "[data-facets]": cards, "[data-spotlight]": [] };
   vm.runInNewContext(script, {
     navigator: { clipboard },
@@ -349,6 +365,34 @@ test("clipboard rejection offers manual copying; unavailable clipboard hides the
   assert.equal(rejected.elements["#copy-command"].disabled, false);
   const none = browser();
   assert.equal(none.elements["#copy-command"].hidden, true);
+});
+
+test("agent prompt copies independently and announces success only after the clipboard resolves", async () => {
+  let copied;
+  let finish;
+  const { elements } = browser({ writeText(value) { copied = value; return new Promise((resolve) => { finish = resolve; }); } });
+  const button = elements["#copy-agent-prompt"];
+  assert.equal(button.hidden, false);
+  const pending = button.listeners.click();
+  assert.equal(button.disabled, true);
+  assert.equal(elements["#agent-copy-status"].textContent, "");
+  assert.equal(copied, elements["#agent-prompt"].textContent.trim());
+  finish();
+  await pending;
+  assert.match(elements["#agent-copy-status"].textContent, /^Copied\. Paste into your AI assistant/);
+  assert.equal(button.disabled, false);
+  assert.equal(elements["#copy-status"].textContent, "");
+});
+
+test("agent clipboard failure offers manual copying and missing clipboard leaves the prompt available", async () => {
+  const { elements } = browser({ writeText: async () => { throw new Error("denied"); } });
+  await elements["#copy-agent-prompt"].listeners.click();
+  assert.match(elements["#agent-copy-status"].textContent, /copy it manually/);
+  assert.equal(elements["#copy-agent-prompt"].disabled, false);
+  assert.equal(elements["#copy-status"].textContent, "");
+  const none = browser();
+  assert.equal(none.elements["#copy-agent-prompt"].hidden, true);
+  assert.match(none.elements["#agent-prompt"].textContent, /guide me through getting started/);
 });
 
 // --- Build output ----------------------------------------------------------------------------
