@@ -1,0 +1,593 @@
+{
+  "schema": "patchground-interview-batch-evidence/1",
+  "date": "2026-11-04",
+  "source_base_commit": "565f3501c08d65fe2612cd704adc348710b03e43",
+  "authorship": {
+    "harness": "Pi",
+    "requested_alias": "opus",
+    "observed_model": "openai-codex/gpt-6.1-sol",
+    "prompt_version": "interview-batch-v1",
+    "isolated_authoring_slices": 4
+  },
+  "challenges": [
+    {
+      "id": "config-precedence",
+      "validation_steps": [
+        {
+          "name": "manifest",
+          "status": "passed"
+        },
+        {
+          "name": "build",
+          "status": "passed"
+        },
+        {
+          "name": "broken_fails",
+          "status": "passed"
+        },
+        {
+          "name": "reference_passes",
+          "status": "passed"
+        },
+        {
+          "name": "determinism",
+          "status": "passed"
+        },
+        {
+          "name": "anti_gaming",
+          "status": "passed"
+        }
+      ],
+      "reference_counts": {
+        "passed": 16,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "determinism_summaries": 9,
+      "anti_gaming_probes": 3,
+      "source_file_sha256": {
+        "TICKET.md": "c953b54a208a1e3fea2fc952f39c33a66f7446e08ace24bd331d33214ad779a2",
+        "challenge.yaml": "e18918bb7fdfc36438a7522d6f5c068f31c6254e110f48d003dc2c46e596ac82",
+        "checks/hidden/tests/test_configuration_contract.py": "8db1ebf36c6b6bdd0ce7789bcb69da5ffa9a0377db3ddb714ed17eed1664b715",
+        "checks/visible/tests/test_configuration.py": "ae83b8ca916f144a2a36ac2f04b99a937a3f2a15cc1957fb1ca35cf3a459392e",
+        "debrief/questions.md": "b11c1ed24808e79b4322ed6aa4301e046c903ae07020ee516276482fc24a5918",
+        "environment/Dockerfile": "22bcb03fed13c6acd9ae4210278c26a9bd755a2ad1d07a2a0639d06e5cc6b884",
+        "solution/reference.patch": "4b17265ff85392bdad33b7235bbde144f5ffdfbf012f0d272fcbbd1f0adf775d",
+        "workspace/pyproject.toml": "f992b73ef859fe28435d43710cc069b19e7402c4d95333dfe503731e3e9ff857",
+        "workspace/src/configuration.py": "21c0e68a047f075e21188eacf4c115e4f1a14c506b62468283156d3fe5408588"
+      }
+    },
+    {
+      "id": "invoice-monthly-summary",
+      "validation_steps": [
+        {
+          "name": "manifest",
+          "status": "passed"
+        },
+        {
+          "name": "build",
+          "status": "passed"
+        },
+        {
+          "name": "broken_fails",
+          "status": "passed"
+        },
+        {
+          "name": "reference_passes",
+          "status": "passed"
+        },
+        {
+          "name": "determinism",
+          "status": "passed"
+        },
+        {
+          "name": "anti_gaming",
+          "status": "passed"
+        }
+      ],
+      "reference_counts": {
+        "passed": 18,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "determinism_summaries": 9,
+      "anti_gaming_probes": 3,
+      "source_file_sha256": {
+        "TICKET.md": "7d5d52d0659eb9d826b066b696f125a019a9ce2ff68cdf2d4d0c056535288445",
+        "challenge.yaml": "1e49bf32c2d8cb765daccd0dea9913ec5d138e50971e9ce3a7bde3293ec015b0",
+        "checks/hidden/tests/test_invoice_contract.py": "8a0cbefc73e10410bbf15acca49b146737fab513a59069c88bf1a179de6e274e",
+        "checks/visible/tests/test_monthly_summary.py": "b4231ac82d60d3c2246586d4537310eb9b7385b6f088df46a3513946dbc8e238",
+        "debrief/questions.md": "b46cb781217f2ef2170561a2a20e39a70ce757d33edb9aa1fb6fd506245416ce",
+        "environment/Dockerfile": "22bcb03fed13c6acd9ae4210278c26a9bd755a2ad1d07a2a0639d06e5cc6b884",
+        "solution/reference.patch": "58539c59b108167841e67368d4b3f8f34eb7c0c0a067cad63fb3a870cb8d4741",
+        "workspace/pyproject.toml": "f992b73ef859fe28435d43710cc069b19e7402c4d95333dfe503731e3e9ff857",
+        "workspace/src/invoices/__init__.py": "29708720a8dec560b937306f855c84d241e4c5855b1114ab6fe67271bca69350",
+        "workspace/src/invoices/database.py": "c9cbc58dd541b4e093b8dd9361f3fcd11a4afd52d0507a9d60702b6c05d76eb1",
+        "workspace/src/invoices/demo.py": "d34788028f29072a14a8a31061b0f1a79a176a62fe57b6aecb78f803e5502722",
+        "workspace/src/invoices/repository.py": "cc6220b6cebafd7952f69c4adab38273f2b531ae4eef891742f653000d554802"
+      }
+    },
+    {
+      "id": "cron-field-expansion",
+      "validation_steps": [
+        {
+          "name": "manifest",
+          "status": "passed"
+        },
+        {
+          "name": "build",
+          "status": "passed"
+        },
+        {
+          "name": "broken_fails",
+          "status": "passed"
+        },
+        {
+          "name": "reference_passes",
+          "status": "passed"
+        },
+        {
+          "name": "determinism",
+          "status": "passed"
+        },
+        {
+          "name": "anti_gaming",
+          "status": "passed"
+        }
+      ],
+      "reference_counts": {
+        "passed": 87,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "determinism_summaries": 9,
+      "anti_gaming_probes": 3,
+      "source_file_sha256": {
+        "TICKET.md": "364450908024a0f0c226d67af076660ea9725903ce4a96fafa17a4d91980e653",
+        "challenge.yaml": "2b3aa1aa0630ca9e2fc661c0b2579156a9a9c53efdbfa883ea3790a4c0719d99",
+        "checks/hidden/tests/test_long_numeric_contract.py": "0d2eba03d045e775ee1334e63d2e6635239abe0bd2d5f7e55b023cb472fe55aa",
+        "checks/hidden/tests/test_schedule_contract.py": "eedbe254031b4e69767ef0005f4a9b6a1624f4a4dd8e4c9c4e75016d6aad1356",
+        "checks/visible/tests/test_export_schedule.py": "a9b7214f6b749171d98224b0b7079f5bd01a55fc51ec09a05ab7a9c798efcbdd",
+        "checks/visible/tests/test_long_schedule_numbers.py": "9d50f0e28418e71b29d925d7a825da3edc23c8679c51ff5e4145082f1f9817fe",
+        "debrief/questions.md": "4c35706242f03f2a32fdf026cf315dfcea69d559acb0a21f367a05943c3650ed",
+        "environment/Dockerfile": "22bcb03fed13c6acd9ae4210278c26a9bd755a2ad1d07a2a0639d06e5cc6b884",
+        "solution/reference.patch": "fa44540199c6b3e3bc18177ff228c07add81974525a69c8f590b0901792d739f",
+        "workspace/README.md": "1339bdef1f6bcf93856f7efcbe27697666f9ab55d3c23d3ffcd3f911d93dd0d5",
+        "workspace/pyproject.toml": "f992b73ef859fe28435d43710cc069b19e7402c4d95333dfe503731e3e9ff857",
+        "workspace/src/export_schedule.py": "023073328735de7509775da017f32501e52e1da52b8afce87db1e52ac788a49f"
+      }
+    },
+    {
+      "id": "webhook-retry-scheduling",
+      "validation_steps": [
+        {
+          "name": "manifest",
+          "status": "passed"
+        },
+        {
+          "name": "build",
+          "status": "passed"
+        },
+        {
+          "name": "broken_fails",
+          "status": "passed"
+        },
+        {
+          "name": "reference_passes",
+          "status": "passed"
+        },
+        {
+          "name": "determinism",
+          "status": "passed"
+        },
+        {
+          "name": "anti_gaming",
+          "status": "passed"
+        }
+      ],
+      "reference_counts": {
+        "passed": 51,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "determinism_summaries": 9,
+      "anti_gaming_probes": 3,
+      "source_file_sha256": {
+        "TICKET.md": "ccf60765a79c2fafe4b61f8a089ec878862a4d54ddffe5fa8691cd126c15cff3",
+        "challenge.yaml": "e143e854a045b054deea1e11ceeef1976c125d5a03538cd21bc5572fc4edc02c",
+        "checks/hidden/tests/test_retry_contract.py": "96aad9d228b347ea045bbec64fab5273ce65dcee0444c7969c2217ef2cb56ebd",
+        "checks/visible/tests/test_webhook_queue.py": "4488487360b8d0d402178f4fae89426a37cda8420d999e5e32c07ec767d0b697",
+        "debrief/questions.md": "70a5cbc7e4af3d5a9c08c7b9617929955270b1660ea0cc83b368846fb5222606",
+        "environment/Dockerfile": "22bcb03fed13c6acd9ae4210278c26a9bd755a2ad1d07a2a0639d06e5cc6b884",
+        "solution/reference.patch": "21f2c6c8f309dccfd6937885f4f0432c6a42c58552d0451cf57773f6a6b80686",
+        "workspace/README.md": "135f422eb05d08042b2af346625cd14a6d08d889917c805a425bb7e8f098469e",
+        "workspace/pyproject.toml": "f992b73ef859fe28435d43710cc069b19e7402c4d95333dfe503731e3e9ff857",
+        "workspace/src/scripted_sender.py": "e1bd74d7d517d5f9a24a76b944b7a60499e37d92192f397624b13861deecbf7d",
+        "workspace/src/webhook_queue.py": "b5ec9098738df5bbe195067d3e1067f6d8491a7ed0b21b5271ba5f815d0cf988"
+      }
+    },
+    {
+      "id": "draft-edit-isolation",
+      "validation_steps": [
+        {
+          "name": "manifest",
+          "status": "passed"
+        },
+        {
+          "name": "build",
+          "status": "passed"
+        },
+        {
+          "name": "broken_fails",
+          "status": "passed"
+        },
+        {
+          "name": "reference_passes",
+          "status": "passed"
+        },
+        {
+          "name": "determinism",
+          "status": "passed"
+        },
+        {
+          "name": "anti_gaming",
+          "status": "passed"
+        }
+      ],
+      "reference_counts": {
+        "passed": 18,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "determinism_summaries": 9,
+      "anti_gaming_probes": 3,
+      "source_file_sha256": {
+        "TICKET.md": "3040eb80d828642458117aaffab8c94025ed46b01ba9d2521cb82eaabeecb80a",
+        "challenge.yaml": "64abd1f94b7210d0823ea1117c18f3d4dddef31f65038cf72d035b0bccdaf186",
+        "checks/hidden/tests/checklist-hidden.test.ts": "32238091d61331eefcacc5a9ab3aa575e7cd223c7768bb9378188337fe2ccff3",
+        "checks/visible/tests/checklist.test.ts": "0e1c5d13b2ae51813d16fcc3dff14f3a7a68d0828ab10c9610e61a43af37fbf0",
+        "debrief/questions.md": "e8af43823701ce6cf9cd027a7889383b08651b13b7430528b97b1918e5458f8c",
+        "environment/Dockerfile": "3f87d8cf9290a919ef2389c8527a3a731f4bc76604d5f8b2dcb9612006a31c2e",
+        "environment/package-lock.json": "74723b23fe6943a7de319bdeba018e2db14fca050608f718d42589ce6bad81bc",
+        "environment/package.json": "b86b23b2d8f117ec8791561f462918c36f9a1f0da2e0ca83cc9f352ed6e7621e",
+        "environment/vitest-runner.mjs": "74876fdb2463dcedb513acb082a1b9e9d7ca04ada0596b6767ee1c4d5611abd8",
+        "solution/reference.patch": "c65425306c4005ecd80daa93f9aff1f4e69e7b6696448c8816ce0cfa322c4e7e",
+        "workspace/package.json": "7af745ffc2b1065c35704460ff90930d7c2e86ad0c9dfe0590fd749ceb27ff50",
+        "workspace/src/checklist.ts": "9558a1fc4798d7f00fa0095f7f4d78115571f43613178ab6b8c490db1e85cc1b"
+      }
+    },
+    {
+      "id": "search-response-ordering",
+      "validation_steps": [
+        {
+          "name": "manifest",
+          "status": "passed"
+        },
+        {
+          "name": "build",
+          "status": "passed"
+        },
+        {
+          "name": "broken_fails",
+          "status": "passed"
+        },
+        {
+          "name": "reference_passes",
+          "status": "passed"
+        },
+        {
+          "name": "determinism",
+          "status": "passed"
+        },
+        {
+          "name": "anti_gaming",
+          "status": "passed"
+        }
+      ],
+      "reference_counts": {
+        "passed": 21,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "determinism_summaries": 9,
+      "anti_gaming_probes": 3,
+      "source_file_sha256": {
+        "TICKET.md": "d09fa7941e2b82443c3edf02c9f3a60ede5489629a8c99f11963827508189e53",
+        "challenge.yaml": "3b4008da9a601c8f498e774ad35047a333ce8c7d96a82b0531349474dd4887e8",
+        "checks/hidden/tests/search-model-hidden.test.ts": "752eb56084d6d960f15b83f955268ef8327ea200d12de089ffe2e6a64f5af338",
+        "checks/visible/tests/search-model.test.ts": "debdceed94f1fac1a359226bf8dda0227d417b657ae781aecb8254d936e397e7",
+        "debrief/questions.md": "52d0370d5d076ec91e33626e8f0d1389a7a4c45bc8471531192f1b0ba4bf5c7f",
+        "environment/Dockerfile": "3f87d8cf9290a919ef2389c8527a3a731f4bc76604d5f8b2dcb9612006a31c2e",
+        "environment/package-lock.json": "74723b23fe6943a7de319bdeba018e2db14fca050608f718d42589ce6bad81bc",
+        "environment/package.json": "b86b23b2d8f117ec8791561f462918c36f9a1f0da2e0ca83cc9f352ed6e7621e",
+        "environment/vitest-runner.mjs": "74876fdb2463dcedb513acb082a1b9e9d7ca04ada0596b6767ee1c4d5611abd8",
+        "solution/reference.patch": "4e160ed70841e6f23099cdaafd765fb9974542c5555b55af84479723e0e1e6ad",
+        "workspace/package.json": "7af745ffc2b1065c35704460ff90930d7c2e86ad0c9dfe0590fd749ceb27ff50",
+        "workspace/src/search-model.ts": "8e883ab4eb82d4ed06d439177965f31a547e6bad0aaf31652f5094c94b5e23c8"
+      }
+    },
+    {
+      "id": "sliding-window-rate-limit",
+      "validation_steps": [
+        {
+          "name": "manifest",
+          "status": "passed"
+        },
+        {
+          "name": "build",
+          "status": "passed"
+        },
+        {
+          "name": "broken_fails",
+          "status": "passed"
+        },
+        {
+          "name": "reference_passes",
+          "status": "passed"
+        },
+        {
+          "name": "determinism",
+          "status": "passed"
+        },
+        {
+          "name": "anti_gaming",
+          "status": "passed"
+        }
+      ],
+      "reference_counts": {
+        "passed": 13,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "determinism_summaries": 9,
+      "anti_gaming_probes": 3,
+      "source_file_sha256": {
+        "TICKET.md": "c54600caaeb250a02950d877807109aa9d09c07cda90feffc206ebeaf39432fd",
+        "challenge.yaml": "fc111e1e13152c4946ca88584215f23a5188085aa70ab1ad61a541b2c54e8d6d",
+        "checks/hidden/tests/quota-hidden.test.ts": "2630edaf5e393079c0e485bb2811e7bc42acef9682e4a4c77b2cbca568266adf",
+        "checks/visible/tests/quota.test.ts": "43bb61f5ec2f245c5b49502cfa1af5c99f509f1bf3eca496a2e911ae54cc0c4f",
+        "debrief/questions.md": "880676d2e913612280cb9baa466389f0d264ab429699671f6d7f11d7fc70d765",
+        "environment/Dockerfile": "3f87d8cf9290a919ef2389c8527a3a731f4bc76604d5f8b2dcb9612006a31c2e",
+        "environment/package-lock.json": "74723b23fe6943a7de319bdeba018e2db14fca050608f718d42589ce6bad81bc",
+        "environment/package.json": "b86b23b2d8f117ec8791561f462918c36f9a1f0da2e0ca83cc9f352ed6e7621e",
+        "environment/vitest-runner.mjs": "74876fdb2463dcedb513acb082a1b9e9d7ca04ada0596b6767ee1c4d5611abd8",
+        "solution/reference.patch": "a4e4cb34361fc52b9d08b2579ac2144ea7538d3ff277e608437cf62135de7d1a",
+        "workspace/package.json": "7af745ffc2b1065c35704460ff90930d7c2e86ad0c9dfe0590fd749ceb27ff50",
+        "workspace/src/rate-limiter.ts": "461e9c5c3c3309a2e21cbe4cc018bcc1b9f6fbbaa4224cc7f17cf026d6dea94b",
+        "workspace/src/request-gate.ts": "28144732a487426bfe66de16a709c470b3d031942201897ccafdcdac3c223e9a"
+      }
+    },
+    {
+      "id": "transaction-rule-evaluator",
+      "validation_steps": [
+        {
+          "name": "manifest",
+          "status": "passed"
+        },
+        {
+          "name": "build",
+          "status": "passed"
+        },
+        {
+          "name": "broken_fails",
+          "status": "passed"
+        },
+        {
+          "name": "reference_passes",
+          "status": "passed"
+        },
+        {
+          "name": "determinism",
+          "status": "passed"
+        },
+        {
+          "name": "anti_gaming",
+          "status": "passed"
+        }
+      ],
+      "reference_counts": {
+        "passed": 25,
+        "failed": 0,
+        "errored": 0,
+        "skipped": 0
+      },
+      "determinism_summaries": 9,
+      "anti_gaming_probes": 3,
+      "source_file_sha256": {
+        "TICKET.md": "0eb0cddcac388489cca328a6873c3f0a385a1ec1280c8988cf3c06995f2c8ef4",
+        "challenge.yaml": "7681109798e8eb40c63f2ec5a34a68e3d2bbd482fccd00b770c82dbf71567c53",
+        "checks/hidden/tests/rules-hidden.test.ts": "cf5ad0c2448e9c993b3e232392413b1dad6e74bbbfe770e387e1e71d1ffb1c57",
+        "checks/visible/tests/rules.test.ts": "2557c297437767eec9278152740d67884a648150fd68932332830d7442381195",
+        "debrief/questions.md": "862d4a42043fb49051a828b51489cd384598cc3923cecd839f30fedd0899394d",
+        "environment/Dockerfile": "3f87d8cf9290a919ef2389c8527a3a731f4bc76604d5f8b2dcb9612006a31c2e",
+        "environment/package-lock.json": "74723b23fe6943a7de319bdeba018e2db14fca050608f718d42589ce6bad81bc",
+        "environment/package.json": "b86b23b2d8f117ec8791561f462918c36f9a1f0da2e0ca83cc9f352ed6e7621e",
+        "environment/vitest-runner.mjs": "74876fdb2463dcedb513acb082a1b9e9d7ca04ada0596b6767ee1c4d5611abd8",
+        "solution/reference.patch": "a33ea3dc11cd6efc3ef13801124bdad1a8f4e918d36a90d9e63cedd531667714",
+        "workspace/package.json": "7af745ffc2b1065c35704460ff90930d7c2e86ad0c9dfe0590fd749ceb27ff50",
+        "workspace/src/evaluator.ts": "abc98e5754fbeab75f050b66f10691bd4877cc07658854322616ca8fed2f18e9",
+        "workspace/src/risk-preview.ts": "8de7ce05aa2bee1d8ae5b600116d96667fedd3ebca3ebb4d42a34bfaeb582611",
+        "workspace/src/rule-types.ts": "24d97e3fc01f1da6f2cb5e80ee4775d1e337ef5dc7f862a1a3e64ba86ce7fbdd"
+      }
+    }
+  ],
+  "coordinator_tests": {
+    "non_docker": {
+      "passed": 1042,
+      "failed": 0
+    },
+    "initial_docker_attempt": {
+      "passed": 114,
+      "failed": 14
+    },
+    "final_collection_docker_attempt": {
+      "passed": 99,
+      "failed": 14
+    },
+    "cleanup_failure_rerun": {
+      "passed": 14,
+      "failed": 0
+    },
+    "final_docker_cases_passed_across_runs": 113,
+    "cleanup_failure_reason": "Two disposable sandbox runs predated this batch. Removed their stopped container, orphan networks and unused volumes; no test or runtime assertion changed.",
+    "hidden_omission_negative_control": {
+      "failed_at_outcome_comparison": true,
+      "missing_outcomes": 10
+    },
+    "website_tests_passed": 27,
+    "browser_smoke": "passed using installed Chrome",
+    "typescript": {
+      "version": "5.8.3",
+      "strict_no_emit_starter_and_reference_checks_passed": 8,
+      "execution": "pgnd run in disposable Docker environments; compiler installed only at build time"
+    }
+  },
+  "installed_wheel": {
+    "wheel": "patchground-0.1.0-py3-none-any.whl",
+    "sha256": "80ab9f49cdb6186cc044c3387f96b2072cc9faf6cd736304a7b07603ef9a3439",
+    "python": "3.12",
+    "outside_checkout": true,
+    "optional_ai_absent": true,
+    "catalog_ids": [
+      "cache-expiry",
+      "config-precedence",
+      "cron-field-expansion",
+      "csv-import-row-errors",
+      "draft-edit-isolation",
+      "duplicate-charges-on-retry",
+      "event-bus-subscriptions",
+      "invoice-monthly-summary",
+      "order-notifications-boundary",
+      "pagination-last-page",
+      "release-version-ordering",
+      "search-response-ordering",
+      "sliding-window-rate-limit",
+      "transaction-rule-evaluator",
+      "webhook-retry-scheduling"
+    ],
+    "challenges": {
+      "config-precedence": {
+        "show": "passed",
+        "start": "passed",
+        "broken_check": {
+          "passed": 4,
+          "failed": 12,
+          "errored": 0,
+          "skipped": 0
+        },
+        "git_unchanged": true,
+        "protected_material_absent": true
+      },
+      "draft-edit-isolation": {
+        "show": "passed",
+        "start": "passed",
+        "broken_check": {
+          "passed": 7,
+          "failed": 11,
+          "errored": 0,
+          "skipped": 0
+        },
+        "git_unchanged": true,
+        "protected_material_absent": true
+      },
+      "cron-field-expansion": {
+        "show": "passed",
+        "start": "passed",
+        "broken_check": {
+          "passed": 62,
+          "failed": 25,
+          "errored": 0,
+          "skipped": 0
+        },
+        "git_unchanged": true,
+        "protected_material_absent": true
+      },
+      "invoice-monthly-summary": {
+        "show": "passed",
+        "start": "passed",
+        "broken_check": {
+          "passed": 4,
+          "failed": 14,
+          "errored": 0,
+          "skipped": 0
+        },
+        "git_unchanged": true,
+        "protected_material_absent": true
+      },
+      "sliding-window-rate-limit": {
+        "show": "passed",
+        "start": "passed",
+        "broken_check": {
+          "passed": 1,
+          "failed": 12,
+          "errored": 0,
+          "skipped": 0
+        },
+        "git_unchanged": true,
+        "protected_material_absent": true
+      },
+      "search-response-ordering": {
+        "show": "passed",
+        "start": "passed",
+        "broken_check": {
+          "passed": 6,
+          "failed": 15,
+          "errored": 0,
+          "skipped": 0
+        },
+        "git_unchanged": true,
+        "protected_material_absent": true
+      },
+      "webhook-retry-scheduling": {
+        "show": "passed",
+        "start": "passed",
+        "broken_check": {
+          "passed": 14,
+          "failed": 37,
+          "errored": 0,
+          "skipped": 0
+        },
+        "git_unchanged": true,
+        "protected_material_absent": true
+      },
+      "transaction-rule-evaluator": {
+        "show": "passed",
+        "start": "passed",
+        "broken_check": {
+          "passed": 2,
+          "failed": 23,
+          "errored": 0,
+          "skipped": 0
+        },
+        "git_unchanged": true,
+        "protected_material_absent": true
+      }
+    }
+  },
+  "review": {
+    "independent_contexts": 2,
+    "proven_findings": 4,
+    "resolved_findings": 4,
+    "independent_reprobes": "passed",
+    "human_review": false
+  },
+  "publication": {
+    "deployed": false,
+    "package_published": false,
+    "release_created": false,
+    "remote_ci_observed_for_batch": false
+  },
+  "limits": [
+    "Generated content is not an independent solve or human usability/difficulty evidence.",
+    "Three repetitions and supported tampering probes are bounded checks, not universal guarantees.",
+    "Local wheel version remains 0.1.0; the published 0.1.0 artifact is unchanged.",
+    "Docker results combine the full attempt with a rerun of every cleanup failure; no claim of one all-green full invocation."
+  ]
+}

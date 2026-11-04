@@ -1,0 +1,33 @@
+spec_version: "0.1"
+id: draft-edit-isolation
+version: 1.0.0
+title: Cancelling an edit still changes the shipment checklist
+type: debug
+summary: Repair draft ownership so checklist edits stay private until a valid save.
+languages: [typescript]
+tags: [state, immutability, validation, debugging]
+difficulty: beginner
+timebox_minutes: 30
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: node /opt/patchground/vitest-runner.mjs
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/, tests/]
+hints:
+  - Reproduce the complaint by changing an item label, then cancelling. Compare the saved value before and after.
+  - Trace which objects are shared between the saved checklist, its items array and each draft item.
+  - Check ownership in both directions at begin_edit and save_edit. A new outer object alone may still share mutable children.
+debrief:
+  questions: debrief/questions.md
+  focus: [debugging_method, test_quality, scope_judgment]
+author: {name: Patchground generated challenge author}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by:
+  model: openai-codex/gpt-6.1-sol
+  prompt_version: interview-batch-v1

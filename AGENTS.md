@@ -21,11 +21,13 @@ updates the owning spec in the same change.
 
 The owner approved expanding beyond M1 toward the roadmap and a public documentation/catalog site
 at patchground.dev. Delivery boundaries and resume context live in `docs/launch-brief.md` and
-`docs/delivery-plan.md`; the shared TODO list tracks active work. Four Python/TypeScript debugging/feature starters, seven curated challenges
+`docs/delivery-plan.md`; the shared TODO list tracks active work. Four Python/TypeScript debugging/feature starters, fifteen curated challenges in source
 and immutable verified-outcomes reports are implemented, together with hints, disposable diagnostic
 commands, session browsing, private checkpoint history and consent-gated pinned packs. Consent-gated contribution automation and bounded TypeScript runner evidence are implemented.
 The ten-attempt synthetic learner cohort and later guide/onboarding trials are complete; neither
-establishes human usability. Latest evidence: `docs/evaluations/agent-guide-smoke.md`.
+establishes human usability. Latest evidence: `docs/evaluations/agent-guide-smoke.md` and
+`docs/evaluations/interview-batch.md`. The eight new practical interview challenges are locally
+validated content, not a new PyPI release or a production deployment.
 The owner deferred AI coaching and generation from launch. Remaining gates cover independent-human
 acceptance and approval-gated future publication. Version 0.1.0 and the public site are already
 published. Each subsystem still requires an accepted design and owning-spec updates.

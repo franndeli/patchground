@@ -1,0 +1,99 @@
+--- a/src/evaluator.ts
++++ b/src/evaluator.ts
+@@ -38,7 +38,59 @@
+ }
+ 
+ function parseNode(input: unknown, ruleId: string, path: string, depth: number): RuleNode {
+-  invalid(ruleId, path, "implement rule tree validation");
++  if (depth > 8) invalid(ruleId, path, "maximum depth is eight nodes");
++  const value = record(input, ruleId, path);
++  switch (value.kind) {
++    case "all":
++    case "any": {
++      keys(value, ["kind", "children"], ruleId, path);
++      const children = value.children;
++      if (!Array.isArray(children) || children.length === 0) {
++        invalid(ruleId, `${path}.children`, "expected a nonempty array");
++      }
++      return {
++        kind: value.kind,
++        children: children.map((child: unknown, index: number) =>
++          parseNode(child, ruleId, `${path}.children[${index}]`, depth + 1),
++        ),
++      };
++    }
++    case "not":
++      keys(value, ["kind", "child"], ruleId, path);
++      return { kind: "not", child: parseNode(value.child, ruleId, `${path}.child`, depth + 1) };
++    case "predicate": {
++      keys(value, ["kind", "field", "op", "value"], ruleId, path);
++      const { field, op } = value;
++      if (field === "amount_cents") {
++        if (op !== "gt" && op !== "gte" && op !== "eq") {
++          invalid(ruleId, `${path}.op`, "unsupported amount operator");
++        }
++        if (typeof value.value !== "number" || !Number.isInteger(value.value)) {
++          invalid(ruleId, `${path}.value`, "expected an integer");
++        }
++        return { kind: "predicate", field, op, value: value.value };
++      }
++      if (field !== "country" && field !== "merchant") {
++        invalid(ruleId, `${path}.field`, "unknown transaction field");
++      }
++      if (op === "eq") {
++        if (typeof value.value !== "string") invalid(ruleId, `${path}.value`, "expected a string");
++        return { kind: "predicate", field, op, value: value.value };
++      }
++      if (op === "in") {
++        const members = value.value;
++        if (!Array.isArray(members)) invalid(ruleId, `${path}.value`, "expected a string array");
++        const strings = members.map((member: unknown, index: number) => {
++          if (typeof member !== "string") invalid(ruleId, `${path}.value[${index}]`, "expected a string");
++          return member;
++        });
++        return { kind: "predicate", field, op, value: strings };
++      }
++      invalid(ruleId, `${path}.op`, "unsupported string operator");
++    }
++    default:
++      invalid(ruleId, `${path}.kind`, "unknown node kind");
++  }
+ }
+ 
+ function parseRules(input: unknown): Rule[] {
+@@ -59,7 +111,34 @@
+ }
+ 
+ function evaluateNode(node: RuleNode, transaction: Transaction): boolean {
+-  throw new Error("Implement typed rule interpretation");
++  switch (node.kind) {
++    case "all":
++      return node.children.every(child => evaluateNode(child, transaction));
++    case "any":
++      return node.children.some(child => evaluateNode(child, transaction));
++    case "not":
++      return !evaluateNode(node.child, transaction);
++    case "predicate":
++      if (node.field === "amount_cents") {
++        const amount = transaction.amount_cents;
++        switch (node.op) {
++          case "gt": return amount > node.value;
++          case "gte": return amount >= node.value;
++          case "eq": return amount === node.value;
++          default: {
++            const exhaustive: never = node;
++            return exhaustive;
++          }
++        }
++      }
++      return node.op === "eq"
++        ? transaction[node.field] === node.value
++        : node.value.includes(transaction[node.field]);
++    default: {
++      const exhaustive: never = node;
++      return exhaustive;
++    }
++  }
+ }
+ 
+ export function evaluateRules(rules: unknown, transaction: unknown): string[] {

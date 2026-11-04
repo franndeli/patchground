@@ -223,6 +223,24 @@ test("catalog HTML, JSON and stats come from the manifests and the registry", as
   assert.match(text(html), new RegExp(`${challenges.length} curated challenges`));
 });
 
+test("all eight approved interview challenges ship as generated catalog entries and cards", async () => {
+  const approved = [
+    "config-precedence", "draft-edit-isolation", "cron-field-expansion", "invoice-monthly-summary",
+    "sliding-window-rate-limit", "search-response-ordering", "webhook-retry-scheduling", "transaction-rule-evaluator",
+  ];
+  const json = JSON.parse(await readFile(new URL("catalog.json", dist), "utf8"));
+  for (const id of approved) {
+    const entries = json.challenges.filter((entry) => entry.id === id && entry.pack === "patchground-examples");
+    assert.equal(entries.length, 1, `missing or duplicate approved challenge: ${id}`);
+    assert.equal(entries[0].provenance, "generated", id);
+    assert.ok(html.includes(`data-challenge="${id}"`), `missing card: ${id}`);
+    assert.ok(html.includes(`examples/${id}/TICKET.md`), `missing ticket link: ${id}`);
+    for (const privateField of ["checks", "solution", "hints", "generated_by"]) {
+      assert.equal(entries[0][privateField], undefined, `${id}: private field ${privateField}`);
+    }
+  }
+});
+
 test("the metadata reader publishes only allowlisted fields and handles quotes and folds", () => {
   const meta = readPublicMetadata([
     "id: demo", 'title: Returns "page out of range"', "summary: >-", "  First line", "  second line.",

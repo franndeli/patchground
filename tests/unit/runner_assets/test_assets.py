@@ -7,6 +7,7 @@ from importlib.resources import files
 from pathlib import Path
 
 from patchground.runner_assets import VITEST_COMMAND, vitest_assets
+from patchground.spec import load_challenge
 
 
 def test_assets_are_canonical_portable_bytes() -> None:
@@ -24,9 +25,11 @@ def test_assets_are_canonical_portable_bytes() -> None:
 
 def test_curated_typescript_environments_match_canonical_assets() -> None:
     examples = Path(__file__).resolve().parents[3] / "examples"
-    for challenge in ("release-version-ordering", "event-bus-subscriptions"):
+    for manifest in examples.glob("*/challenge.yaml"):
+        if "typescript" not in load_challenge(manifest.parent).manifest.languages:
+            continue
         for name, data in vitest_assets().items():
-            assert (examples / challenge / "environment" / name).read_bytes() == data
+            assert (manifest.parent / "environment" / name).read_bytes() == data
 
 
 def test_locked_build_time_recipe() -> None:

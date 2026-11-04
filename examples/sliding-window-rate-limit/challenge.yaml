@@ -1,0 +1,33 @@
+spec_version: "0.1"
+id: sliding-window-rate-limit
+version: 1.0.0
+title: Enforce a rolling request quota
+type: feature
+summary: Add deterministic per-client admission and idle cleanup to a small API request gate.
+languages: [typescript]
+tags: [rate-limiting, state, time-boundaries]
+difficulty: intermediate
+timebox_minutes: 45
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: node /opt/patchground/vitest-runner.mjs
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/, tests/]
+hints:
+  - Write a timeline of accepted requests for one client before choosing the stored state.
+  - An accepted timestamp at exactly now minus windowMs no longer consumes capacity.
+  - Compare cleanup with admission pruning; rejection must not add a timestamp or move expiry.
+debrief:
+  questions: debrief/questions.md
+  focus: [test_quality, scope_judgment]
+author: {name: "Patchground generated content (OpenAI Codex)"}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by:
+  model: openai-codex/gpt-6.1-sol
+  prompt_version: interview-batch-v1

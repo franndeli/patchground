@@ -1,0 +1,37 @@
+--- a/src/invoices/repository.py
++++ b/src/invoices/repository.py
+@@ -20,27 +20,20 @@
+         """Return issued invoice totals in a UTC reporting interval."""
+         rows = self.connection.execute(
+             """
+-            WITH invoice_totals AS (
+-                SELECT organization_id, invoice_id, SUM(amount_cents) AS total_cents
+-                FROM invoice_lines
+-                GROUP BY organization_id, invoice_id
+-            )
+             SELECT substr(i.issued_at, 1, 7) AS month,
+-                   SUM(t.total_cents) AS total_cents
++                   COALESCE(l.amount_cents, 0) AS amount_cents
+             FROM invoices AS i
+-            JOIN invoice_totals AS t
+-              ON t.organization_id = i.organization_id
+-             AND t.invoice_id = i.invoice_id
+-            JOIN invoice_lines AS l
++            LEFT JOIN invoice_lines AS l
+               ON l.organization_id = i.organization_id
+              AND l.invoice_id = i.invoice_id
+             WHERE i.organization_id = ?
+               AND i.status = 'issued'
+               AND i.issued_at >= ?
+-              AND i.issued_at <= ?
+-            GROUP BY strftime('%m', i.issued_at)
+-            ORDER BY month
++              AND i.issued_at < ?
+             """,
+             (organization_id, start, end),
+         )
+-        return [MonthlyTotal(month, total_cents) for month, total_cents in rows]
++        totals: dict[str, int] = {}
++        for month, amount_cents in rows:
++            totals[month] = totals.get(month, 0) + amount_cents
++        return [MonthlyTotal(month, totals[month]) for month in sorted(totals)]

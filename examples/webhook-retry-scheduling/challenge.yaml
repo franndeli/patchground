@@ -1,0 +1,34 @@
+spec_version: "0.1"
+id: webhook-retry-scheduling
+version: 1.0.0
+title: Retry webhook deliveries without blocking the queue
+type: feature
+summary: Add bounded time-based retries to a single-worker notification queue with an injected sender.
+languages: [python]
+tags: [retries, state-machines, queues]
+difficulty: advanced
+timebox_minutes: 75
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/, tests/]
+hints:
+  - Write the transitions for success, permanent failure and retryable failure before changing drain.
+  - Treat a drain as one pass over the items that are due, not a loop that waits for retries.
+  - Count the initial send as attempt one, and calculate future due times from the drain's now value.
+  - For a rate limit, compare a valid retry-after duration with the ordinary backoff before adding now.
+debrief:
+  questions: debrief/questions.md
+  focus: [state_modeling, failure_handling, test_quality, scope_judgment]
+author: {name: Patchground generated challenge author}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by:
+  model: openai-codex/gpt-6.1-sol
+  prompt_version: interview-batch-v1

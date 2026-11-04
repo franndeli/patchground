@@ -1,0 +1,33 @@
+spec_version: "0.1"
+id: cron-field-expansion
+version: 1.0.0
+title: Expand a scheduled-export expression
+type: feature
+summary: Complete a bounded schedule parser so operations can preview export fields safely.
+languages: [python]
+tags: [parsing, validation, scheduling]
+difficulty: intermediate
+timebox_minutes: 60
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/, tests/]
+hints:
+  - Separate finding the five fields and opaque command from expanding each field.
+  - Expand comma members independently, then combine them without duplicates and sort.
+  - Validate the bounds before applying a step; the step is anchored at the selected lower endpoint.
+debrief:
+  questions: debrief/questions.md
+  focus: [boundary_reasoning, test_quality, scope_judgment]
+author: {name: Patchground generated challenge author}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by:
+  model: openai-codex/gpt-6.1-sol
+  prompt_version: interview-batch-v1

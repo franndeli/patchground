@@ -1,17 +1,22 @@
 # Project health and next sessions
 
-Baseline: `01c399afe77706b309223d19bf68ae5aa64b2cef`, followed by the local guidance/validation
-work described below. This is a resume index, not a security audit or publication approval. Recheck
-live state when resuming.
+Baseline: `565f350`, which committed and pushed the guidance/validation follow-up. The practical
+interview batch described below adds local source content after that baseline. This is a resume
+index, not a security audit or publication approval. Recheck live state when resuming.
 
 ## Current state
 
 - Patchground **0.1.0 is published** on [PyPI](https://pypi.org/project/patchground/) and as a
   [GitHub release](https://github.com/franndeli/patchground/releases/tag/v0.1.0).
-- [patchground.dev](https://patchground.dev/) is live with seven built-in challenges. The repository
-  registry contains no community packs.
-- The optional guide skill and website prompt are shipped. This follow-up adds verified clipboard
-  readback, static guidance checks, and three synthetic role trials. It does not publish those changes.
+- The last observed [published catalog](https://patchground.dev/catalog.json) has seven built-in
+  challenges. Source now contains fifteen, including the eight approved practical interview
+  challenges. The repository registry contains no community packs.
+- The optional guide skill and website prompt are shipped. Commit `565f350` added verified clipboard
+  readback, static guidance checks, and three synthetic role trials. A source push alone does not
+  establish a website deployment or a new PyPI release.
+- The interview batch is implemented under `examples/`, not just described in research. Its local
+  wheel and generated site include all eight IDs. See [batch evidence](evaluations/interview-batch.md)
+  for validation, review corrections, artifact identity, and remaining limits.
 - Independent-human learner and author acceptance remains **pending recruitment**. Publication and
   synthetic completions do not establish that acceptance or waive future approval gates.
 
@@ -58,9 +63,9 @@ this gate pending rather than inventing observations or marking it passed.
 
 - Platform coverage: existing CI covers Ubuntu/Python 3.12 with Docker; local wheel evidence covers
   macOS. WSL2, Podman, and cold-cache installation are not established by this follow-up.
-- Content: difficulty is not human-rated; there is only one beginner challenge. Use feedback to
-  prioritize another beginner challenge or an independently authored community pack, not an arbitrary
-  catalog target. No demand claim follows from model completions.
+- Content: the source catalog now includes three beginner challenges. Difficulty and timeboxes
+  remain author estimates. Calibrate the expanded catalog with human feedback before claiming
+  interview fidelity, usefulness, or measured completion times.
 - Registry-name installation and a publish helper remain planned, not practice prerequisites.
 - AI coaching/generation, stages, multi-container services, periodic history capture, and restoration
   remain deferred. No accounts, hosted execution, or overall scoring.
@@ -69,10 +74,11 @@ this gate pending rather than inventing observations or marking it passed.
 
 ## Verification context
 
-The evaluation names exact artifacts and rerunnable commands. Local checks cover guidance, Python
-lint/types/non-Docker tests, schema parity, site tests/build, real browser interactions, installed
-candidate behavior, and the Docker-backed synthetic workflows. The full Docker integration suite
-was not rerun for this follow-up; the role trials and coordinator author validation are narrower.
+The [guidance evaluation](evaluations/agent-guide-smoke.md) and
+[interview batch evaluation](evaluations/interview-batch.md) name separate artifacts and checks.
+The earlier guidance follow-up did not rerun the full Docker suite. The batch record includes its
+own full-suite attempts, the pre-existing sandbox residue they exposed, and subsequent verification.
+Do not substitute old results for the current candidate or imply that local checks establish CI.
 
 Historical baseline CI was green:
 [core](https://github.com/franndeli/patchground/actions/runs/41630504321),

@@ -1,0 +1,33 @@
+--- a/src/rate-limiter.ts
++++ b/src/rate-limiter.ts
+@@ -30,10 +30,28 @@
+   }
+ 
+   check(clientId: string): Decision {
+-    throw new Error("Implement the rolling admission policy");
++    const now = this.clock();
++    const live = (this.history.get(clientId) ?? []).filter(
++      timestamp => timestamp > now - this.windowMs,
++    );
++    const allowed = live.length < this.capacity;
++    if (allowed) live.push(now);
++    this.history.set(clientId, live);
++    return { allowed, remaining: this.capacity - live.length };
+   }
+ 
+   cleanup(): number {
+-    throw new Error("Implement idle-history cleanup");
++    const cutoff = this.clock() - this.windowMs;
++    let removed = 0;
++    for (const [clientId, timestamps] of this.history) {
++      const live = timestamps.filter(timestamp => timestamp > cutoff);
++      if (live.length === 0) {
++        this.history.delete(clientId);
++        removed += 1;
++      } else {
++        this.history.set(clientId, live);
++      }
++    }
++    return removed;
+   }
+ }

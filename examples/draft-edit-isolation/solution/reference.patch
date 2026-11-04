@@ -1,0 +1,18 @@
+--- a/src/checklist.ts
++++ b/src/checklist.ts
+@@ -20,7 +20,7 @@
+   | { ok: false; error: SaveError };
+ 
+ export function begin_edit(saved: Checklist): Checklist {
+-  return { ...saved };
++  return { ...saved, items: saved.items.map((item) => ({ ...item })) };
+ }
+ 
+ export function cancel_edit(_draft: Checklist): null {
+@@ -50,5 +50,5 @@
+     }
+     seen.add(item.id);
+   }
+-  return { ok: true, saved: { ...draft, items: [...draft.items] } };
++  return { ok: true, saved: { ...draft, items: draft.items.map((item) => ({ ...item })) } };
+ }

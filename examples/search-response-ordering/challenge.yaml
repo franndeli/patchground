@@ -1,0 +1,33 @@
+spec_version: "0.1"
+id: search-response-ordering
+version: 1.0.0
+title: Old search results replace the latest query
+type: debug
+summary: Repair asynchronous request ownership across results, failures, clearing and disposal.
+languages: [typescript]
+tags: [async, promises, state, debugging]
+difficulty: intermediate
+timebox_minutes: 45
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: node /opt/patchground/vitest-runner.mjs
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/, tests/]
+hints:
+  - Complete two transport promises in the opposite order from their search calls. Inspect the state after each completion.
+  - Trace every place a request can write state, including failure handlers. Decide which request still owns the model.
+  - Query text is not a request identity. Repeating a query, clearing it and disposing the model must invalidate earlier work too.
+debrief:
+  questions: debrief/questions.md
+  focus: [debugging_method, test_quality, scope_judgment]
+author: {name: Patchground generated challenge author}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by:
+  model: openai-codex/gpt-6.1-sol
+  prompt_version: interview-batch-v1

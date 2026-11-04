@@ -16,6 +16,12 @@ The subsequent [guidance/onboarding evaluation](evaluations/agent-guide-smoke.md
 documentation, synthetic learner/author/guide trials, and real browser clipboard verification.
 Those results do not close human acceptance; follow-up changes require their own publication approval.
 
+The [practical interview batch](evaluations/interview-batch.md) adds eight original challenges to
+`examples/`, reaching fifteen in the local wheel and generated website catalog. Its research and
+approved scope remain in `docs/research/practical-interview-challenges.md` and
+`docs/work/interview-challenge-implementation.md`. Source content and local validation are not a
+website deployment, a PyPI release, or human difficulty calibration.
+
 ## Completion definition
 
 Prepare a coherent local-first product: installable CLI, documented authoring/distribution, curated

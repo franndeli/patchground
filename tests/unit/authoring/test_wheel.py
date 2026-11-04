@@ -1,3 +1,4 @@
+import hashlib
 import subprocess
 import zipfile
 from pathlib import Path
@@ -28,3 +29,25 @@ def test_wheel_contains_all_template_assets(tmp_path: Path) -> None:
         assert "patchground/runner_assets/__init__.py" in names
         for name, content in runner_assets.vitest_assets().items():
             assert wheel.read(f"patchground/runner_assets/{name}") == content
+        for manifest in (REPO / "examples").glob("*/challenge.yaml"):
+            challenge = manifest.parent
+            for relative in (
+                "challenge.yaml",
+                "TICKET.md",
+                "workspace",
+                "environment",
+                "checks",
+                "solution",
+                "debrief",
+            ):
+                path = challenge / relative
+                sources = path.rglob("*") if path.is_dir() else [path]
+                for source in sources:
+                    if not source.is_file():
+                        continue
+                    packaged = f"patchground/catalog/{source.relative_to(REPO / 'examples')}"
+                    assert packaged in names, packaged
+                    assert (
+                        hashlib.sha256(wheel.read(packaged)).digest()
+                        == hashlib.sha256(source.read_bytes()).digest()
+                    ), packaged

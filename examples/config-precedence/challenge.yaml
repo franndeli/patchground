@@ -1,0 +1,33 @@
+spec_version: "0.1"
+id: config-precedence
+version: 1.0.0
+title: Configuration overrides discard valid values
+type: debug
+summary: Repair a deployment preview that loses disabled settings and chooses the wrong override.
+languages: [python]
+tags: [configuration, precedence, debugging]
+difficulty: beginner
+timebox_minutes: 30
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/configuration.py, tests/]
+hints:
+  - Compare the presence of a key with the truth value of its value.
+  - Trace two layers with the same priority. Which one reaches the result first?
+  - Think about processing lower priorities before higher ones, with later writes replacing earlier values.
+debrief:
+  questions: debrief/questions.md
+  focus: [debugging_method, test_quality, scope_judgment]
+author: {name: Patchground generated authorship}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by:
+  model: gpt-6.1-sol
+  prompt_version: interview-batch-v1

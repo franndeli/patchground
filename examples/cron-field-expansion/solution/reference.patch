@@ -1,0 +1,49 @@
+--- a/src/export_schedule.py
++++ b/src/export_schedule.py
+@@ -28,15 +28,38 @@
+ 
+ 
+ def _expand(text: str, field: str, lower: int, upper: int) -> tuple[int, ...]:
+-    if text == "*":
+-        return tuple(range(lower, upper + 1))
+-    if not text.isascii() or not text.isdecimal():
+-        raise ScheduleError(field, "preview currently supports only integers and *")
+-    value = int(text)
+-    if not lower <= value <= upper:
+-        raise ScheduleError(field, f"expected {lower}..{upper}")
+-    return (value,)
++    def number(text: str, maximum: int) -> int:
++        if not text or not text.isascii() or not text.isdecimal():
++            raise ScheduleError(field, "expected an unsigned decimal integer")
++        digits = text.lstrip("0") or "0"
++        ceiling = str(maximum)
++        if (len(digits), digits) > (len(ceiling), ceiling):
++            return maximum + 1
++        return int(digits)
+ 
++    values: set[int] = set()
++    for member in text.split(","):
++        if member.count("/") > 1:
++            raise ScheduleError(field, "expected at most one step suffix")
++        selection, slash, step_text = member.partition("/")
++        step = number(step_text, upper - lower + 1) if slash else 1
++        if step == 0:
++            raise ScheduleError(field, "step must be positive")
++        if selection == "*":
++            first, last = lower, upper
++        elif "-" in selection:
++            endpoints = selection.split("-")
++            if len(endpoints) != 2:
++                raise ScheduleError(field, "expected two range endpoints")
++            first, last = (number(endpoint, upper) for endpoint in endpoints)
++        else:
++            if slash:
++                raise ScheduleError(field, "steps require a wildcard or range")
++            first = last = number(selection, upper)
++        if not lower <= first <= last <= upper:
++            raise ScheduleError(field, f"expected ascending values in {lower}..{upper}")
++        values.update(range(first, last + 1, step))
++    return tuple(sorted(values))
+ 
+ def parse_schedule(expression: str) -> Schedule:
+     """Split five fields from an opaque command and expand each field."""

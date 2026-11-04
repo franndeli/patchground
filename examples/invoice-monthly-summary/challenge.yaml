@@ -1,0 +1,33 @@
+spec_version: "0.1"
+id: invoice-monthly-summary
+version: 1.0.0
+title: Monthly invoice totals are wrong
+type: debug
+summary: Repair an SQLite billing report that merges years and counts invoice amounts more than once.
+languages: [python]
+tags: [sqlite, aggregation, debugging, integer-money]
+difficulty: intermediate
+timebox_minutes: 45
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/invoices/repository.py, tests/]
+hints:
+  - Follow one invoice with several lines through each join. How many rows represent its total?
+  - Compare the grouping keys for January in two different years.
+  - Check invoices with no lines and timestamps exactly at the interval end, without losing organization isolation.
+debrief:
+  questions: debrief/questions.md
+  focus: [debugging_method, test_quality, scope_judgment]
+author: {name: Patchground generated authorship}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by:
+  model: gpt-6.1-sol
+  prompt_version: interview-batch-v1

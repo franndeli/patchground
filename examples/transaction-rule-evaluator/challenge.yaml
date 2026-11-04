@@ -1,0 +1,33 @@
+spec_version: "0.1"
+id: transaction-rule-evaluator
+version: 1.0.0
+title: Evaluate transaction rules without executing code
+type: feature
+summary: Validate an untrusted JSON rule tree and explain matching risk-preview rules with a bounded interpreter.
+languages: [typescript]
+tags: [validation, interpreters, untrusted-input]
+difficulty: advanced
+timebox_minutes: 75
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: node /opt/patchground/vitest-runner.mjs
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/, tests/]
+hints:
+  - Separate parsing the unknown JSON from interpreting a validated typed tree.
+  - Validate every child before considering logical short-circuiting or matching rules.
+  - Carry the rule ID and tree path through recursion; the root counts toward the eight-node limit.
+debrief:
+  questions: debrief/questions.md
+  focus: [test_quality, scope_judgment]
+author: {name: "Patchground generated content (OpenAI Codex)"}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by:
+  model: openai-codex/gpt-6.1-sol
+  prompt_version: interview-batch-v1

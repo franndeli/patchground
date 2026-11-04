@@ -1,0 +1,38 @@
+--- a/src/webhook_queue.py
++++ b/src/webhook_queue.py
+@@ -53,10 +53,29 @@
+             try:
+                 response = self._sender(attempt)
+             except TimeoutError:
+-                self._deliveries[delivery.delivery_id] = replace(
+-                    attempt, status="failed", due_at=None
+-                )
+-                continue
+-            status: Status = "complete" if 200 <= response.status_code < 300 else "failed"
+-            self._deliveries[delivery.delivery_id] = replace(attempt, status=status, due_at=None)
++                response = None
++            due_at: int | None = None
++            status: Status
++            if response is not None and 200 <= response.status_code < 300:
++                status = "complete"
++            elif (
++                response is None
++                or response.status_code == 429
++                or 500 <= response.status_code < 600
++            ):
++                if attempt.attempts >= 3:
++                    status = "exhausted"
++                else:
++                    delay = 1000 * attempt.attempts
++                    if response is not None and response.status_code == 429:
++                        duration = response.retry_after_ms
++                        if type(duration) is int and duration >= 0:
++                            delay = max(delay, duration)
++                    status = "pending"
++                    due_at = now + delay
++            else:
++                status = "failed"
++            self._deliveries[delivery.delivery_id] = replace(
++                attempt, status=status, due_at=due_at
++            )
+         return tuple(attempted)
