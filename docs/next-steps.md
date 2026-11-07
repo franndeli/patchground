@@ -6,22 +6,22 @@ the daily routine, see [maintenance](maintenance.md).
 
 ## Current state
 
-- **PyPI:** 0.1.0 is published. 0.2.0 is tagged and published only after the owner approves the
-  `release` and `pypi` environments in the release workflow (see [publishing](publishing.md)).
-  Recheck PyPI before assuming either.
-- **Catalog:** source contains eighteen built-in challenges: debug, feature and architecture work
-  in Python and TypeScript. The site and `catalog.json` are generated from `examples/` at build time;
-  the live site showed all fifteen pre-architecture challenges on 2026-11-07. Counts are never
-  written by hand (tests reject them in the landing and README).
+- **PyPI:** 0.2.0 is published ([release workflow](https://github.com/franndeli/patchground/actions/runs/42418846808):
+  build, GitHub release and PyPI jobs succeeded after owner approval).
+- **Website:** deployed from `b39f4ad` on 2026-11-07 (Cloudflare Worker `patchground`, version
+  `d745a914-db6f-4ffc-807a-947ee19caac0`). The live `catalog.json` lists eighteen challenges across
+  debug, feature and architecture; a browser check on the live page paged five at a time and the
+  Architecture filter showed four cards. Counts are generated from `examples/` at build time and
+  never written by hand (tests reject them in the landing and README).
 - **Architecture practice:** the `architecture` challenge type (contract:
   [challenge format](contracts/challenge-format.md)) and three new challenges,
   `sales-report-layers`, `shipping-carrier-plugins` and `payment-vendor-boundary`, plus the
   retyped `order-notifications-boundary`. Each passed all six `pgnd validate` steps and the
   installed-wheel release-candidate check. An independent review found loopholes and unstated
   requirements; they were fixed and the bypasses were re-run in real sessions to confirm they fail.
-- **Website:** the challenge list shows five per page with Previous/Next; filters and search span
-  the whole catalog. Without JavaScript every challenge is listed.
-- **CI:** green on `7c673bb` (core, web, validation Action, secret scan) and on the scheduled
+- **Website catalog:** five challenges per page with Previous/Next; filters and search span the
+  whole catalog. Without JavaScript every challenge is listed.
+- **CI:** green on `b39f4ad` (core, web, validation Action, secret scan) and on the scheduled
   registry runs. Check the current commit before relying on it.
 - Independent-human learner and author acceptance remains **pending recruitment**. Synthetic runs
   do not establish it.
