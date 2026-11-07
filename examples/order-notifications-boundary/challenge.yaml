@@ -2,7 +2,7 @@ spec_version: "0.1"
 id: order-notifications-boundary
 version: 1.0.0
 title: Put a port between the order service and its storage and email
-type: refactor
+type: architecture
 summary: >-
   OrderService imports and constructs SQLite and SMTP adapters itself, so nothing can be swapped
   for SMS or for fast tests. Introduce ports, inject the adapters and keep behaviour identical.

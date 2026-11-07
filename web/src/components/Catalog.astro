@@ -4,7 +4,8 @@ import { REPO, day, pad, title } from "../lib/catalog.mjs";
 
 interface Props { view: ReturnType<typeof import("../lib/catalog.mjs").catalogView> }
 const { view } = Astro.props;
-const tile: Record<string, string> = { debug: "from-fail/25 text-fail", feature: "from-pass/25 text-pass", refactor: "from-sky-400/25 text-sky-300" };
+const tile: Record<string, string> = { debug: "from-fail/25 text-fail", feature: "from-pass/25 text-pass", refactor: "from-sky-400/25 text-sky-300", architecture: "from-violet-400/25 text-violet-300" };
+const tileLabel: Record<string, string> = { architecture: "Arch" };
 ---
 <section class="catalog-section mx-auto w-[min(1200px,calc(100%-40px))] py-20 lg:py-28" id="challenges" aria-labelledby="challenges-heading">
   <SectionHeading eyebrow="Challenges" id="challenges-heading">
@@ -31,7 +32,7 @@ const tile: Record<string, string> = { debug: "from-fail/25 text-fail", feature:
       <article class="challenge-card group relative grid gap-4 p-5 transition-colors hover:bg-panel-2/70 sm:grid-cols-[64px_1fr_auto] sm:items-center sm:gap-6" data-facets={e.facets} data-tags={e.tags.join(" ")} data-search={e.search} data-challenge={e.id} data-pack={e.pack}>
         <span class:list={["challenge-tile grid size-16 place-content-center rounded-xl border border-line bg-gradient-to-br to-transparent text-center", tile[e.type] ?? "from-patch/25 text-patch-soft"]} aria-hidden="true">
           <span class="font-mono text-sm font-semibold">{e.langTag}</span>
-          <span class="text-2xs text-muted">{title(e.type)}</span>
+          <span class="text-2xs text-muted" title={title(e.type)}>{tileLabel[e.type] ?? title(e.type)}</span>
         </span>
         <div class="challenge-summary min-w-0">
           <h3 class="font-semibold tracking-tight"><a class="after:absolute after:inset-0 hover:text-patch-soft" href={e.ticket}>{e.title}<span class="sr-only"> — read the ticket</span></a></h3>

@@ -52,6 +52,7 @@ class ChallengeType(StrEnum):
     FEATURE = "feature"
     REVIEW = "review"
     REFACTOR = "refactor"
+    ARCHITECTURE = "architecture"
 
 
 class Difficulty(StrEnum):

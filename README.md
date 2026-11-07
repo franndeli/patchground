@@ -25,8 +25,10 @@ including hidden ones, in Docker and reports verified outcomes rather than a sco
   such as which tests pass, whether you added a regression test and what you changed. It never gives
   an overall score.
 
-> **Status: 0.1.0, early release.** Seven curated Python and TypeScript challenges ship with the
-> CLI: debugging, feature work and an architecture refactor. Difficulty is not yet human-rated.
+> **Status: early release.** Curated Python and TypeScript challenges ship with the CLI:
+> debugging, feature work and architecture. `pgnd list --builtin` or the
+> [catalog](https://patchground.dev/#challenges) shows the current set. Difficulty is not yet
+> human-rated.
 
 ## Quick start
 

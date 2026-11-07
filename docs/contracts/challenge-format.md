@@ -34,7 +34,7 @@ spec_version: "0.1"
 id: duplicate-charges-on-retry      # matches the folder name
 version: 1.0.0                      # semver
 title: Duplicate charges after a payment retry
-type: debug                         # debug | feature | review | refactor
+type: debug                         # debug | feature | review | refactor | architecture
 summary: A retry path charges customers twice. Find the root cause and fix it with a test.
 languages: [python]
 tags: [idempotency, retries]
@@ -65,6 +65,11 @@ Optional: `tags`, `checks.visible`, `expected_paths`, `hints`, `debrief`, `conte
 `CC-BY-4.0`), `provenance` (default `handmade`), `generated_by`; every other key is required. Values
 are not coerced: `spec_version` is the string `"0.1"`, `timebox_minutes` an integer.
 
+- `type: architecture` restructures a working codebase so it gains a stated architectural property
+  (a dependency direction, a port, an extension point, an anti-corruption layer) while behaviour is
+  preserved. As for every type, only tests decide: hidden checks pair behaviour tests with
+  structural tests (for example import direction, or a new extension added without editing core
+  files). Written designs are not this type; `design` stays reserved.
 - Unknown keys are rejected, except keys prefixed `x-`, which are accepted and ignored so experiments
   don't break the schema.
 - Every path is relative to the challenge folder and must stay inside it, except `expected_paths`,

@@ -16,6 +16,11 @@ from patchground.cli.app import app
 ROOT = Path(__file__).resolve().parents[2]
 SKILL = Path("skills/patchground/SKILL.md")
 REPO = "https://github.com/franndeli/patchground/blob/main/"
+# A written count goes stale as the catalog grows; `pgnd list --builtin` and the site generate it.
+COUNTED_CHALLENGES = (
+    r"\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen"
+    r"|fifteen|twenty)\s+(?:[a-z-]+\s+){0,4}challenges\b"
+)
 
 
 def assert_public_guidance(root: Path) -> None:
@@ -37,6 +42,8 @@ def assert_public_guidance(root: Path) -> None:
     assert "--type debug|feature" in readme
     assert "--lang python|typescript" in readme
     assert "Only that template combination is currently supported" not in readme
+    stale_count = re.search(COUNTED_CHALLENGES, readme, re.IGNORECASE)
+    assert stale_count is None, f"README hardcodes a challenge count: {stale_count[0]}"
     first_session = (root / "docs/first-session.md").read_text()
     assert "accept challenge paths, not IDs" not in first_session
     assert "list --builtin" in first_session
@@ -66,6 +73,12 @@ def test_standalone_guide_and_public_docs() -> None:
             "for any of the four starters.",
             "Only that template combination is currently supported.",
             None,
+        ),
+        (
+            Path("README.md"),
+            "Curated Python and TypeScript challenges ship",
+            "Fifteen curated Python and TypeScript challenges ship",
+            "hardcodes a challenge count",
         ),
         (
             Path("docs/first-session.md"),

@@ -88,7 +88,7 @@ Eight nouns define the whole system; code, docs and CLI output must use exactly 
 | Term | Definition |
 | --- | --- |
 | Challenge | One self-contained exercise: a starting codebase, a ticket, verification, reference solution, optional debrief questions. Lives in one folder. |
-| Challenge type | `debug`, `feature`, `review`, `refactor`, `incident`, `ai-validation`. `design` (system design) is reserved for later. |
+| Challenge type | `debug`, `feature`, `review`, `refactor`, `architecture`, `incident`, `ai-validation`. `design` (system design) is reserved for later. |
 | Stage | Not in format v0.1. Reserved for progressive requirements inside one challenge, once there is a model that works on top of any valid earlier solution, not just the reference. |
 | Pack | A versioned collection of challenges, distributed as a git repository with a `pack.yaml` index. |
 | Session | One attempt at a challenge by one user: its own workspace, timer, event log and final report. |
@@ -133,7 +133,7 @@ spec_version: "0.1"
 id: duplicate-charges-on-retry
 version: 1.0.0
 title: Duplicate charges after a payment retry
-type: debug               # v0.1: debug | feature | review | refactor
+type: debug               # v0.1: debug | feature | review | refactor | architecture
 summary: A retry path charges customers twice. Find the root cause and fix it with a test.
 languages: [python]
 tags: [idempotency, retries]

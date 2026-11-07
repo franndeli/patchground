@@ -51,7 +51,8 @@
         "debug",
         "feature",
         "review",
-        "refactor"
+        "refactor",
+        "architecture"
       ],
       "title": "ChallengeType",
       "type": "string"

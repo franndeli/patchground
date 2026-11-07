@@ -59,7 +59,13 @@ def test_schema_headers_and_extension_rule(tmp_path: Path) -> None:
 def test_challenge_schema_details(tmp_path: Path) -> None:
     export_schemas(tmp_path)
     schema = json.loads((tmp_path / FILES[0]).read_text(encoding="utf-8"))
-    assert schema["$defs"]["ChallengeType"]["enum"] == ["debug", "feature", "review", "refactor"]
+    assert schema["$defs"]["ChallengeType"]["enum"] == [
+        "debug",
+        "feature",
+        "review",
+        "refactor",
+        "architecture",
+    ]
     assert schema["$defs"]["AIPolicy"]["enum"] == ["allowed", "forbidden"]
     assert schema["then"]["required"] == ["generated_by"]
     defs = {name for name, d in schema["$defs"].items() if d.get("type") == "object"}

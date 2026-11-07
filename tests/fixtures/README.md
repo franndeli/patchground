@@ -18,7 +18,7 @@ All must be reported in one pass, each naming `challenge.yaml` and the line:
 
 | Line | Path | Problem |
 | --- | --- | --- |
-| 5 | `type` | `bugfix` is not one of `debug`, `feature`, `review`, `refactor`. |
+| 5 | `type` | `bugfix` is not one of `debug`, `feature`, `review`, `refactor`, `architecture`. |
 | 12 | `estimated_minutes` | Unknown top-level key. |
 | 17 | `environment.network` | Unknown key inside `environment`. |
 | — | `timebox_minutes` | Required field missing. It has no line of its own; expect the error to point at the top-level mapping (line 1). |

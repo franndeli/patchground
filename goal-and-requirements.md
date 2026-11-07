@@ -105,7 +105,7 @@ Code, docs and CLI output use exactly these terms.
 | Term | Meaning |
 | --- | --- |
 | Challenge | One self-contained exercise in one folder: starting codebase, ticket, checks, reference solution, optional debrief questions. |
-| Challenge type | `debug`, `feature`, `review`, `refactor` (format v0.1); `incident`, `ai-validation`, `design` are reserved. |
+| Challenge type | `debug`, `feature`, `review`, `refactor`, `architecture` (format v0.1); `incident`, `ai-validation`, `design` are reserved. |
 | Pack | A versioned collection of challenges, distributed as a git repository with a `pack.yaml` index. |
 | Session | One attempt at a challenge by one user: its workspace, timer, event log and report. |
 | Workspace | The git repo the user edits, created fresh per session outside the pack. |
