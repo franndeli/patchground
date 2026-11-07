@@ -3,6 +3,29 @@
 All notable changes to the Patchground CLI. The format follows Keep a Changelog; versions follow
 Semantic Versioning. Before 1.0, minor versions may change the CLI and challenge format.
 
+## [0.2.0]
+
+Adds architecture practice and eleven more curated challenges. Sessions, reports and existing
+challenge folders are unchanged.
+
+### Added
+
+- Challenge type `architecture`: restructure working code so it gains a stated architectural
+  property while behaviour stays identical. Hidden checks pair behaviour tests with structural
+  tests. `pgnd list --type architecture` filters for it. Packs that use it need CLI 0.2.0 or later.
+- Three architecture challenges: `sales-report-layers` (Python, layering a god function),
+  `shipping-carrier-plugins` (TypeScript, a carrier extension point) and `payment-vendor-boundary`
+  (Python, an anti-corruption layer around a vendor SDK). The existing ports-and-adapters
+  challenge, `order-notifications-boundary`, is now typed `architecture`.
+- Eight practical interview challenges across Python and TypeScript, from beginner to advanced:
+  `config-precedence`, `draft-edit-isolation`, `cron-field-expansion`, `invoice-monthly-summary`,
+  `sliding-window-rate-limit`, `search-response-ordering`, `webhook-retry-scheduling` and
+  `transaction-rule-evaluator`.
+
+### Fixed
+
+- `pgnd start --help` describes the built-in challenge ID argument.
+
 ## [0.1.0]
 
 First public preview. Local-first: no account, no hosted execution, no built-in AI, no overall score.

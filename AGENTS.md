@@ -21,7 +21,7 @@ updates the owning spec in the same change.
 
 The owner approved expanding beyond M1 toward the roadmap and a public documentation/catalog site
 at patchground.dev. Delivery boundaries and resume context live in `docs/launch-brief.md` and
-`docs/delivery-plan.md`; the shared TODO list tracks active work. Four Python/TypeScript debugging/feature starters, fifteen curated challenges in source
+`docs/delivery-plan.md`; the shared TODO list tracks active work. Four Python/TypeScript debugging/feature starters, curated debug, feature and architecture challenges in source
 and immutable verified-outcomes reports are implemented, together with hints, disposable diagnostic
 commands, session browsing, private checkpoint history and consent-gated pinned packs. Consent-gated contribution automation and bounded TypeScript runner evidence are implemented.
 The ten-attempt synthetic learner cohort and later guide/onboarding trials are complete; neither

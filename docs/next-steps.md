@@ -1,24 +1,30 @@
 # Project health and next sessions
 
-Baseline: `565f350`, which committed and pushed the guidance/validation follow-up. The practical
-interview batch described below adds local source content after that baseline. This is a resume
-index, not a security audit or publication approval. Recheck live state when resuming.
+Baseline: the 0.2.0 release commit on `main` (architecture practice, see the changelog). This is a
+resume index, not a security audit or publication approval. Recheck live state when resuming. For
+the daily routine, see [maintenance](maintenance.md).
 
 ## Current state
 
-- Patchground **0.1.0 is published** on [PyPI](https://pypi.org/project/patchground/) and as a
-  [GitHub release](https://github.com/franndeli/patchground/releases/tag/v0.1.0).
-- The last observed [published catalog](https://patchground.dev/catalog.json) has seven built-in
-  challenges. Source now contains fifteen, including the eight approved practical interview
-  challenges. The repository registry contains no community packs.
-- The optional guide skill and website prompt are shipped. Commit `565f350` added verified clipboard
-  readback, static guidance checks, and three synthetic role trials. A source push alone does not
-  establish a website deployment or a new PyPI release.
-- The interview batch is implemented under `examples/`, not just described in research. Its local
-  wheel and generated site include all eight IDs. See [batch evidence](evaluations/interview-batch.md)
-  for validation, review corrections, artifact identity, and remaining limits.
-- Independent-human learner and author acceptance remains **pending recruitment**. Publication and
-  synthetic completions do not establish that acceptance or waive future approval gates.
+- **PyPI:** 0.1.0 is published. 0.2.0 is tagged and published only after the owner approves the
+  `release` and `pypi` environments in the release workflow (see [publishing](publishing.md)).
+  Recheck PyPI before assuming either.
+- **Catalog:** source contains eighteen built-in challenges: debug, feature and architecture work
+  in Python and TypeScript. The site and `catalog.json` are generated from `examples/` at build time;
+  the live site showed all fifteen pre-architecture challenges on 2026-11-07. Counts are never
+  written by hand (tests reject them in the landing and README).
+- **Architecture practice:** the `architecture` challenge type (contract:
+  [challenge format](contracts/challenge-format.md)) and three new challenges,
+  `sales-report-layers`, `shipping-carrier-plugins` and `payment-vendor-boundary`, plus the
+  retyped `order-notifications-boundary`. Each passed all six `pgnd validate` steps and the
+  installed-wheel release-candidate check. An independent review found loopholes and unstated
+  requirements; they were fixed and the bypasses were re-run in real sessions to confirm they fail.
+- **Website:** the challenge list shows five per page with Previous/Next; filters and search span
+  the whole catalog. Without JavaScript every challenge is listed.
+- **CI:** green on `7c673bb` (core, web, validation Action, secret scan) and on the scheduled
+  registry runs. Check the current commit before relying on it.
+- Independent-human learner and author acceptance remains **pending recruitment**. Synthetic runs
+  do not establish it.
 
 ## Completed follow-up
 
@@ -63,10 +69,13 @@ this gate pending rather than inventing observations or marking it passed.
 
 - Platform coverage: existing CI covers Ubuntu/Python 3.12 with Docker; local wheel evidence covers
   macOS. WSL2, Podman, and cold-cache installation are not established by this follow-up.
-- Content: the source catalog now includes three beginner challenges. Difficulty and timeboxes
+- Content: three beginner challenges and four architecture challenges exist. Difficulty and timeboxes
   remain author estimates. Calibrate the expanded catalog with human feedback before claiming
   interview fidelity, usefulness, or measured completion times.
 - Registry-name installation and a publish helper remain planned, not practice prerequisites.
+- Systems practice beyond one process (multi-container `services`) needs a runner and sandbox
+  redesign with a security review. Written design challenges (`design`) stay reserved because
+  tests cannot verify them.
 - AI coaching/generation, stages, multi-container services, periodic history capture, and restoration
   remain deferred. No accounts, hosted execution, or overall scoring.
 - Any future package release or production deployment needs separate explicit approval. The help
