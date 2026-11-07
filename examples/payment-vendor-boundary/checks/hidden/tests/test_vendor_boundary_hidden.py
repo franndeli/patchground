@@ -2,6 +2,8 @@
 
 import ast
 import dataclasses
+import subprocess
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -26,6 +28,17 @@ def test_only_the_gateway_adapter_and_the_composition_root_import_the_sdk():
     importers = {path.name for path in BILLING.rglob("*.py") if imports_paysafe(path)}
     assert importers <= {"paysafe_gateway.py", "app.py"}
     assert "paysafe_gateway.py" in importers
+
+
+def test_the_domain_never_loads_the_sdk_even_indirectly():
+    code = "import sys, billing.invoices, billing.dunning, billing.payments; print(chr(10).join(sys.modules))"
+    result = subprocess.run(
+        [sys.executable, "-c", code], cwd=BILLING.parents[1], env={"PYTHONPATH": "src"},
+        capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    loaded = set(result.stdout.split())
+    assert not {m for m in loaded if m == "paysafe" or m.startswith("paysafe.") or m == "billing.paysafe_gateway"}
 
 
 def test_invoice_holds_no_vendor_data():

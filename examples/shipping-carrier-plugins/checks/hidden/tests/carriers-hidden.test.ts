@@ -12,7 +12,9 @@ const plugins = async () => ({
   ups: (await import("../src/carriers/ups")).ups,
 });
 
-const source = (file: string) => readFileSync(new URL(`../src/${file}`, import.meta.url), "utf8");
+// Source without comments, so a mention in a comment neither satisfies nor fails a check.
+const source = (file: string) =>
+  readFileSync(new URL(`../src/${file}`, import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
 const small = { weightGrams: 1500, destination: "NL", express: false };
 const bike: Carrier = {
   id: "bike",
@@ -32,7 +34,7 @@ test("hidden a new carrier plugs in without editing the quoter", async () => {
 
 test("hidden the quoter knows no carrier by name", () => {
   const quoter = source("quoter.ts");
-  expect(quoter).not.toMatch(/postnl|dhl|ups/i);
+  expect(quoter).not.toMatch(/\b(postnl|dhl|ups)\b/i);
   expect(quoter).not.toMatch(/from\s+["']\.\/carriers/);
   expect(quoter).not.toMatch(/\bswitch\s*\(/);
 });
@@ -70,6 +72,7 @@ test("hidden duplicate ids are rejected and the quoter keeps its own copy", asyn
 test("hidden the public functions delegate to a quoter of the three carriers", () => {
   const quotes = source("quotes.ts");
   expect(quotes).not.toMatch(/\bswitch\s*\(/);
+  expect(quotes).not.toMatch(/\b(695|1200|990)\b/);
   expect(quotes).toMatch(/createQuoter\s*\(/);
   expect(availableCarriers({ weightGrams: 25_000, destination: "FR", express: false })).toEqual(["dhl"]);
   expect(quote({ weightGrams: 3001, destination: "BE", express: false }, "postnl")).toBe(895);

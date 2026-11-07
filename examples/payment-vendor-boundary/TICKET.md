@@ -34,9 +34,14 @@ Put an anti-corruption layer between billing and the vendor:
   that speaks Paysafe apart from the composition root. It maps every code and the timeout to a
   `PaymentResult`, converts `ts_ms` to an aware UTC `datetime`, and raises `PaymentGatewayError`
   for unknown codes or a charged amount or currency that does not match the request.
-- `InvoiceService(gateway)` depends only on the port. `Invoice` loses `last_response`. Every
-  other field and every outcome stays the same.
-- Dunning decides from billing's own data.
+- `PaymentResult.reference` and `paid_at` are set only for `APPROVED`; they are `None` otherwise.
+- `InvoiceService(gateway)` depends only on the port: importing `billing.invoices`,
+  `billing.dunning` or `billing.payments` loads neither the SDK nor the adapter, directly or
+  indirectly. `Invoice` loses `last_response` and gains no field; every other field and every
+  outcome stays the same. `failure` holds the `Reason`.
+- Dunning decides from `status` and `failure` only.
+- When the gateway raises `PaymentGatewayError`, `collect` lets it propagate and leaves the invoice
+  unchanged, as today.
 - `billing.app.build_invoice_service(client)` is the composition root that wires the adapter in.
   The visible tests use it and must pass unchanged.
 

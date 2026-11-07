@@ -88,7 +88,7 @@ Eight nouns define the whole system; code, docs and CLI output must use exactly 
 | Term | Definition |
 | --- | --- |
 | Challenge | One self-contained exercise: a starting codebase, a ticket, verification, reference solution, optional debrief questions. Lives in one folder. |
-| Challenge type | `debug`, `feature`, `review`, `refactor`, `architecture`, `incident`, `ai-validation`. `design` (system design) is reserved for later. |
+| Challenge type | `debug`, `feature`, `review`, `refactor`, `architecture`. `incident`, `ai-validation` and `design` (system design) are reserved for later. |
 | Stage | Not in format v0.1. Reserved for progressive requirements inside one challenge, once there is a model that works on top of any valid earlier solution, not just the reference. |
 | Pack | A versioned collection of challenges, distributed as a git repository with a `pack.yaml` index. |
 | Session | One attempt at a challenge by one user: its own workspace, timer, event log and final report. |

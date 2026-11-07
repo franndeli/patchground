@@ -229,7 +229,7 @@ test("landing copy never hardcodes a challenge count; every count comes from the
   const dir = new URL("src/components/", web);
   const sources = await Promise.all((await readdir(dir)).map((n) => readFile(new URL(n, dir), "utf8")));
   sources.push(await readFile(new URL("src/pages/index.astro", web), "utf8"));
-  const literal = /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|twenty)\s+(?:[a-z-]+\s+)?challenges\b/i;
+  const literal = /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|twenty)\s+(?:[a-z-]+\s+){0,4}challenges\b/i;
   for (const source of sources) assert.ok(!literal.test(source), String(source.match(literal)));
 });
 
@@ -313,7 +313,8 @@ test("status page lists every seen source with its failing step; empty registrie
 
 function element(dataset = {}, textContent = "") {
   return {
-    dataset, textContent, hidden: false, disabled: false, attributes: {}, listeners: {},
+    dataset, textContent, hidden: false, disabled: false, attributes: {}, listeners: {}, focused: false,
+    focus() { this.focused = true; },
     setAttribute(key, value) { this.attributes[key] = value; },
     addEventListener(event, listener) { this.listeners[event] = listener; },
   };
@@ -383,7 +384,9 @@ test("the list shows one page at a time; filters and search reset to page one; o
   next.listeners.click();
   assert.deepEqual(cards.map((c) => c.hidden), [true, true, false]);
   assert.equal(label.textContent, "Page 2 of 2");
+  assert.equal(label.attributes["aria-live"], "polite");
   assert.equal(next.disabled, true);
+  assert.equal(prev.focused, true, "focus leaves the button that became disabled");
   assert.equal(elements["#catalog-count"].textContent, "3 challenges in 2 packs");
   filters[2].listeners.click();
   assert.deepEqual(cards.map((c) => c.hidden), [true, false, false]);

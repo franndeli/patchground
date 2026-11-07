@@ -29,10 +29,11 @@ list. There is no way to quote with a carrier that is not in that file.
   `UnknownCarrierError` for an id it was not given, `UnsupportedShipmentError` for a parcel the
   carrier refuses, and cheapest-first ordering with ties broken by id.
 - The quoter names no carrier and imports nothing from `src/carriers/`. Two carriers with the same
-  id are rejected when the quoter is created. Changing the array passed to `createQuoter`
+  id make `createQuoter` throw an error whose message names that id. Changing the array passed to `createQuoter`
   afterwards does not change that quoter.
-- `quote` and `availableCarriers` in `src/quotes.ts` keep their signatures and results; they use
-  a quoter built from the three existing carriers.
+- `quote` and `availableCarriers` in `src/quotes.ts` keep their signatures and results; they delegate to
+  a quoter that `quotes.ts` builds with `createQuoter` from the three existing carriers. No carrier
+  rule stays in `quotes.ts`.
 
 ## Notes
 

@@ -114,3 +114,7 @@ Not in v0.1; the runner must not implement them: stages, `ai_policy: trap` (plan
 
 The Pydantic models in `patchground-spec` are the source of truth; JSON Schemas are exported to
 `schema/` and versioned with `spec_version`.
+
+Within one `spec_version`, a CLI release may add enum values (such as the `architecture` type in
+CLI 0.2.0) but never removes or renames anything. An older CLI rejects a new value with a manifest
+error naming the field and line, so a pack using one should state the minimum CLI version it needs.

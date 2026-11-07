@@ -1,7 +1,10 @@
 """Architecture checks: a pure domain core, storage and presentation at the edges."""
 
 import ast
+import re
 import sqlite3
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -9,39 +12,39 @@ import pytest
 SRC = Path(__file__).resolve().parents[1] / "src" / "reports"
 
 
-def imported_modules(name: str) -> set[str]:
-    tree = ast.parse((SRC / name).read_text(encoding="utf-8"))
-    found: set[str] = set()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            found.update(alias.name for alias in node.names)
-        elif isinstance(node, ast.ImportFrom):
-            if node.level:
-                found.add("reports." + (node.module or ""))
-            elif node.module:
-                found.add(node.module)
-    return found
-
-
-def depends_on(name: str, forbidden: set[str]) -> set[str]:
-    return {m for m in imported_modules(name) if m in forbidden or any(m.startswith(f + ".") for f in forbidden)}
+def loaded_by(module: str) -> set[str]:
+    """Every module that importing ``module`` loads, directly or transitively, in a fresh interpreter."""
+    code = f"import sys, {module}; print(chr(10).join(sys.modules))"
+    result = subprocess.run(
+        [sys.executable, "-c", code], cwd=SRC.parents[1], env={"PYTHONPATH": "src"},
+        capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    return set(result.stdout.split())
 
 
 def test_domain_depends_on_nothing_outside_itself():
-    assert not depends_on("domain.py", {"sqlite3", "reports.storage", "reports.text", "reports.report"})
+    assert not loaded_by("reports.domain") & {"sqlite3", "reports.storage", "reports.text", "reports.report"}
 
 
 def test_presentation_does_not_reach_storage():
-    assert not depends_on("text.py", {"sqlite3", "reports.storage", "reports.report"})
+    assert not loaded_by("reports.text") & {"sqlite3", "reports.storage", "reports.report"}
 
 
 def test_storage_does_not_format():
-    assert not depends_on("storage.py", {"reports.text", "reports.report"})
+    assert not loaded_by("reports.storage") & {"reports.text", "reports.report"}
+
+
+SQL = re.compile(r"\bSELECT\b[\s\S]+\bFROM\b")  # SQL keywords as written in queries, not prose
 
 
 def test_report_only_composes_the_layers():
-    assert not depends_on("report.py", {"sqlite3"})
-    assert "SELECT" not in (SRC / "report.py").read_text(encoding="utf-8").upper()
+    tree = ast.parse((SRC / "report.py").read_text(encoding="utf-8"))
+    imports = {alias.name for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names}
+    imports |= {node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) and node.module}
+    assert "sqlite3" not in imports
+    strings = [node.value for node in ast.walk(tree) if isinstance(node, ast.Constant) and isinstance(node.value, str)]
+    assert not any(SQL.search(text) for text in strings)
 
 
 def test_summarize_needs_no_database():
@@ -105,7 +108,7 @@ def test_storage_returns_domain_sales_in_insertion_order(tmp_path):
     from reports.storage import SqliteSales
 
     db = seed(tmp_path / "s.db", [("b", 1, 100, "2026-02-03"), ("a", 2, 50, "2026-02-01"), ("c", 1, 1, "2026-03-01")])
-    assert SqliteSales(db).for_month("2026-02") == [Sale("b", 1, 100), Sale("a", 2, 50)]
+    assert list(SqliteSales(db).for_month("2026-02")) == [Sale("b", 1, 100), Sale("a", 2, 50)]
 
 
 def test_report_is_the_composition_of_the_layers(tmp_path):

@@ -58,15 +58,18 @@ if (filterGroup && count && challenges.length && filters.length) {
   }
   filterGroup.hidden = false;
 
-  const turn = (step) => {
+  const turn = (step, button, other) => {
     page += step;
     apply();
+    if (button.disabled) other.focus();
     const list = document.querySelector(".challenge-list");
     if (list && list.getBoundingClientRect().top < 0) list.scrollIntoView({ block: "start" });
   };
-  prevButton?.addEventListener("click", () => turn(-1));
-  nextButton?.addEventListener("click", () => turn(1));
+  prevButton?.addEventListener("click", () => turn(-1, prevButton, nextButton));
+  nextButton?.addEventListener("click", () => turn(1, nextButton, prevButton));
   apply();
+  // Announce page changes, not the initial page.
+  pageLabel?.setAttribute("aria-live", "polite");
 
   if (searchBox) {
     searchBox.closest("label").hidden = false;

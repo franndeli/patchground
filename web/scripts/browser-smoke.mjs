@@ -60,6 +60,7 @@ try {
   }
   assert.equal(new Set(seen).size, total);
   assert.equal(await page.locator("#catalog-next").isDisabled(), true);
+  assert.equal(await page.evaluate(() => document.activeElement?.id), "catalog-prev");
   await page.locator('[data-filter="beginner"]').click();
   assert.equal(await page.locator("#catalog-page").innerText().then((t) => t.startsWith("Page 1 of")), true);
   await page.locator('[data-filter="all"]').click();

@@ -26,12 +26,13 @@ Split the module into three layers with dependencies that point inwards:
 - `src/reports/domain.py`: frozen dataclasses `Sale(sku, quantity, unit_cents)`,
   `ProductLine(sku, net_cents)` and `MonthlySummary(month, lines, refunds_cents, total_cents)`
   where `lines` is a tuple of `ProductLine`, plus `summarize(month, sales) -> MonthlySummary`.
-  `summarize` raises `ValueError` for a malformed month. The domain imports nothing from SQLite,
-  storage, presentation or `report.py`.
+  `summarize` decides the order of `lines` (net descending, then SKU, as the report prints them)
+  and raises `ValueError` for a malformed month. Importing the domain loads nothing from SQLite,
+  storage, presentation or `report.py`, directly or indirectly.
 - `src/reports/storage.py`: `SqliteSales(db_path).for_month(month)` returns that month's `Sale`
-  values in insertion order. It knows nothing about formatting.
+  values in insertion order. Importing it loads nothing from presentation.
 - `src/reports/text.py`: `render(summary) -> str` produces today's text from any
-  `MonthlySummary`. It never touches SQLite or storage.
+  `MonthlySummary`. Importing it loads neither SQLite nor storage.
 - `src/reports/report.py`: `monthly_report(db_path, month)` keeps its signature and output
   exactly. It only composes the layers. No SQL and no `sqlite3` import there.
 
