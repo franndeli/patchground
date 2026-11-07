@@ -1,0 +1,34 @@
+spec_version: "0.1"
+id: payment-vendor-boundary
+version: 1.0.0
+title: Keep the payment vendor's SDK out of the billing domain
+type: architecture
+summary: >-
+  Paysafe response codes, timestamps and response objects leak into invoices and dunning, so a
+  vendor upgrade touches every billing rule. Build an anti-corruption layer that translates the
+  SDK into billing's own payment port without changing a single outcome.
+languages: [python]
+tags: [architecture, anti-corruption-layer, ports-and-adapters, third-party-integration]
+difficulty: advanced
+timebox_minutes: 60
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/billing/, tests/]
+hints:
+  - Search billing/ for every use of the SDK, not just the imports. Codes, PsTimeout, ts_ms and the stored response are all vendor vocabulary.
+  - Write the port first, in billing's words. What does collect() need to know after a charge? An outcome, a reason, a reference and a time. None of them is a Paysafe code.
+  - Dunning reads last_response.rc today. Once the invoice stores billing's reason instead, which of today's dunning rules can be expressed without the SDK?
+debrief:
+  questions: debrief/questions.md
+  focus: [design_judgment, test_quality, scope_judgment]
+author: {name: Fran Delicado, github: franndeli}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by: {model: "Claude (Anthropic) via pi coding agent, model id unverified", prompt_version: architecture-batch-v1}

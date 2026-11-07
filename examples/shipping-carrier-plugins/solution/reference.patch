@@ -1,0 +1,165 @@
+diff --git a/src/carrier.ts b/src/carrier.ts
+new file mode 100644
+index 0000000..6a3bf24
+--- /dev/null
++++ b/src/carrier.ts
+@@ -0,0 +1,8 @@
++import type { Shipment } from "./shipment";
++
++/** One shipping carrier: whether it takes a parcel and what it charges, in cents. */
++export interface Carrier {
++  readonly id: string;
++  supports(shipment: Shipment): boolean;
++  price(shipment: Shipment): number;
++}
+diff --git a/src/carriers/dhl.ts b/src/carriers/dhl.ts
+new file mode 100644
+index 0000000..014143f
+--- /dev/null
++++ b/src/carriers/dhl.ts
+@@ -0,0 +1,11 @@
++import type { Carrier } from "../carrier";
++import { startedKg } from "../shipment";
++
++export const dhl: Carrier = {
++  id: "dhl",
++  supports: (shipment) => shipment.weightGrams <= 30_000,
++  price: (shipment) => {
++    const base = 1200 + 150 * startedKg(shipment);
++    return shipment.express ? Math.round(base * 1.5) : base;
++  },
++};
+diff --git a/src/carriers/postnl.ts b/src/carriers/postnl.ts
+new file mode 100644
+index 0000000..b406138
+--- /dev/null
++++ b/src/carriers/postnl.ts
+@@ -0,0 +1,10 @@
++import type { Carrier } from "../carrier";
++import { startedKg } from "../shipment";
++
++const COUNTRIES = ["NL", "BE", "DE", "FR"];
++
++export const postnl: Carrier = {
++  id: "postnl",
++  supports: (shipment) => COUNTRIES.includes(shipment.destination) && shipment.weightGrams <= 10_000 && !shipment.express,
++  price: (shipment) => 695 + 100 * Math.max(0, startedKg(shipment) - 2),
++};
+diff --git a/src/carriers/ups.ts b/src/carriers/ups.ts
+new file mode 100644
+index 0000000..7ace78d
+--- /dev/null
++++ b/src/carriers/ups.ts
+@@ -0,0 +1,9 @@
++import type { Carrier } from "../carrier";
++import { startedKg } from "../shipment";
++
++export const ups: Carrier = {
++  id: "ups",
++  supports: (shipment) => shipment.weightGrams <= 20_000,
++  price: (shipment) =>
++    990 + (shipment.destination === "NL" ? 0 : 500) + 120 * startedKg(shipment) + (shipment.express ? 1500 : 0),
++};
+diff --git a/src/quoter.ts b/src/quoter.ts
+new file mode 100644
+index 0000000..58fc89d
+--- /dev/null
++++ b/src/quoter.ts
+@@ -0,0 +1,34 @@
++import type { Carrier } from "./carrier";
++import { UnknownCarrierError, UnsupportedShipmentError } from "./errors";
++import { assertShipment, type Shipment } from "./shipment";
++
++export interface Quoter {
++  quote(shipment: Shipment, carrierId: string): number;
++  availableCarriers(shipment: Shipment): string[];
++}
++
++export function createQuoter(carriers: readonly Carrier[]): Quoter {
++  const byId = new Map<string, Carrier>();
++  for (const carrier of carriers) {
++    if (byId.has(carrier.id)) throw new Error(`duplicate carrier id: ${carrier.id}`);
++    byId.set(carrier.id, carrier);
++  }
++
++  return {
++    quote(shipment, carrierId) {
++      assertShipment(shipment);
++      const carrier = byId.get(carrierId);
++      if (!carrier) throw new UnknownCarrierError(carrierId);
++      if (!carrier.supports(shipment)) throw new UnsupportedShipmentError(carrierId);
++      return carrier.price(shipment);
++    },
++    availableCarriers(shipment) {
++      assertShipment(shipment);
++      return [...byId.values()]
++        .filter((carrier) => carrier.supports(shipment))
++        .map((carrier) => ({ id: carrier.id, cents: carrier.price(shipment) }))
++        .sort((a, b) => a.cents - b.cents || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
++        .map(({ id }) => id);
++    },
++  };
++}
+diff --git a/src/quotes.ts b/src/quotes.ts
+index 7aa88fe..93fe13e 100644
+--- a/src/quotes.ts
++++ b/src/quotes.ts
+@@ -1,50 +1,17 @@
+-import { UnknownCarrierError, UnsupportedShipmentError } from "./errors";
+-import { assertShipment, type Shipment, startedKg } from "./shipment";
++import { dhl } from "./carriers/dhl";
++import { postnl } from "./carriers/postnl";
++import { ups } from "./carriers/ups";
++import { createQuoter } from "./quoter";
++import type { Shipment } from "./shipment";
+ 
+-const CARRIERS = ["postnl", "dhl", "ups"];
+-const POSTNL_COUNTRIES = ["NL", "BE", "DE", "FR"];
+-
+-function supports(carrier: string, shipment: Shipment): boolean {
+-  switch (carrier) {
+-    case "postnl":
+-      return POSTNL_COUNTRIES.includes(shipment.destination) && shipment.weightGrams <= 10_000 && !shipment.express;
+-    case "dhl":
+-      return shipment.weightGrams <= 30_000;
+-    case "ups":
+-      return shipment.weightGrams <= 20_000;
+-    default:
+-      throw new UnknownCarrierError(carrier);
+-  }
+-}
+-
+-function price(carrier: string, shipment: Shipment): number {
+-  const kg = startedKg(shipment);
+-  switch (carrier) {
+-    case "postnl":
+-      return 695 + 100 * Math.max(0, kg - 2);
+-    case "dhl": {
+-      const base = 1200 + 150 * kg;
+-      return shipment.express ? Math.round(base * 1.5) : base;
+-    }
+-    case "ups":
+-      return 990 + (shipment.destination === "NL" ? 0 : 500) + 120 * kg + (shipment.express ? 1500 : 0);
+-    default:
+-      throw new UnknownCarrierError(carrier);
+-  }
+-}
++const defaultQuoter = createQuoter([postnl, dhl, ups]);
+ 
+ /** Price in cents for one carrier. */
+ export function quote(shipment: Shipment, carrier: string): number {
+-  assertShipment(shipment);
+-  if (!supports(carrier, shipment)) throw new UnsupportedShipmentError(carrier);
+-  return price(carrier, shipment);
++  return defaultQuoter.quote(shipment, carrier);
+ }
+ 
+ /** Carriers that can ship the parcel, cheapest first; ties by carrier id. */
+ export function availableCarriers(shipment: Shipment): string[] {
+-  assertShipment(shipment);
+-  return CARRIERS.filter((carrier) => supports(carrier, shipment))
+-    .map((carrier) => ({ carrier, cents: price(carrier, shipment) }))
+-    .sort((a, b) => a.cents - b.cents || (a.carrier < b.carrier ? -1 : a.carrier > b.carrier ? 1 : 0))
+-    .map(({ carrier }) => carrier);
++  return defaultQuoter.availableCarriers(shipment);
+ }

@@ -1,0 +1,34 @@
+spec_version: "0.1"
+id: sales-report-layers
+version: 1.0.0
+title: Split the monthly sales report into domain, storage and presentation layers
+type: architecture
+summary: >-
+  One function reads SQLite, applies the refund rules and formats text, so nobody can reuse the
+  totals or test them without a database. Separate a pure domain core from storage and
+  presentation without changing a byte of the report.
+languages: [python]
+tags: [architecture, layering, separation-of-concerns, functional-core]
+difficulty: intermediate
+timebox_minutes: 45
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: pytest -q -p no:cacheprovider --junitxml=$PG_RESULTS/junit.xml
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/reports/, tests/]
+hints:
+  - List what monthly_report does in order. Mark each step as "talks to SQLite", "decides a number" or "builds text". Each mark is a module.
+  - The domain should take plain Sale values and return a MonthlySummary value. If a function there needs a path, a connection or an f-string with padding, it is in the wrong layer.
+  - The visible test about a malformed month still has to pass. Which layer validates the month, and does that happen before anything opens the database file?
+debrief:
+  questions: debrief/questions.md
+  focus: [design_judgment, test_quality, scope_judgment]
+author: {name: Fran Delicado, github: franndeli}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by: {model: "Claude (Anthropic) via pi coding agent, model id unverified", prompt_version: architecture-batch-v1}

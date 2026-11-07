@@ -1,0 +1,173 @@
+diff --git a/src/reports/domain.py b/src/reports/domain.py
+new file mode 100644
+index 0000000..79273d7
+--- /dev/null
++++ b/src/reports/domain.py
+@@ -0,0 +1,51 @@
++"""The report's rules: which sales count, how they net out and in what order. No I/O."""
++
++from __future__ import annotations
++
++import re
++from collections.abc import Iterable
++from dataclasses import dataclass
++
++MONTH = re.compile(r"\d{4}-(0[1-9]|1[0-2])")
++
++
++@dataclass(frozen=True)
++class Sale:
++    sku: str
++    quantity: int
++    unit_cents: int
++
++
++@dataclass(frozen=True)
++class ProductLine:
++    sku: str
++    net_cents: int
++
++
++@dataclass(frozen=True)
++class MonthlySummary:
++    month: str
++    lines: tuple[ProductLine, ...]
++    refunds_cents: int
++    total_cents: int
++
++
++def check_month(month: str) -> str:
++    if not MONTH.fullmatch(month):
++        raise ValueError(f"month must look like 2026-03, got {month!r}")
++    return month
++
++
++def summarize(month: str, sales: Iterable[Sale]) -> MonthlySummary:
++    check_month(month)
++    net_by_sku: dict[str, int] = {}
++    refunds = 0
++    for sale in sales:
++        amount = sale.quantity * sale.unit_cents
++        if sale.quantity < 0:
++            refunds += -amount
++        net_by_sku[sale.sku] = net_by_sku.get(sale.sku, 0) + amount
++    lines = tuple(
++        ProductLine(sku, net) for sku, net in sorted(net_by_sku.items(), key=lambda item: (-item[1], item[0]))
++    )
++    return MonthlySummary(month, lines, refunds, sum(line.net_cents for line in lines))
+diff --git a/src/reports/report.py b/src/reports/report.py
+index 067a57a..bb0f370 100644
+--- a/src/reports/report.py
++++ b/src/reports/report.py
+@@ -1,47 +1,13 @@
+-"""The monthly sales report: read the month's sales, total them, print them."""
++"""The monthly sales report: wires storage, the domain rules and the text presentation."""
+ 
+ from __future__ import annotations
+ 
+-import re
+-import sqlite3
+-
+-MONTH = re.compile(r"\d{4}-(0[1-9]|1[0-2])")
+-
+-
+-def money(cents: int) -> str:
+-    sign = "-" if cents < 0 else ""
+-    cents = abs(cents)
+-    return f"{sign}{cents // 100}.{cents % 100:02d}"
++from reports.domain import check_month, summarize
++from reports.storage import SqliteSales
++from reports.text import render
+ 
+ 
+ def monthly_report(db_path: str, month: str) -> str:
+     """Plain-text report of net sales per SKU for one month (``YYYY-MM``)."""
+-    if not MONTH.fullmatch(month):
+-        raise ValueError(f"month must look like 2026-03, got {month!r}")
+-
+-    connection = sqlite3.connect(db_path)
+-    try:
+-        rows = connection.execute(
+-            "SELECT sku, quantity, unit_cents FROM sales WHERE substr(sold_on, 1, 7) = ? ORDER BY id",
+-            (month,),
+-        ).fetchall()
+-    finally:
+-        connection.close()
+-
+-    net_by_sku: dict[str, int] = {}
+-    refunds = 0
+-    for sku, quantity, unit_cents in rows:
+-        amount = quantity * unit_cents
+-        if quantity < 0:
+-            refunds += -amount
+-        net_by_sku[sku] = net_by_sku.get(sku, 0) + amount
+-
+-    lines = [f"Sales report {month}"]
+-    if not net_by_sku:
+-        lines.append("No sales.")
+-        return "\n".join(lines) + "\n"
+-    for sku, net in sorted(net_by_sku.items(), key=lambda item: (-item[1], item[0])):
+-        lines.append(f"{sku:<12}{money(net):>10}")
+-    lines.append(f"{'Refunds':<12}{money(refunds):>10}")
+-    lines.append(f"{'Total':<12}{money(sum(net_by_sku.values())):>10}")
+-    return "\n".join(lines) + "\n"
++    check_month(month)
++    return render(summarize(month, SqliteSales(db_path).for_month(month)))
+diff --git a/src/reports/storage.py b/src/reports/storage.py
+new file mode 100644
+index 0000000..0a50dfc
+--- /dev/null
++++ b/src/reports/storage.py
+@@ -0,0 +1,23 @@
++"""Read sales from the shop's SQLite database."""
++
++from __future__ import annotations
++
++import sqlite3
++
++from reports.domain import Sale
++
++
++class SqliteSales:
++    def __init__(self, db_path: str) -> None:
++        self._db_path = db_path
++
++    def for_month(self, month: str) -> list[Sale]:
++        connection = sqlite3.connect(self._db_path)
++        try:
++            rows = connection.execute(
++                "SELECT sku, quantity, unit_cents FROM sales WHERE substr(sold_on, 1, 7) = ? ORDER BY id",
++                (month,),
++            ).fetchall()
++        finally:
++            connection.close()
++        return [Sale(sku, quantity, unit_cents) for sku, quantity, unit_cents in rows]
+diff --git a/src/reports/text.py b/src/reports/text.py
+new file mode 100644
+index 0000000..6499fd5
+--- /dev/null
++++ b/src/reports/text.py
+@@ -0,0 +1,23 @@
++"""Plain-text presentation of a monthly summary."""
++
++from __future__ import annotations
++
++from reports.domain import MonthlySummary
++
++
++def money(cents: int) -> str:
++    sign = "-" if cents < 0 else ""
++    cents = abs(cents)
++    return f"{sign}{cents // 100}.{cents % 100:02d}"
++
++
++def render(summary: MonthlySummary) -> str:
++    lines = [f"Sales report {summary.month}"]
++    if not summary.lines:
++        lines.append("No sales.")
++        return "\n".join(lines) + "\n"
++    for line in summary.lines:
++        lines.append(f"{line.sku:<12}{money(line.net_cents):>10}")
++    lines.append(f"{'Refunds':<12}{money(summary.refunds_cents):>10}")
++    lines.append(f"{'Total':<12}{money(summary.total_cents):>10}")
++    return "\n".join(lines) + "\n"

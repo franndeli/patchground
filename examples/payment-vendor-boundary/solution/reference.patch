@@ -1,0 +1,179 @@
+diff --git a/src/billing/app.py b/src/billing/app.py
+index 2b3afb3..6f4d397 100644
+--- a/src/billing/app.py
++++ b/src/billing/app.py
+@@ -3,8 +3,9 @@
+ from __future__ import annotations
+ 
+ from billing.invoices import InvoiceService
++from billing.paysafe_gateway import PaysafeGateway
+ from paysafe import PaysafeClient
+ 
+ 
+ def build_invoice_service(client: PaysafeClient) -> InvoiceService:
+-    return InvoiceService(client)
++    return InvoiceService(PaysafeGateway(client))
+diff --git a/src/billing/dunning.py b/src/billing/dunning.py
+index 32186a0..fe8631b 100644
+--- a/src/billing/dunning.py
++++ b/src/billing/dunning.py
+@@ -3,6 +3,7 @@
+ from __future__ import annotations
+ 
+ from billing.invoices import Invoice
++from billing.payments import Reason
+ 
+ 
+ def next_action(invoice: Invoice) -> str:
+@@ -12,6 +13,6 @@ def next_action(invoice: Invoice) -> str:
+         return "collect"
+     if invoice.status == "retry":
+         return "retry in 1 hour"
+-    if invoice.last_response is not None and invoice.last_response.rc == "51":
++    if invoice.failure == Reason.INSUFFICIENT_FUNDS:
+         return "email: top up and retry in 3 days"
+     return "email: update card"
+diff --git a/src/billing/invoices.py b/src/billing/invoices.py
+index f653da3..398477e 100644
+--- a/src/billing/invoices.py
++++ b/src/billing/invoices.py
+@@ -1,13 +1,11 @@
+-"""Collect payment for an invoice through Paysafe."""
++"""Collect payment for an invoice through the payment port."""
+ 
+ from __future__ import annotations
+ 
+ from dataclasses import dataclass
+-from datetime import UTC, datetime
++from datetime import datetime
+ 
+-from paysafe import PaysafeClient, PsResponse, PsTimeout
+-
+-DECLINES = {"05": "card declined", "51": "insufficient funds"}
++from billing.payments import Outcome, PaymentGateway
+ 
+ 
+ @dataclass
+@@ -19,32 +17,19 @@ class Invoice:
+     paid_at: datetime | None = None
+     payment_ref: str | None = None
+     failure: str | None = None
+-    last_response: PsResponse | None = None
+ 
+ 
+ class InvoiceService:
+-    def __init__(self, client: PaysafeClient) -> None:
+-        self._client = client
++    def __init__(self, gateway: PaymentGateway) -> None:
++        self._gateway = gateway
+ 
+     def collect(self, invoice: Invoice) -> Invoice:
+         if invoice.status == "paid":
+             raise ValueError(f"invoice {invoice.invoice_id} is already paid")
+-        try:
+-            response = self._client.charge(invoice.invoice_id, invoice.amount_cents, invoice.currency)
+-        except PsTimeout:
+-            invoice.status, invoice.failure = "retry", "gateway timeout"
+-            return invoice
+-        if (response.amt_minor, response.ccy) != (invoice.amount_cents, invoice.currency):
+-            raise RuntimeError(f"paysafe charged {response.amt_minor} {response.ccy} for {invoice.invoice_id}")
+-        if response.rc == "00":
++        result = self._gateway.charge(invoice.invoice_id, invoice.amount_cents, invoice.currency)
++        if result.outcome is Outcome.APPROVED:
+             invoice.status, invoice.failure = "paid", None
+-            invoice.paid_at = datetime.fromtimestamp(response.ts_ms / 1000, UTC)
+-            invoice.payment_ref = response.txn_ref
+-        elif response.rc in DECLINES:
+-            invoice.status, invoice.failure = "declined", DECLINES[response.rc]
+-        elif response.rc == "91":
+-            invoice.status, invoice.failure = "retry", "issuer unavailable"
++            invoice.paid_at, invoice.payment_ref = result.paid_at, result.reference
+         else:
+-            raise RuntimeError(f"unexpected paysafe response code {response.rc!r}")
+-        invoice.last_response = response
++            invoice.status, invoice.failure = result.outcome.value, result.reason
+         return invoice
+diff --git a/src/billing/payments.py b/src/billing/payments.py
+new file mode 100644
+index 0000000..6881301
+--- /dev/null
++++ b/src/billing/payments.py
+@@ -0,0 +1,38 @@
++"""What billing needs from a payment provider, in billing's own terms."""
++
++from __future__ import annotations
++
++from dataclasses import dataclass
++from datetime import datetime
++from enum import StrEnum
++from typing import Protocol, runtime_checkable
++
++
++class Outcome(StrEnum):
++    APPROVED = "approved"
++    DECLINED = "declined"
++    RETRY = "retry"
++
++
++class Reason(StrEnum):
++    CARD_DECLINED = "card declined"
++    INSUFFICIENT_FUNDS = "insufficient funds"
++    ISSUER_UNAVAILABLE = "issuer unavailable"
++    GATEWAY_TIMEOUT = "gateway timeout"
++
++
++@dataclass(frozen=True)
++class PaymentResult:
++    outcome: Outcome
++    reason: Reason | None
++    reference: str | None
++    paid_at: datetime | None
++
++
++class PaymentGatewayError(RuntimeError):
++    """The provider answered with something billing cannot interpret."""
++
++
++@runtime_checkable
++class PaymentGateway(Protocol):
++    def charge(self, invoice_id: str, amount_cents: int, currency: str) -> PaymentResult: ...
+diff --git a/src/billing/paysafe_gateway.py b/src/billing/paysafe_gateway.py
+new file mode 100644
+index 0000000..6940442
+--- /dev/null
++++ b/src/billing/paysafe_gateway.py
+@@ -0,0 +1,34 @@
++"""Anti-corruption layer: translate the Paysafe SDK into billing's payment port."""
++
++from __future__ import annotations
++
++from datetime import UTC, datetime
++
++from billing.payments import Outcome, PaymentGatewayError, PaymentResult, Reason
++from paysafe import PaysafeClient, PsTimeout
++
++UNPAID = {
++    "05": (Outcome.DECLINED, Reason.CARD_DECLINED),
++    "51": (Outcome.DECLINED, Reason.INSUFFICIENT_FUNDS),
++    "91": (Outcome.RETRY, Reason.ISSUER_UNAVAILABLE),
++}
++
++
++class PaysafeGateway:
++    def __init__(self, client: PaysafeClient) -> None:
++        self._client = client
++
++    def charge(self, invoice_id: str, amount_cents: int, currency: str) -> PaymentResult:
++        try:
++            response = self._client.charge(invoice_id, amount_cents, currency)
++        except PsTimeout:
++            return PaymentResult(Outcome.RETRY, Reason.GATEWAY_TIMEOUT, None, None)
++        if (response.amt_minor, response.ccy) != (amount_cents, currency):
++            raise PaymentGatewayError(f"paysafe charged {response.amt_minor} {response.ccy} for {invoice_id}")
++        if response.rc == "00":
++            paid_at = datetime.fromtimestamp(response.ts_ms / 1000, UTC)
++            return PaymentResult(Outcome.APPROVED, None, response.txn_ref, paid_at)
++        if response.rc in UNPAID:
++            outcome, reason = UNPAID[response.rc]
++            return PaymentResult(outcome, reason, None, None)
++        raise PaymentGatewayError(f"unexpected paysafe response code {response.rc!r}")

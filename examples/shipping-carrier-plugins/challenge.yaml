@@ -1,0 +1,34 @@
+spec_version: "0.1"
+id: shipping-carrier-plugins
+version: 1.0.0
+title: Let new shipping carriers plug in without editing the quote engine
+type: architecture
+summary: >-
+  Every carrier's rules live in switch statements inside the quote engine, so adding one means
+  editing core code and retesting all of them. Introduce a Carrier extension point and a quoter
+  that knows no carrier by name, keeping every price identical.
+languages: [typescript]
+tags: [architecture, extension-points, open-closed, strategy]
+difficulty: intermediate
+timebox_minutes: 45
+ai_policy: allowed
+environment:
+  dockerfile: environment/Dockerfile
+  services: []
+  test_command: node /opt/patchground/vitest-runner.mjs
+checks:
+  visible: checks/visible
+  hidden: checks/hidden
+solution: solution/reference.patch
+expected_paths: [src/, tests/]
+hints:
+  - Each switch has one case per carrier. Collect the cases for one carrier from both switches; that is one object with an id, supports() and price().
+  - The quoter should receive its carriers instead of importing them. Who then decides which carriers exist, and where does quotes.ts get them?
+  - Read the existing sort and validation carefully. The quoter must keep the tie-breaking, the RangeError for bad weights and the two different errors.
+debrief:
+  questions: debrief/questions.md
+  focus: [design_judgment, test_quality, scope_judgment]
+author: {name: Fran Delicado, github: franndeli}
+content_license: CC-BY-4.0
+provenance: generated
+generated_by: {model: "Claude (Anthropic) via pi coding agent, model id unverified", prompt_version: architecture-batch-v1}

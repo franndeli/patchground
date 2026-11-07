@@ -1,0 +1,6 @@
+- Which layer owns the refund rule, and how would analytics call it with sales from their stream?
+- Why does the domain define `Sale` instead of reading the storage's rows?
+- Where is the month validated, and why must that happen before the database file is opened?
+- What would a CSV export need to add, and which existing files would it touch?
+- What did you keep identical on purpose, and how did the visible tests prove it?
+- If an AI assistant drafted the split, which dependency did you check yourself?

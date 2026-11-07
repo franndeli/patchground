@@ -1,0 +1,6 @@
+- List every piece of vendor vocabulary you found in billing. Which one was hardest to spot?
+- Which module would change for Paysafe SDK 3.0, and which would not?
+- Why does the port use billing's reasons instead of passing the vendor code through?
+- What should happen to an unknown response code, and why is that not a decline?
+- How would a second provider fit in, and what would it share with Paysafe?
+- If an AI assistant wrote the translation table, how did you check it against today's behaviour?

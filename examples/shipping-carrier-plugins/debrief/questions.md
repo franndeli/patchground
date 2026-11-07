@@ -1,0 +1,6 @@
+- What does the quoter know about carriers now, and what does it no longer know?
+- Where is the list of default carriers decided, and why there rather than in the quoter?
+- How did you keep validation order and tie-breaking identical while moving the logic?
+- Why does the quoter copy the carriers it receives?
+- When would this extension point be over-engineering, and what would you have done instead?
+- If an AI assistant split the switch statements, which price did you check yourself?
