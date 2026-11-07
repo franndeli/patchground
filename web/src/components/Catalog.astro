@@ -56,6 +56,12 @@ const tile: Record<string, string> = { debug: "from-fail/25 text-fail", feature:
     <p class="catalog-empty p-8 text-center text-sm text-muted" id="catalog-empty" hidden>No challenge matches. Clear the search or pick another filter.</p>
   </div>
 
+  <nav class="catalog-pager mt-4 flex items-center justify-center gap-3" aria-label="Challenge pages" data-page-size="5" hidden>
+    <button type="button" class="btn-ghost px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-40" id="catalog-prev"><span aria-hidden="true">‹</span> Previous</button>
+    <p class="font-mono text-xs text-subtle tabular-nums" id="catalog-page" aria-live="polite"></p>
+    <button type="button" class="btn-ghost px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-40" id="catalog-next">Next <span aria-hidden="true">›</span></button>
+  </nav>
+
   <p class="catalog-note mt-5 max-w-4xl text-xs leading-relaxed text-subtle">Difficulty and realism are not yet human-rated. Challenges marked AI-generated were drafted with a coding agent and validated like any other. <strong class="text-muted">built-in</strong> means shipped with the CLI and validated in this repository's CI; <strong class="text-muted">verified</strong> means a community pack whose every challenge passed <code class="code-chip">pgnd validate</code> in Patchground's CI on the date shown. Installing packs by name from the CLI is planned; today the CLI runs challenges from a local path or a pack URL. <a class="link text-xs" href={`${REPO}/blob/main/docs/first-session.md`}>How to run one <span aria-hidden="true">↗</span></a> · <a class="link text-xs" href="./status.html">Registry status</a></p>
 
   <div class="packs-section mt-20" id="packs" aria-labelledby="packs-heading">

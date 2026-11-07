@@ -10,19 +10,34 @@ const count = document.querySelector("#catalog-count");
 const filterGroup = document.querySelector(".filters");
 const searchBox = document.querySelector("#catalog-search");
 const emptyNote = document.querySelector("#catalog-empty");
+const pager = document.querySelector(".catalog-pager");
+const prevButton = document.querySelector("#catalog-prev");
+const nextButton = document.querySelector("#catalog-next");
+const pageLabel = document.querySelector("#catalog-page");
 
 if (filterGroup && count && challenges.length && filters.length) {
   const summary = count.dataset.summary || count.textContent;
+  const pageSize = Number(pager?.dataset.pageSize) || Infinity;
   let facet = "all";
   let query = "";
+  let page = 0;
 
   const apply = () => {
-    let visible = 0;
-    for (const challenge of challenges) {
+    const matching = challenges.filter((challenge) => {
       const facets = (challenge.dataset.facets || "").split(/\s+/);
       const haystack = challenge.dataset.search || "";
-      challenge.hidden = (facet !== "all" && !facets.includes(facet)) || (query !== "" && !haystack.includes(query));
-      if (!challenge.hidden) visible += 1;
+      return (facet === "all" || facets.includes(facet)) && (query === "" || haystack.includes(query));
+    });
+    const visible = matching.length;
+    const pages = Math.max(1, Math.ceil(visible / pageSize));
+    page = Math.min(page, pages - 1);
+    const shown = new Set(matching.slice(page * pageSize, (page + 1) * pageSize));
+    for (const challenge of challenges) challenge.hidden = !shown.has(challenge);
+    if (pager && prevButton && nextButton && pageLabel) {
+      pager.hidden = pages === 1;
+      prevButton.disabled = page === 0;
+      nextButton.disabled = page === pages - 1;
+      pageLabel.textContent = `Page ${page + 1} of ${pages}`;
     }
     if (emptyNote) emptyNote.hidden = visible !== 0;
     const parts = [];
@@ -36,16 +51,28 @@ if (filterGroup && count && challenges.length && filters.length) {
   for (const button of filters) {
     button.addEventListener("click", () => {
       facet = button.dataset.filter;
+      page = 0;
       for (const other of filters) other.setAttribute("aria-pressed", String(other === button));
       apply();
     });
   }
   filterGroup.hidden = false;
 
+  const turn = (step) => {
+    page += step;
+    apply();
+    const list = document.querySelector(".challenge-list");
+    if (list && list.getBoundingClientRect().top < 0) list.scrollIntoView({ block: "start" });
+  };
+  prevButton?.addEventListener("click", () => turn(-1));
+  nextButton?.addEventListener("click", () => turn(1));
+  apply();
+
   if (searchBox) {
     searchBox.closest("label").hidden = false;
     searchBox.addEventListener("input", () => {
       query = searchBox.value.trim().toLowerCase();
+      page = 0;
       apply();
     });
   }

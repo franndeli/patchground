@@ -44,6 +44,27 @@ try {
   assert.equal(await page.locator("#copy-status").innerText(), "");
   console.log("PASS: real browser clipboard write/readback matches the visible agent prompt");
 
+  const cards = page.locator(".challenge-card");
+  const visibleCards = () => cards.evaluateAll((all) => all.filter((card) => !card.hidden).map((card) => card.dataset.challenge));
+  const total = await cards.count();
+  const pages = Math.ceil(total / 5);
+  const first = await visibleCards();
+  assert.equal(first.length, Math.min(5, total));
+  assert.equal(await page.locator("#catalog-page").innerText(), `Page 1 of ${pages}`);
+  const seen = [...first];
+  for (let p = 2; p <= pages; p++) {
+    await page.locator("#catalog-next").click();
+    const shown = await visibleCards();
+    assert.ok(shown.length > 0 && shown.length <= 5);
+    seen.push(...shown);
+  }
+  assert.equal(new Set(seen).size, total);
+  assert.equal(await page.locator("#catalog-next").isDisabled(), true);
+  await page.locator('[data-filter="beginner"]').click();
+  assert.equal(await page.locator("#catalog-page").innerText().then((t) => t.startsWith("Page 1 of")), true);
+  await page.locator('[data-filter="all"]').click();
+  console.log(`PASS: the catalog shows five per page; paging reaches all ${total} challenges; filters reset to page one`);
+
   await button.focus();
   await page.keyboard.press("Tab");
   assert.equal(await page.evaluate(() => document.activeElement.textContent.trim()), "View skill ↗");
@@ -88,6 +109,8 @@ try {
   assert.equal(await staticPage.locator("#copy-agent-prompt").isHidden(), true);
   assert.equal(await staticPage.locator("#agent-prompt").innerText(), prompt);
   assert.equal(await staticPage.getByRole("link", { name: "View skill" }).isVisible(), true);
+  assert.equal(await staticPage.locator(".challenge-card:visible").count(), await staticPage.locator(".challenge-card").count());
+  assert.equal(await staticPage.locator(".catalog-pager").isHidden(), true);
   assert.deepEqual(errors, []);
   console.log("PASS: no-JavaScript prompt and skill link remain available; no page errors");
 } finally {

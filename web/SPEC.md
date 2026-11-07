@@ -63,7 +63,7 @@ it names alternatives worth using rather than disparaging them. Quotes, rows and
 `web/` is an Astro project independent of the Python package. Astro, Tailwind CSS and the Geist
 font packages are build-time dependencies (locked in `package-lock.json`); the output has no
 runtime dependencies: static HTML/CSS, bundled font files and small progressive-enhancement
-JavaScript (facet filtering, search, pack sorting, copy-to-clipboard, a pointer spotlight). No
+JavaScript (facet filtering, search, paging, pack sorting, copy-to-clipboard, a pointer spotlight). No
 React or other client framework. Everything is readable and navigable without JavaScript. No
 remote fonts, scripts, images, analytics or browser storage. The build output is only the two
 pages, `catalog.json`, the favicon and hashed CSS/JS/font assets; it never publishes sources or
@@ -79,7 +79,10 @@ rendered at build time by `src/lib/catalog.mjs` and the Astro pages from two inp
 are the only places the site touches challenge data. Cards show a pack chip and a *built-in* or
 *verified · date* badge; a *community* facet, search over title/summary/tags/pack, and pack sorting
 (stars, recently verified, newest, challenge count; built-in first) are client-side over the
-generated HTML. With no community pack the sections render an explicit empty state. A *Publish
+generated HTML. With JavaScript the challenge list shows five rows per page with Previous/Next and a
+"Page x of y" label; filters and search act on the whole catalog and return to page one, and the
+pager hides when the matches fit on one page. Without JavaScript every challenge is listed. Every
+challenge count on the page is generated; a test rejects a hardcoded count in the landing copy. With no community pack the sections render an explicit empty state. A *Publish
 your pack* section describes the publish-and-appear steps and marks the CLI helpers as planned. For examples the script
 reads an explicit allowlist of public fields (id, title, summary, type, languages, tags, difficulty,
 timebox, provenance) and never opens `workspace/`, `checks/`, `solution/` or `debrief/`, so
@@ -95,7 +98,8 @@ status page or plain text) and host counts are coerced to non-negative integers.
 
 ## Interaction and accessibility
 
-Filters are native buttons with pressed state and an announced live count. Copy uses the visible
+Filters and pager buttons are native buttons with pressed or disabled state and an announced live
+count and page label. Copy uses the visible
 command or agent-prompt block, reports success only after the clipboard resolves, offers manual copying on
 rejection, and hides itself when the clipboard is unavailable. A type scale with an 11px floor,
 visible focus, a skip link, live regions and reduced-motion styling apply throughout; the hero

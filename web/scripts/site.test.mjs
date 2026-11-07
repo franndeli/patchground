@@ -171,6 +171,7 @@ test("motion is finite: nothing animates forever unless the pointer is on it", (
 test("no-JavaScript page shows every challenge; enhancement controls start hidden", () => {
   assert.ok(/class="filters[^"]*"[^>]+ hidden/.test(html), String(/class="filters[^"]*"[^>]+ hidden/));
   assert.ok(/<label class="search[^"]*" hidden/.test(html), String(/<label class="search[^"]*" hidden/));
+  assert.ok(/<nav class="catalog-pager[^"]*"[^>]+data-page-size="5" hidden/.test(html), "the pager starts hidden with five per page");
   assert.ok(/id="copy-command"[^>]+ hidden/.test(html), String(/id="copy-command"[^>]+ hidden/));
   for (const [card] of matches(html, /<article class="challenge-card[^>]+>/g)) assert.ok(!/\bhidden\b/.test(card), String(/\bhidden\b/));
 });
@@ -221,6 +222,15 @@ test("catalog HTML, JSON and stats come from the manifests and the registry", as
     assert.ok(html.includes(`examples/${entry.id}/TICKET.md`), entry.id);
   }
   assert.match(text(html), new RegExp(`${challenges.length} curated challenges`));
+  assert.match(text(html), new RegExp(`${challenges.length} challenges in ${packs.length} packs?`));
+});
+
+test("landing copy never hardcodes a challenge count; every count comes from the catalog", async () => {
+  const dir = new URL("src/components/", web);
+  const sources = await Promise.all((await readdir(dir)).map((n) => readFile(new URL(n, dir), "utf8")));
+  sources.push(await readFile(new URL("src/pages/index.astro", web), "utf8"));
+  const literal = /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|twenty)\s+(?:[a-z-]+\s+)?challenges\b/i;
+  for (const source of sources) assert.ok(!literal.test(source), String(source.match(literal)));
 });
 
 test("all eight approved interview challenges ship as generated catalog entries and cards", async () => {
@@ -309,7 +319,7 @@ function element(dataset = {}, textContent = "") {
   };
 }
 
-function browser(clipboard) {
+function browser(clipboard, { pageSize } = {}) {
   const filters = ["all", "beginner", "intermediate", "community"].map((filter) => element({ filter }));
   const cards = [
     ["beginner debug python built-in", "last page pagination off-by-one patchground-examples"],
@@ -323,6 +333,8 @@ function browser(clipboard) {
     "#copy-command": element(), "#install-command": element({}, "git clone x\nuv tool install .\n"), "#copy-status": element(),
     "#copy-agent-prompt": element(), "#agent-prompt": element({}, html.match(/<p[^>]*id="agent-prompt"[^>]*>([^<]+)<\/p>/)[1]), "#agent-copy-status": element(),
     "#catalog-search": searchBox, "#catalog-empty": element(), "#pack-grid": null, "#pack-sort": null,
+    ".catalog-pager": pageSize ? element({ pageSize: String(pageSize) }) : null,
+    "#catalog-prev": element(), "#catalog-next": element(), "#catalog-page": element(), ".challenge-list": null,
   };
   elements[".filters"].hidden = elements["#copy-command"].hidden = elements["#copy-agent-prompt"].hidden = true;
   const all = { "[data-filter]": filters, "[data-facets]": cards, "[data-spotlight]": [] };
@@ -358,6 +370,31 @@ test("facets and search combine; the empty note appears for zero matches; All + 
   assert.ok(cards.every((c) => !c.hidden));
   assert.equal(elements["#catalog-count"].textContent, "3 challenges in 2 packs");
   assert.equal(filters.filter((b) => b.attributes["aria-pressed"] === "true").length, 1);
+});
+
+test("the list shows one page at a time; filters and search reset to page one; one page hides the pager", () => {
+  const { filters, cards, elements, searchBox } = browser(undefined, { pageSize: 2 });
+  const [pager, prev, next, label] = [".catalog-pager", "#catalog-prev", "#catalog-next", "#catalog-page"].map((s) => elements[s]);
+  assert.deepEqual(cards.map((c) => c.hidden), [false, false, true]);
+  assert.equal(pager.hidden, false);
+  assert.equal(label.textContent, "Page 1 of 2");
+  assert.equal(prev.disabled, true);
+  assert.equal(next.disabled, false);
+  next.listeners.click();
+  assert.deepEqual(cards.map((c) => c.hidden), [true, true, false]);
+  assert.equal(label.textContent, "Page 2 of 2");
+  assert.equal(next.disabled, true);
+  assert.equal(elements["#catalog-count"].textContent, "3 challenges in 2 packs");
+  filters[2].listeners.click();
+  assert.deepEqual(cards.map((c) => c.hidden), [true, false, false]);
+  assert.equal(pager.hidden, true);
+  filters[0].listeners.click();
+  next.listeners.click();
+  searchBox.value = "patchground";
+  searchBox.listeners.input();
+  assert.deepEqual(cards.map((c) => c.hidden), [false, true, false]);
+  assert.equal(label.textContent, "Page 1 of 1");
+  assert.equal(pager.hidden, true);
 });
 
 test("copy uses the exact visible command block and reports only after the clipboard resolves", async () => {
